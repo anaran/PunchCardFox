@@ -1,0 +1,23 @@
+/* a {
+  border-radius: 0.5em;
+  border: solid 2px;
+  padding: 0.2em;
+}
+ */
+nav {
+  margin: 0.5em;
+}
+
+section {
+  margin: 0.5em;
+}
+
+/* 
+body {
+  height: 100%
+}
+ */
+
+footer {
+  margin: 0.5em;
+}

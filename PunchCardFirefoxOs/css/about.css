@@ -1,0 +1,50 @@
+@import url(links.css);
+
+pre {
+  font-family: FiraSans;
+}
+
+/* html, body {
+  margin: 0;
+  padding: 0.5rem;
+} */
+
+body {
+  font-size: 1rem;
+  background: #fff;
+}
+
+h1 {
+  margin: 0 0 1rem 0;
+}
+
+p {
+  font-size: inherit;
+}
+
+div {
+/*   font-size: small; */
+/*   border: 1px solid; */
+  padding: 0 0 0;
+/*   display: inline; */
+}
+
+div.entry {
+/*   font-size: small; */
+  border: 0.1em solid;
+/*   margin: 0 0 1em; */
+}
+
+pre {
+  margin: 0 0 0;
+  width: 50%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis ellipsis;
+}
+
+pre:focus {
+  overflow: visible;
+  white-space: pre;
+/*   white-space: pre; */
+}

@@ -1,0 +1,31 @@
+@import url(links.css);
+
+html, body {
+  margin: 0;
+  padding: 0.5rem;
+}
+
+body {
+  font-size: 1rem;
+  background: #fff;
+}
+
+h1 {
+  margin: 0 0 1rem 0;
+}
+
+span {
+  font-family: monospace;
+  text-align: end;
+  border: 1px solid;
+  width: 2em;
+  display: inline-block;
+}
+
+time {
+  font-size: smaller;
+} 
+
+textarea {
+  resize: both;
+}

@@ -1,0 +1,78 @@
+@import url(links.css);
+
+html, body {
+  margin: 0;
+  padding: 0.5rem;
+}
+
+body {
+  font-size: 1rem;
+  background: #fff;
+}
+
+h1 {
+  margin: 0 0 1rem 0;
+}
+
+p {
+  font-size: inherit;
+}
+
+div {
+  /*   font-size: small; */
+  /*   border: 1px solid; */
+  padding: 0 0 0;
+  /*   display: inline; */
+}
+
+div.entry {
+  /*   font-size: small; */
+  border: 0.1em solid;
+  /*   margin: 0 0 1em; */
+}
+
+div.linked {
+  /*   font-size: small; */
+  border: 0.2em solid;
+  /* background: skyblue;
+  margin: 0 0 1em; */
+}
+
+pre {
+  margin: 0 0 0;
+  /*   border: 1px solid; */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis ellipsis;
+  /*   white-space: normal; */
+}
+
+pre:focus {
+  overflow: visible;
+  white-space: pre;
+  /*   white-space: pre; */
+}
+
+/* Begin of section taken from
+https://developer.mozilla.org/en-US/Apps/Design/Firefox_OS_building_blocks/Scrolling/2.0 */
+/* html, body {
+margin: 0;
+padding: 0;
+font-size: 10px;
+font-family: sans-serif;
+background-color: #fff;
+}
+
+body {
+background: none;
+}
+
+body[role="application"] nav[data-type="scrollbar"] p {
+opacity: 1;
+}
+
+body[role="application"] nav[data-type="scrollbar"] {
+top: 6.8rem;
+} */
+/* End of section taken from
+https://developer.mozilla.org/en-US/Apps/Design/Firefox_OS_building_blocks/Scrolling/2.0 */
