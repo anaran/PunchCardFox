@@ -7,40 +7,244 @@ window.addEventListener('DOMContentLoaded', function() {
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   'use strict';
-  var DEBUG = false;
+  var DEBUG = false, LOG = true;
+  var startDateTime = new Date;
+  var endDateTime = new Date;
+  window.addEventListener("beforeunload", function (e) {
+    var confirmationMessage = "too bad! \o/";
 
-  var translate = navigator.mozL10n.get;
+    (e || window.event).returnValue = confirmationMessage;     //Gecko + IE
+    return confirmationMessage;                                //Webkit, Safari, Chrome etc.
+  });
+  var setDateFromStringOrNumber = function (ticker, setDate, updater) {
+    return function (event) {
+    if (event.keyCode == 13) {
+      event.preventDefault();
+      ticker();
+      var newDateTime;
+      // Note: Number.parseFloat would parse an ISO date string to the numeric value of its year component!
+      // "2015-03-07..." => 2015
+      var milliSeconds = Number(event.target.textContent);
+      if (Number.isNaN(milliSeconds)) {
+        newDateTime = new Date(event.target.textContent);
+      } else {
+        newDateTime = new Date(milliSeconds);
+      }
+      if (Number.isNaN(newDateTime.getMilliseconds())) {
+        window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
+      } else {
+        setDate(newDateTime);
+        updater(newDateTime);
+      }
+    }
+    };
+  };
+  var addTouchable = function(delta_element, update_elemet, dateTime, updater, padWidth) {
+    var offset = delta_element;
+    // offset.contentEditable = false;
+    // offset.textContent = pad('0', padWidth, '0');
+    // offset.style.display = 'inline-block';
+    // offset.style.textAlign = 'end';
+    // offset.style.width = '3ex';
+    // offset.style.fontFamily = 'monospace';
+    // offset.style.border = 'solid 2px';
+    (function() {
+      var prevX,
+          prevY,
+          deltaX,
+          deltaY,
+          deltaSum;
+      prevX = prevY = deltaX = deltaY = deltaSum = 0;
+      offset.draggable = true;
+      offset.addEventListener('touchstart', function(event) {
+        // event.preventDefault();
+        // event.stopPropagation();
+        LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY);
+        prevX = event.touches[event.touches.length - 1].clientX;
+        prevY = event.touches[event.touches.length - 1].clientY;
+        // event.dataTransfer.effectAllowed = "all";
+        // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
+      }, false);
+      offset.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        LOG && console.log(event.type);
+        offset.textContent = '-' + pad('0', padWidth, '0');
+        // updater(dateTime, Math.round(-deltaSum));
+        (updateDateTime(update_elemet))(dateTime);
+        prevX = prevY = deltaX = deltaY = deltaSum = 0;
+        // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
+      }, false);
+      false && offset.addEventListener('mouseenter', function(event) {
+        LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY);
+        LOG && console.log(event.target);
+        var s = getSelection();
+        s.removeAllRanges();
+        var r = document.createRange();
+        r.selectNodeContents(offset);
+        s.addRange(r);
+      }, false);
+      offset.addEventListener('touchend', function(event) {
+        LOG && console.log(event.type, event.touches.length && event.touches[event.touches.length - 1].clientX, event.touches.length && event.touches[event.touches.length - 1].clientY);
+        offset.style.backgroundColor = 'white';
+      }, false);
+      offset.addEventListener('touchmove', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY, event.x, event.y);
+        LOG && console.log(event);
+        // TODO Need to stop only associated element.
+        // startTicking = false;
+        // endTicking = false;
+        deltaX = event.touches[event.touches.length - 1].clientX - prevX;
+        deltaY = prevY - event.touches[event.touches.length - 1].clientY;
+        if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+          if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            //     Slow mode
+            offset.style.backgroundColor = 'lightcyan';
+            // deltaSum += deltaX;
+            deltaSum += deltaX > 0 ? 0.1 : -0.1;
+            offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+          }
+          if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            //     Fast mode
+            offset.style.backgroundColor = 'lightpink';
+            // deltaSum += deltaY * 5;
+            deltaSum += deltaY > 0 ? 0.5 : -0.5;
+            // TODO Please note toFixed() also produces -0 values.
+            offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+          }
+        }
+        LOG && console.log(deltaX, deltaY, offset.textContent);
+        var d = updater(dateTime, Math.round(deltaSum));
+        (updateDateTime(update_elemet))(d);
+        prevX = event.touches[event.touches.length - 1].clientX;
+        prevY = event.touches[event.touches.length - 1].clientY;
+      }, false);
+    })();
+  };
+  var tick = function () {
+    var now = new Date;
+    window.clearTimeout(timerId);
+    if (startTicking) {
+      startDateTime = now;
+      startUpdater(now);
+    }
+    if (endTicking) {
+      endDateTime = now;
+      endUpdater(now);
+    }
+    var millisToNextSecond = 1000 - now % 1000;
+    timerId = window.setTimeout(tick, millisToNextSecond);
+  };
+  // See tick function for timer rescheduling, start after 20ms delay initially.
+  var timerId = window.setTimeout(tick, 20);
+  function pad(text, length, padding) {
+    text += '';
+    while (text.length < length) {
+      text = padding + text;
+    }
+    return text;
+  }
+  var updateDateTime = function _updateDateTime(element) {
+    var year = element.querySelector('.year');
+    var month = element.querySelector('.month');
+    var date = element.querySelector('.date');
+    var week = element.querySelector('.week');
+    var hour = element.querySelector('.hour');
+    var minute = element.querySelector('.minute');
+    var second = element.querySelector('.second');
+    return function (time) {
+      year.textContent = time.getFullYear();
+      month.textContent = pad(time.getMonth() + 1, 2, '0');
+      date.textContent = pad(time.getDate(), 2, '0');
+      week.textContent = pad('0', 2, '0');
+      hour.textContent = pad(time.getHours(), 2, '0');
+      minute.textContent = pad(time.getMinutes(), 2, '0');
+      second.textContent = pad(time.getSeconds(), 2, '0');
+    };
+  };
+
+  // var translate = navigator.mozL10n.get;
 
   //   var db = new PouchDB('punchcard');
   //   var remoteCouch = false;
 
   // We want to wait until the localisations library has loaded all the strings.
   // So we'll tell it to let us know once it's ready.
-  navigator.mozL10n.once(start);
-  var save = document.querySelector('a#save');
-  var activity = document.querySelector('textarea#activity');
-  save.addEventListener('click', function (event) {
-    var db = new PouchDB('punchcard');
-    window.alert('saving...');
+  // navigator.mozL10n.once(start);
+  var saveButton = document.querySelector('input.save');
+  var saveLink = document.querySelector('a.save');
+  var activity = document.querySelector('pre#activity');
+  saveButton.addEventListener('click', function (event) {
+    // event.preventDefault();
+    // event.stopPropagation();
+    var db = new PouchDB('punchcard3');
+    DEBUG && window.alert('saving...');
     var entry = {
       // _id: db.post(),
-      activity: activity.value,
-      start: Date.parse(start.textContent),
-      end: Date.parse(end.textContent)
+      activity: activity.textContent,
+      start: startDateTime,
+      end: endDateTime
     };
-    window.alert(JSON.stringify(entry, null, 2));
+    DEBUG && window.alert(JSON.stringify(entry, null, 2));
     db.post(entry, function callback(err, result) {
       if (!err) {
-        alert('Successfully posted a todo!');
+        DEBUG && window.alert('Successfully posted a todo!');
+        saveLink.click();
       }
     });
-
   });
-  var start = document.querySelector('time#start');
-  var end = document.querySelector('time#end');
-  start.textContent = Date();
-  end.textContent = Date();
-
+  var start = document.querySelector('pre#start');
+  var startDiv = document.querySelector('div.start_div');
+  var startUpdater = updateDateTime(startDiv);
+  // var startnow = document.querySelector('#startnow');
+  var startTicking = true;
+  startDiv.addEventListener('click', function (event) {
+    startTicking = !startTicking;
+  });
+  var startAtEnd = document.querySelector('#start_at_end');
+  startAtEnd.addEventListener('click', function (event) {
+    startTicking = false;
+    startDateTime = endDateTime;
+    startUpdater(endDateTime);
+  });
+  start.addEventListener('keypress', setDateFromStringOrNumber(function () { startTicking = false; }, function (date) { startDateTime = date; }, startUpdater));
+  addTouchable(document.querySelector('.start_delta_div>.year'), startDiv, startDateTime, function (value, delta) {
+    var d = new Date(value);
+    value.setFullYear(d.getFullYear() + delta);
+    return d;
+  }, 3);
+  addTouchable(document.querySelector('.start_delta_div>.minute'), startDiv, startDateTime, function (value, delta) {
+    var d = new Date(value);
+    d.setMinutes(d.getMinutes() + delta);
+    return d;
+  }, 2);
+  var end = document.querySelector('pre#end');
+  var endDiv = document.querySelector('div.end_div');
+  var endUpdater = updateDateTime(endDiv);
+  // var endnow = document.querySelector('#endnow');
+  var endTicking = true;
+  endDiv.addEventListener('click', function (event) {
+    endTicking = !endTicking;
+  });
+  var endAtStart = document.querySelector('#end_at_start');
+  endAtStart.addEventListener('click', function (event) {
+    endTicking = false;
+    endDateTime = startDateTime;
+    endUpdater(startDateTime);
+  });
+  end.addEventListener('keypress', setDateFromStringOrNumber(function () { endTicking = false; }, function (date) { endDateTime = date; }, endUpdater));
+  addTouchable(document.querySelector('.end_delta_div>.year'), endDiv, endDateTime, function (value, delta) {
+    var d = new Date(value);
+    d.setFullYear(d.getFullYear() + delta);
+    return d;
+  }, 3);
+  addTouchable(document.querySelector('.end_delta_div>.minute'), endDiv, endDateTime, function (value, delta) {
+    var d = new Date(value);
+    d.setMinutes(d.getMinutes() + delta);
+    return d;
+  }, 2);
   // ---
 
   function start() {

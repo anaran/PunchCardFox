@@ -1,13 +1,8 @@
-@import url(links.css);
-
-html, body {
-  margin: 0;
-  padding: 0.5rem;
-}
+/* @import url(links.css);
+*/
 
 body {
-  font-size: 1rem;
-  background: #fff;
+font-size: 1rem;
 }
 
 h1 {
@@ -28,14 +23,14 @@ div {
 div.entry {
   /*   font-size: small; */
   border: 0.1em solid;
-  /*   margin: 0 0 1em; */
+  /*   margin: 0 0 1rem; */
 }
 
 div.linked {
   /*   font-size: small; */
   border: 0.2em solid;
   /* background: skyblue;
-  margin: 0 0 1em; */
+  margin: 0 0 1rem; */
 }
 
 pre {
@@ -47,11 +42,125 @@ pre {
   /*   white-space: normal; */
 }
 
-pre:focus {
+/*pre:focus {
+  color: red;
   overflow: visible;
-  white-space: pre;
-  /*   white-space: pre; */
+  white-space: pre-wrap;
+  / *   white-space: pre; * /
+}*/
+
+/*pre:hover {
+  color: hotpink;
+  overflow: visible;
+  white-space: pre-wrap;
+  / *   white-space: pre; * /
+}*/
+
+pre:focus {
+  color:blue;
+/*   font-size: larger; */
+  overflow: visible;
+  white-space: pre-wrap;
+/*     white-space: pre; */
 }
+
+menu {
+/*   display: none; */
+  position: fixed;
+  top: 2em;
+  left: 2em;
+}
+
+/* gaia-header {
+padding: 0 0 0 1.5rem;
+position: sticky;
+top: -1.5rem;
+background: #FFF;
+z-index: 2;
+} */
+
+/* JUMPER */
+
+/* nav#punchcard_scrollbar li {
+  width: 3em;
+}
+
+nav#punchcard_scrollbar:active li {
+  width: 100%;
+} */
+
+nav#punchcard_scrollbar {
+  top: 3rem;
+  right: -6em;
+/*   z-index: 2; */
+}
+
+nav#punchcard_scrollbar li a {
+  text-align: end;
+  display: inline;
+  font-family: monospace;
+  font-size: smaller;
+/*   color: black; */
+}
+
+/* nav[data-type="scrollbar"] {
+z-index: 6;
+}
+
+nav[data-type="scrollbar"].selecting {
+bottom: 4.2rem;
+}
+
+nav[data-type="scrollbar"] ol > li > * {
+pointer-events: none;
+} */
+
+.view {
+  position: absolute;
+  overflow: scroll;
+  top: 3rem;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 3rem);
+  transform: translate(0, 0);
+}
+
+/* .view-body-inner {
+overflow-x: hidden;
+overflow-y: auto;
+position: absolute;
+left: 0;
+top: 0;
+bottom: 0;
+z-index: 5;
+width: 100%;
+-moz-box-sizing: border-box;
+background: #fff;
+color: #333;
+text-align: left;
+will-change: scroll-position;
+} */
+
+/* Removes scroll from the view body inner */
+/* .view-noscroll .view-body-inner {
+width: -moz-calc(100% + 1.5rem);
+} */
+
+.view-body {
+  position: relative;
+  height: calc(100% - 5rem);
+}
+
+div#entries {
+  margin:  0 2.5rem 0 0.5rem;
+/*   max-height: 50%; */
+}
+
+/* .view-noscroll {
+overflow-x: hidden;
+overflow-y: auto;
+position: absolute;
+} */
 
 /* Begin of section taken from
 https://developer.mozilla.org/en-US/Apps/Design/Firefox_OS_building_blocks/Scrolling/2.0 */

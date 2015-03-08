@@ -1,31 +1,137 @@
 @import url(links.css);
 
-html, body {
-  margin: 0;
-  padding: 0.5rem;
-}
-
 body {
-  font-size: 1rem;
+/*   margin: 0; */
+/*  padding: 0.5em;
+  font-size: 1em; */
+  font-size: larger;
   background: #fff;
 }
 
-h1 {
+/* .delta, .value {
+  font-family: monospace;
+  margin: 0;
+  padding: 0;
+  text-align: end;
+   border: 0 solid;
+  display: inline;
+} */
+
+/* h1 {
   margin: 0 0 1rem 0;
+} */
+
+/* .start_delta_div, .end_delta_div {
+  width: 100%;
 }
 
-span {
+.start_div, .end_div {
+  width: 100%;
+} */
+
+.start, .end {
+/*   width: 100%; */
+}
+
+/* .start_delta_div:active, .end_delta_div:active {
+  transform: matrix(1.5, 0, 0, 1.5, 70, -50);
+} */
+
+/* .start_delta_div:hover, .end_delta_div:hover {
+  transform: matrix(1.5, 0, 0, 1.5, 70, -50);
+} */
+
+.delta {
   font-family: monospace;
+/*   margin: 0;
+  padding: 0; */
   text-align: end;
-  border: 1px solid;
-  width: 2em;
+/*    border: 0 solid; */
+/*   display: inline-block; */
+}
+
+.sign {
+  font-family: monospace;
+/*   margin: 0;
+  padding: 0; */
+  text-align: end;
+/*   border: 0 solid; */
   display: inline-block;
 }
 
-time {
-  font-size: smaller;
-} 
+.month, .date, .week, .hour, .minute, .second {
+  font-family: monospace;
+/*   margin: 0;
+  padding: 0; */
+  text-align: end;
+/*   border: 0 solid; */
+/*   display: inline-block; */
+}
+
+.year {
+  font-family: monospace;
+/*   margin: 0;
+  padding: 0; */
+  text-align: end;
+/*   border: 0 solid; */
+/*   display: inline-block; */
+}
+
+/* .year::after, .month::after {
+  content: "-";
+} */
+
+/* input[type=text] {
+  font-family: monospace;
+  text-align: end;
+  border: 0 solid;
+  display: inline-block;
+} */
 
 textarea {
+/*   min-height: 40%;
+  min-width: 90%; */
+  font-size: larger;
   resize: both;
 }
+
+pre {
+  border: 1px dashed;
+  color:blue;
+  font-size: larger;
+  min-height: 1em;
+  overflow: visible;
+  white-space: pre-wrap;
+}
+
+/* pre {
+  margin: 0 0 0;
+  white-space: nowrap;
+  height: 10em;
+  overflow: hidden;
+  text-overflow: ellipsis ellipsis;
+  / *   white-space: normal; * /
+} */
+
+/*pre:focus {
+  color: red;
+  overflow: visible;
+  white-space: pre-wrap;
+  / *   white-space: pre; * /
+}*/
+
+/*pre:hover {
+  color: hotpink;
+  overflow: visible;
+  white-space: pre-wrap;
+  / *   white-space: pre; * /
+}*/
+
+/* pre:focus {
+  color:blue;
+  font-size: larger;
+  height: 100%;
+  overflow: visible;
+  white-space: pre-wrap;
+  / *   white-space: pre; * /
+} */

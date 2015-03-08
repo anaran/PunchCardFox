@@ -12,11 +12,9 @@ section {
   margin: 0.5em;
 }
 
-/* 
-body {
-  height: 100%
-}
- */
+/* body {
+  overflow: scroll;
+} */
 
 footer {
   margin: 0.5em;

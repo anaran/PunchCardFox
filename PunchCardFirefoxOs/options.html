@@ -29,7 +29,7 @@ execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
         <script type="text/javascript" src="/js/options.js" defer></script>
-        <script type="text/javascript" src="/js/libs/pouchdb.js" defer></script>
+        <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
 <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
  -->
         <!--
@@ -53,6 +53,12 @@ own language (as long as you provide translations).
             <h1 data-l10n-id="app_title">Options for Privileged empty app</h1>
             <p data-l10n-id="app_description">This app will hopefully soon replace my well tried PunchCard Android app.</p>
             <p id="message"></p>
+        <section>
+            <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
+            <input type="checkbox" id="include_case" data-l10n-id="include_case"/>
+            <input type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
+            <input type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
+        </section>
         <section>
             <button id="import" data-l10n-id="import">Import</button>
             <button id="export" data-l10n-id="export">Export</button>

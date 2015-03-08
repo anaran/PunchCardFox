@@ -29,9 +29,9 @@ execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
         <script type="text/javascript" src="/js/new.js" defer></script>
-        <script type="text/javascript" src="/js/libs/pouchdb.js" defer></script>
-<!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
- -->
+        <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
+        <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
+-->
 
         <!--
 The following two lines are for loading the localisations library
@@ -50,36 +50,100 @@ own language (as long as you provide translations).
                 <a href="/about.html">About</a>
             </nav>
             <!--       <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
-            <textarea id="activity">New</textarea>
+            <pre id="activity" title="activity" contentEditable>Activity</pre>
+        </section>
+        <section class="start">
+            <div class="start_div">
+                <span class="year">0</span>
+                <span class="sign">-</span>
+                <span class="month">10</span>
+                <span class="sign">-</span>
+                <span class="date">0</span>
+                <span class="sign">W</span>
+                <span class="week">51</span>
+                <span class="sign">T</span>
+                <span class="hour">23</span>
+                <span class="sign">:</span>
+                <span class="minute">10</span>
+                <span class="sign">:</span>
+                <span class="second">59</span>
+            </div>
+            <span>
+                <input type="button" id="start_at_end" value="&UpTeeArrow;"/>
+            </span>
+            <div class="start_delta_div">
+                <span class="year">-000</span>
+                <span class="sign"> </span>
+                <span class="month">-00</span>
+                <span class="sign"> </span>
+                <span class="date">-00</span>
+                <span class="sign"> </span>
+                <span class="week">-00</span>
+                <span class="sign"> </span>
+                <span class="hour">-00</span>
+                <span class="sign"> </span>
+                <span class="minute">-00</span>
+                <span class="sign"> </span>
+                <span class="second">-00</span>
+                <label for="shist">Start Time History</label>
+                <select name="shist">
+                    <option>old</option>
+                    <option>older</option>
+                    <option>oldest</option>
+                </select>
+            </div>
         </section>
         <section>
-            <span>0</span>
-            <span>10</span>
-            <span>0</span>
-            <span>51</span>
-            <span>-23</span>
-            <span>-10</span>
-            <span>59</span>
+            <pre id="start" contentEditable></pre>
+            <!--         <span>
+<input type="button" id="startnow" value="&circlearrowright;"/>
+</span> -->
+        </section>
+        <section class="end">
+            <div class="end_div">
+                <span class="year">0</span>
+                <span class="sign">-</span>
+                <span class="month">10</span>
+                <span class="sign">-</span>
+                <span class="date">0</span>
+                <span class="sign">W</span>
+                <span class="week">51</span>
+                <span class="sign">T</span>
+                <span class="hour">23</span>
+                <span class="sign">:</span>
+                <span class="minute">10</span>
+                <span class="sign">:</span>
+                <span class="second">59</span>
+            </div>
+            <span>
+                <input type="button" id="end_at_start" value="&DownTeeArrow;"/>
+            </span>
+            <div class="end_delta_div">
+                <span class="year">-000</span>
+                <span class="sign"> </span>
+                <span class="month">-00</span>
+                <span class="sign"> </span>
+                <span class="date">-00</span>
+                <span class="sign"> </span>
+                <span class="week">-00</span>
+                <span class="sign"> </span>
+                <span class="hour">-00</span>
+                <span class="sign"> </span>
+                <span class="minute">-00</span>
+                <span class="sign"> </span>
+                <span class="second">-00</span>
+            </div>
         </section>
         <section>
-            <time id="start"></time>
-        </section>
-        <section>
-            <span>-99</span>
-            <span>10</span>
-            <span>10</span>
-            <span>10</span>
-            <span>10</span>
-            <span>10</span>
-            <span>10</span>
-        </section>
-        <section>
-            <time id="end"></time>
+            <pre id="end" contentEditable></pre>
+            <!--             <span>
+<input type="button" id="endnow" value="&circlearrowright;"/>
+</span> -->
         </section>
         <section>
             <footer>
-                <a id="save">Save</a>
-                <a>Cancel</a>
+                <input type="button" class="save" value="Save"/>
+                <a class="save" href="/about.html"></a>
             </footer>
         </section>
     </body>

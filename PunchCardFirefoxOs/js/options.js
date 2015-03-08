@@ -10,11 +10,20 @@ try {
     var DEBUG = false;
 
     var translate = navigator.mozL10n.get;
+    var addReadOnlyInfo = function (info, element) {
+      var pre = document.createElement('pre');
+      pre.contentEditable = true;
+      // Does not work, set attribute instead.
+      // pre.readOnly = true;
+      pre.setAttribute('readonly', true);
+      pre.textContent = JSON.stringify(info, null, 2);
+      element.appendChild(pre);
+    }
 
     // We want to wait until the localisations library has loaded all the strings.
     // So we'll tell it to let us know once it's ready.
     navigator.mozL10n.once(start);
-    var db = new PouchDB('punchcard');
+    var db = new PouchDB('punchcard3');
     var optionsDB = new PouchDB('options');
     var options = [
       'protocol',
@@ -52,7 +61,7 @@ try {
       //                       'Content-Type': 'application/json'
       //                     }};
       var opts = {
-        // method: 'POST',
+        method: 'POST',
         auth:
         {'username': document.getElementById('user').value,
          'password': document.getElementById('pass').value
@@ -72,33 +81,36 @@ try {
         }
       };
       var remoteDB = new PouchDB(destination, opts);
+      // var remoteDB = new PouchDB(destination);
       remoteDB.info(function (err, info) {
-        var pre = document.createElement('pre');
-        // pre.textContent = info;
-        pre.contentEditable = true;
         if (err) {
-          pre.textContent = JSON.stringify(err, null, 2);
+          addReadOnlyInfo(err, document.body);
         } else {
-          pre.textContent = JSON.stringify(remoteDB, null, 2);
+          // TypeError: cyclic object value
+          // pre.textContent = JSON.stringify(remoteDB, null, 2);
+          addReadOnlyInfo(info, document.body);
         }
-        document.body.appendChild(pre);
         // DEBUG && console.log(info);
       });
       //       var remoteDB = new PouchDB(destination);
-      var replication = db.sync(remoteDB);
-      //           .on('change', function (info) {
-      //             // window.alert(info);
-      //             // handle change
-      //           }).on('complete', function (info) {
-      //             // window.alert(info);
-      //             // handle complete
-      //           }).on('uptodate', function (info) {
-      //             // window.alert(info);
-      //             // handle up-to-date
-      //           }).on('error', function (err) {
-      //             window.alert(err);
-      //             // shandle error
-      //           });
+      var replication = db.sync(remoteDB)
+      .on('change', function (info) {
+        addReadOnlyInfo(info, document.body);
+        // window.alert(info);
+        // handle change
+      }).on('complete', function (info) {
+        addReadOnlyInfo(info, document.body);
+        // window.alert(info);
+        // handle complete
+      }).on('uptodate', function (info) {
+        addReadOnlyInfo(info, document.body);
+        // window.alert(info);
+        // handle up-to-date
+      }).on('error', function (err) {
+        addReadOnlyInfo(err, document.body);
+        window.alert(err);
+        // shandle error
+      });
       // var source = document.getElementById('protocol').value +
       //       document.getElementById('user').value + ':' +
       //       window.encodeURIComponent(document.getElementById('pass').value) + '@' +
@@ -107,15 +119,19 @@ try {
       var replication2 = PouchDB.replicate("https://admin:PLACEHOLDER@apa.selfhost.eu/apa-test-2", "apa-test-2", {live: false,
                                                                                                                     create_target: false})
       .on('change', function (info) {
+        addReadOnlyInfo(info, document.body);
         // window.alert(info);
         // handle change
       }).on('complete', function (info) {
-        window.alert('complete ' + info);
+        addReadOnlyInfo(info, document.body);
+        // window.alert('complete ' + info);
         // handle complete
       }).on('uptodate', function (info) {
-        window.alert('uptodate ' + info);
+        addReadOnlyInfo(info, document.body);
+        // window.alert('uptodate ' + info);
         // handle up-to-date
       }).on('error', function (err) {
+        addReadOnlyInfo(err, document.body);
         window.alert(err);
         // handle error
       });
@@ -125,40 +141,81 @@ try {
       //   });
     });
 
-    false && db.allDocs({include_docs: true, descending: false}, function(err, doc) {
-      if (err) {
-        alert(err);
-      } else {
-        doc.rows.forEach(function (row) {
-          var entry = document.createElement('div');
-          entry.id = 'entry';
-          var start = document.createElement('div');
-          var end = document.createElement('div');
-          var activity = document.createElement('pre');
-          // activity.contentEditable = true;
-          // activity.addEventListener('input', null);
-          // activity.readOnly = true;
-          start.textContent = (new Date(row.doc.start)).toLocaleString();
-          end.textContent = (new Date(row.doc.end)).toLocaleString();
-          activity.textContent = row.doc.activity;
-          activity.contentEditable = true;
-          //         activity.addEventListener('focus', function (event) {
-          //           event.target.removeAttribute('rows');
-          //         });
-          //         activity.addEventListener('blur', function (event) {
-          //           event.target.setAttribute('rows', 1);
-          //         });
-          entry.appendChild(start);
-          entry.appendChild(end);
-          entry.appendChild(activity);
-          document.body.appendChild(entry);
-        });
-        //     var pre = document.createElement('pre');
-        //     pre.textContent = JSON.stringify(doc.rows, null, 2);
-        //     document.body.appendChild(pre);
-      }
-    });
+    var include = document.getElementById('include');
+    var exclude = document.getElementById('exclude');
+    var includeCase = document.getElementById('include_case');
+    var excludeCase = document.getElementById('exclude_case');
 
+    include.addEventListener('keypress', function (event) {
+      if (event.keyCode == 13) {
+        if (include.value.length < 5) {
+          window.alert(include.value + ' is too short (< 5)');
+          return;
+        }
+        searchMatchingActivities();
+      }
+      // console.log(event.type, event);
+    });
+    exclude.addEventListener('keypress', function (event) {
+      if (event.keyCode == 13) {
+        if (include.value.length < 5) {
+          window.alert(include.value + ' is too short (< 5)');
+          return;
+        }
+        searchMatchingActivities();
+      }
+      // console.log(event.type, event);
+    });
+    // NOTE Seem to be supported by desktop safari only:
+    // https://developer.mozilla.org/en-US/docs/Web/Events/search#Browser_compatibility
+    // include.addEventListener('search', function (event) {
+    //   console.log(event.type, event);
+    // });
+    var searchMatchingActivities = function () {
+      var includeRegExp = new RegExp(include.value, include_case.checked ? '' : 'i');
+      var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
+      db.allDocs({ limit: 450, include_docs: true, descending: true }, function(err, doc) {
+        if (err) {
+          window.alert(err);
+        } else {
+          var search = document.getElementById('search');
+          search && document.body.removeChild(search);
+          search = document.createElement('div');
+          search.id = 'search';
+          doc.rows.forEach(function (row) {
+            if (!includeRegExp.test(row.doc.activity) ||
+                exclude.value.length && excludeRegExp.test(row.doc.activity)) {
+              return;
+            }
+            // var start = document.createElement('div');
+            // var end = document.createElement('div');
+            var activity = document.createElement('pre');
+            // activity.contentEditable = true;
+            // activity.addEventListener('input', null);
+            // activity.readOnly = true;
+            // start.textContent = (new Date(row.doc.start)).toLocaleString();
+            // end.textContent = (new Date(row.doc.end)).toLocaleString();
+            activity.textContent = row.doc.activity;
+            activity.contentEditable = true;
+            // activity.readOnly = true;
+            activity.setAttribute('readonly', true);
+            //         activity.addEventListener('focus', function (event) {
+            //           event.target.removeAttribute('rows');
+            //         });
+            //         activity.addEventListener('blur', function (event) {
+            //           event.target.setAttribute('rows', 1);
+            //         });
+            // search.appendChild(start);
+            // search.appendChild(end);
+            search.appendChild(activity);
+          });
+          document.body.appendChild(search);
+          //     var pre = document.createElement('pre');
+          //     pre.textContent = JSON.stringify(doc.rows, null, 2);
+          //     document.body.appendChild(pre);
+        }
+      });
+    };
     // ---
 
     function start() {

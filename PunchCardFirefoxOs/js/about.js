@@ -14,7 +14,7 @@ window.addEventListener('DOMContentLoaded', function() {
   // We want to wait until the localisations library has loaded all the strings.
   // So we'll tell it to let us know once it's ready.
   navigator.mozL10n.once(start);
-  var db = new PouchDB('punchcard');
+  var db = new PouchDB('punchcard3');
   db.info().then(function (info) {
     var pre = document.createElement('pre');
     // pre.textContent = info;
@@ -34,6 +34,15 @@ window.addEventListener('DOMContentLoaded', function() {
   });
   var db2 = new PouchDB('apa-test-2');
   db2.info().then(function (info) {
+    var pre = document.createElement('pre');
+    // pre.textContent = info;
+    pre.textContent = JSON.stringify(info, null, 2);
+    pre.contentEditable = true;
+    document.body.appendChild(pre);
+    // DEBUG && console.log(info);
+  });
+  var db3 = new PouchDB('apa-test-3');
+  db3.info().then(function (info) {
     var pre = document.createElement('pre');
     // pre.textContent = info;
     pre.textContent = JSON.stringify(info, null, 2);

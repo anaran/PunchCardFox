@@ -13,7 +13,7 @@ it at a desktop width, then shrink it to fit.)
 Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
-                <meta name="viewport" content="width=device-width">
+                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
                 <link rel="stylesheet" href="/css/app.css">
 
                 <!--
@@ -29,18 +29,21 @@ execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
 
-                <script type="text/javascript" src="/js/app.js" defer></script>
-                <script type="text/javascript" src="/js/libs/pouchdb.js" defer></script>
+                <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js"></script>
+                <script type="text/javascript" src="/bower_components/pouchdb.mapreduce.noeval/dist/pouchdb.mapreduce.noeval.js"></script>
+                <!--                 <script type="text/javascript" src="/node_modules/pouchdb.mapreduce.noeval/pouchdb.mapreduce.noeval.js"></script> -->
+                <script type="text/javascript" src="/js/app.js"></script>
                 <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
 -->
-
+                <script src="/bower_components/gaia-header/lib/font-fit.js"></script>
                 <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
                 <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css"></link>
         <script src="/bower_components/gaia-component/gaia-component.js"></script>
         <script src="/bower_components/gaia-header/gaia-header.js"></script>
-  <link href="/scrolling.css" rel="stylesheet" type="text/css">
-<!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
-  <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
+        <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
+        <link href="/scrolling.css" rel="stylesheet" type="text/css">
+        <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
+        <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
 
         <!--
 The following two lines are for loading the localisations library
@@ -49,10 +52,9 @@ own language (as long as you provide translations).
 -->
         <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
         <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
+        <script type="text/javascript" src="/js/libs/getElementPath.js" defer></script>
         </head>
-<body>
-<!--         <gaia-header action="menu">
-        </gaia-header> -->
+<body role="application">
         <gaia-header>
                 <h1>Punchcard</h1>
                 <a data-icon="compose" href="/new.html"></a>
@@ -60,46 +62,78 @@ own language (as long as you provide translations).
                 <a data-icon="settings" href="/options.html"></a>
                 <a data-icon="more" href="/about.html"></a>
         </gaia-header>
-<section role="region" id="main">
-    <p>A</p>
-        <!--             <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
-        <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
-          <p id="message"></p>
-          <p><a href="/README.md">README.md</a></p>
-        <button id="remote" data-l10n-id="remote">Get Remote</button>
-  <nav data-type="scrollbar">
-    <ol>
-      <li><a href="#"><span class="pack-icon-search">Search</span></a></li>
-      <li><a href="#"><span class="pack-icon-favorites">favorites</span></a></li>
-      <li><a href="#">A</a></li>
-      <li><a href="#">B</a></li>
-      <li><a href="#">C</a></li>
-      <li><a href="#">D</a></li>
-      <li><a href="#">E</a></li>
-      <li><a href="#">F</a></li>
-      <li><a href="#">G</a></li>
-      <li><a href="#">H</a></li>
-      <li><a href="#">I</a></li>
-      <li><a href="#">J</a></li>
-      <li><a href="#">K</a></li>
-      <li><a href="#">L</a></li>
-      <li><a href="#">M</a></li>
-      <li><a href="#">N</a></li>
-      <li><a href="#">O</a></li>
-      <li><a href="#">P</a></li>
-      <li><a href="#">Q</a></li>
-      <li><a href="#">R</a></li>
-      <li><a href="#">S</a></li>
-      <li><a href="#">T</a></li>
-      <li><a href="#">U</a></li>
-      <li><a href="#">V</a></li>
-      <li><a href="#">W</a></li>
-      <li><a href="#">X</a></li>
-      <li><a href="#">Y</a></li>
-      <li><a href="#">Z</a></li>
-      <li><a href="#">#</a></li>
-    </ol>
-  </nav>
-</section>
+        <!--         <section role="region" id="main"> -->
+        <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
+<!--                 NOTE: Firefox OS support only one level of menu. -->
+                <menu label="Entry ... Start Menu" type="context" id="start_menu">
+                                <menuitem id="start_now" label="start now"></menuitem>
+                                <menuitem label="start is undefined"><a>start is undefined</a></menuitem>
+                                <menuitem label="start at end"><a>start at end</a></menuitem>
+                </menu>
+                <menu type="context" id="end_menu">
+                        <li><a>end now</a></li>
+                        <li><a href="/index.html#b">end is undefined</a></li>
+                        <li><a>end at start</a></li>
+                </menu>
+                <menu type="context" id="activity_menu">
+                        <li><a>edit</a></li>
+                        <li><a>insert parallel activity</a></li>
+                        <li><a href="/options.html#c">show only this activity</a></li>
+                        <li><a>show all activities</a></li>
+                </menu>
+                <!--                 <article class="view-body"> -->
+                <div>
+                        <p>A</p>
+                        <h1 data-l10n-id="app_title">Privileged empty app</h1>
+                        <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
+                        <p id="message"></p>
+                        <section>
+                                <gaia-sub-header><a href="/readme.html#/README.md">README.md</a></gaia-sub-header>
+                                <gaia-sub-header><a href="/readme.html#/README2.md">README2.md</a></gaia-sub-header>
+                        </section>
+                </div>
+                <div id="entries">
+                        <button id="remote" data-l10n-id="remote">Get Remote</button>
+                </div>
+        </section>
+        <nav data-type="scrollbar" id="punchcard_scrollbar">
+                <ol>
+                        <li><a href="#"><span class="pack-icon-search">Search</span></a></li>
+                        <li><a href="#"><span class="pack-icon-favorites">favorites</span></a></li>
+                        <!--                                         <li><a href="#">search</li>
+<li><a href="#">favorites</li> -->
+                        <li><a href="#">A</a></li>
+                        <li><a href="#">B</a></li>
+                        <li><a href="#">C</a></li>
+                        <li><a href="#">D</a></li>
+                        <li><a href="#">E</a></li>
+                        <li><a href="#">F</a></li>
+                        <li><a href="#">G</a></li>
+                        <li><a href="#">H</a></li>
+                        <li><a href="#">I</a></li>
+                        <li><a href="#">J</a></li>
+                        <li><a href="#">K</a></li>
+                        <li><a href="#">L</a></li>
+                        <li><a href="#">M</a></li>
+                        <li><a href="#">N</a></li>
+                        <li><a href="#">O</a></li>
+                        <li><a href="#">P</a></li>
+                        <li><a href="#">Q</a></li>
+                        <li><a href="#">R</a></li>
+                        <li><a href="#">S</a></li>
+                        <li><a href="#">T</a></li>
+                        <li><a href="#">U</a></li>
+                        <li><a href="#">V</a></li>
+                        <li><a href="#">W</a></li>
+                        <li><a href="#">X</a></li>
+                        <li><a href="#">Y</a></li>
+                        <li><a href="#">Z</a></li>
+                        <li><a href="#">#</a></li>
+                </ol>
+        </nav>
+        <!--                 </article> -->
+        <!--         </section> -->
+        <!--
+-->
 </body>
 </html>
