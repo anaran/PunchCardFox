@@ -2,19 +2,17 @@
 // but without waiting for other external resources to load (css/images/etc)
 // That makes the app more responsive and perceived as faster.
 // https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
-  var startNow = function (event) {
-    // console.log(event.type);
-    window.alert('start now!');
-    window.alert(event.type);
-    window.alert(event.target.id);
-    // window.alert(this.target.id);
-  };
 window.addEventListener('DOMContentLoaded', function() {
-
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   'use strict';
   var DEBUG = false;
+  var startNow = function (event) {
+    window.alert('start now!');
+    // window.alert(event.type);
+    window.alert(event.target.parentElement.dataset.id);
+    // window.alert(this.target.id);
+  };
   var translate = navigator.mozL10n.get;
 
   // We want to wait until the localisations library has loaded all the strings.
@@ -81,6 +79,11 @@ window.addEventListener('DOMContentLoaded', function() {
                                      end.textContent = (new Date(row.doc.end || row.doc.clockout_ms)).toLocaleString();
                                      activity.textContent = row.doc.activity;
                                      start.setAttribute('contextmenu', 'start_menu');
+                                     start.addEventListener('contextmenu', function (event) {
+                                       this.contextMenu.dataset.id = event.target.parentElement.id;
+                                       // this.contextMenu.setAttribute('data-id', event.target.parentElement.id);
+                                       console.log(event);
+                                     });
                                      end.setAttribute('contextmenu', 'end_menu');
                                      activity.setAttribute('contextmenu', 'activity_menu');
                                      var startNowItem = document.querySelector('#start_now');
