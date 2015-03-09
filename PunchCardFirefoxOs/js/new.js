@@ -8,35 +8,42 @@ window.addEventListener('DOMContentLoaded', function() {
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   'use strict';
   var DEBUG = false, LOG = true;
+  var id = document.location.hash.substring(1);
   var startDateTime = new Date;
   var endDateTime = new Date;
+  // NOTE: does don't prompt user when called from beforeunload event listener.
+  var maybeSave = function () {
+    if (window.confirm('Save changes?')) {
+      // saveButton.click();
+    }
+  };
   window.addEventListener("beforeunload", function (e) {
+    // maybeSave();
     var confirmationMessage = "too bad! \o/";
-
     (e || window.event).returnValue = confirmationMessage;     //Gecko + IE
     return confirmationMessage;                                //Webkit, Safari, Chrome etc.
   });
   var setDateFromStringOrNumber = function (ticker, setDate, updater) {
     return function (event) {
-    if (event.keyCode == 13) {
-      event.preventDefault();
-      ticker();
-      var newDateTime;
-      // Note: Number.parseFloat would parse an ISO date string to the numeric value of its year component!
-      // "2015-03-07..." => 2015
-      var milliSeconds = Number(event.target.textContent);
-      if (Number.isNaN(milliSeconds)) {
-        newDateTime = new Date(event.target.textContent);
-      } else {
-        newDateTime = new Date(milliSeconds);
+      if (event.keyCode == 13) {
+        event.preventDefault();
+        ticker();
+        var newDateTime;
+        // Note: Number.parseFloat would parse an ISO date string to the numeric value of its year component!
+        // "2015-03-07..." => 2015
+        var milliSeconds = Number(event.target.textContent);
+        if (Number.isNaN(milliSeconds)) {
+          newDateTime = new Date(event.target.textContent);
+        } else {
+          newDateTime = new Date(milliSeconds);
+        }
+        if (Number.isNaN(newDateTime.getMilliseconds())) {
+          window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
+        } else {
+          setDate(newDateTime);
+          updater(newDateTime);
+        }
       }
-      if (Number.isNaN(newDateTime.getMilliseconds())) {
-        window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
-      } else {
-        setDate(newDateTime);
-        updater(newDateTime);
-      }
-    }
     };
   };
   var addTouchable = function(delta_element, update_elemet, dateTime, updater, padWidth) {
@@ -181,19 +188,36 @@ window.addEventListener('DOMContentLoaded', function() {
     // event.stopPropagation();
     var db = new PouchDB('punchcard3');
     DEBUG && window.alert('saving...');
-    var entry = {
-      // _id: db.post(),
-      activity: activity.textContent,
-      start: startDateTime,
-      end: endDateTime
-    };
-    DEBUG && window.alert(JSON.stringify(entry, null, 2));
-    db.post(entry, function callback(err, result) {
-      if (!err) {
-        DEBUG && window.alert('Successfully posted a todo!');
-        saveLink.click();
-      }
-    });
+    if (id) {
+      db.get(id).then(function(otherDoc) {
+        otherDoc.activity = activity.textContent;
+        otherDoc.start = startDateTime;
+        otherDoc.end = endDateTime;
+        return db.put(otherDoc).then(function(response) {
+          saveLink.click();
+        }).catch(function(err) {
+          //errors
+          window.alert(err);
+        });
+      }).catch(function(err) {
+        //errors
+        window.alert(err);
+      });
+    } else {
+      var entry = {
+        // _id: db.post(),
+        activity: activity.textContent,
+        start: startDateTime,
+        end: endDateTime
+      };
+      DEBUG && window.alert(JSON.stringify(entry, null, 2));
+      db.post(entry).then(function(response) {
+          saveLink.click();
+        }).catch(function(err) {
+        //errors
+        window.alert(err);
+      });
+    }
   });
   var start = document.querySelector('pre#start');
   var startDiv = document.querySelector('div.start_div');
@@ -245,6 +269,24 @@ window.addEventListener('DOMContentLoaded', function() {
     d.setMinutes(d.getMinutes() + delta);
     return d;
   }, 2);
+  var id = document.location.hash.substring(1);
+  if (id) {
+    startTicking = endTicking = false;
+    var db = new PouchDB('punchcard3');
+    db.get(id).then(function(otherDoc) {
+      activity.textContent = otherDoc.activity;
+      var start = new Date(otherDoc.start);
+      startDateTime = start;
+      startUpdater(start);
+      var end = new Date(otherDoc.end);
+      endDateTime = end;
+      endUpdater(end);
+    }).catch(function(err) {
+      //errors
+      window.alert(err);
+    });
+  }
+  // maybeSave();
   // ---
 
   function start() {

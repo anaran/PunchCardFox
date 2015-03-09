@@ -22,7 +22,7 @@ try {
 
     // We want to wait until the localisations library has loaded all the strings.
     // So we'll tell it to let us know once it's ready.
-    navigator.mozL10n.once(start);
+    // navigator.mozL10n.once(start);
     var db = new PouchDB('punchcard3');
     var optionsDB = new PouchDB('options');
     var options = [
@@ -189,7 +189,29 @@ try {
             }
             // var start = document.createElement('div');
             // var end = document.createElement('div');
-            var activity = document.createElement('pre');
+            // white-space: pre-wrap;
+            var div = document.createElement('div');
+            var diva = document.createElement('div');
+            var activity = document.createElement('span');
+            var repeat = document.createElement('a');
+            repeat.href = '#';
+            repeat.textContent = 'Repeat now';
+            repeat.addEventListener('click', function (event) {
+              event.preventDefault();
+              var entry = {
+                // _id: db.post(),
+                activity: activity.textContent,
+                start: new Date,
+                end: new Date
+              };
+              DEBUG && window.alert(JSON.stringify(entry, null, 2));
+              db.post(entry).then(function(response) {
+                saveLink.click();
+              }).catch(function(err) {
+                //errors
+                window.alert(err);
+              });
+            });
             // activity.contentEditable = true;
             // activity.addEventListener('input', null);
             // activity.readOnly = true;
@@ -197,8 +219,7 @@ try {
             // end.textContent = (new Date(row.doc.end)).toLocaleString();
             activity.textContent = row.doc.activity;
             activity.contentEditable = true;
-            // activity.readOnly = true;
-            activity.setAttribute('readonly', true);
+            // activity.setAttribute('readonly', true);
             //         activity.addEventListener('focus', function (event) {
             //           event.target.removeAttribute('rows');
             //         });
@@ -207,7 +228,12 @@ try {
             //         });
             // search.appendChild(start);
             // search.appendChild(end);
-            search.appendChild(activity);
+            div.appendChild(activity);
+            div.appendChild(diva);
+            diva.appendChild(repeat);
+            search.appendChild(div);
+            // activity.appendChild(repeat);
+            // search.appendChild(activity);
           });
           document.body.appendChild(search);
           //     var pre = document.createElement('pre');

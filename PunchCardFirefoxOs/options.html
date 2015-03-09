@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Privileged app</title>
-        <meta name="description" content="A privileged app stub">
+        <head>
+                <meta charset="utf-8">
+                <title>Privileged app</title>
+                <meta name="description" content="A privileged app stub">
 
-        <!--
+                <!--
 viewport allows you to control how mobile browsers will render your content.
 width=device-width tells mobile browsers to render your content across the
 full width of the screen, without being zoomed out (by default it would render
@@ -13,10 +13,10 @@ it at a desktop width, then shrink it to fit.)
 Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
-        <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="/css/app.css">
+                <meta name="viewport" content="width=device-width">
+                <link rel="stylesheet" href="/css/options.css">
 
-        <!--
+                <!--
 Inline JavaScript code is not allowed for privileged and certified apps,
 due to Content Security Policy restrictions.
 You can read more about it here: https://developer.mozilla.org/Apps/CSP
@@ -28,48 +28,50 @@ resources in the page. Then, once everything has been loaded, it will parse and
 execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
-        <script type="text/javascript" src="/js/options.js" defer></script>
-        <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
-<!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
- -->
-        <!--
+                <script type="text/javascript" src="/js/options.js" defer></script>
+                <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
+                <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
+-->
+                <script src="/bower_components/gaia-header/lib/font-fit.js"></script>
+                <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
+                <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css"/>
+                <script src="/bower_components/gaia-component/gaia-component.js"></script>
+                <script src="/bower_components/gaia-header/gaia-header.js"></script>
+                <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
+                <!--
 The following two lines are for loading the localisations library
 and the localisation data-so people can use the app in their
 own language (as long as you provide translations).
 -->
-        <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
-        <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
-    </head>
-    <body>
-        <section>
-            <nav>
-                <!--       <ul> -->
-                <a href="/new.html">New</a>
-                <a href="/index.html">Overview</a>
-                <a href="/options.html">Options</a>
-                <a href="/about.html">About</a>
-                <!--       </ul> -->
-            </nav>
-            <h1 data-l10n-id="app_title">Options for Privileged empty app</h1>
-            <p data-l10n-id="app_description">This app will hopefully soon replace my well tried PunchCard Android app.</p>
-            <p id="message"></p>
-        <section>
-            <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
-            <input type="checkbox" id="include_case" data-l10n-id="include_case"/>
-            <input type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
-            <input type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
-        </section>
-        <section>
-            <button id="import" data-l10n-id="import">Import</button>
-            <button id="export" data-l10n-id="export">Export</button>
-        </section>
-        <section>
-            <input type="text" id="protocol" data-l10n-id="protocol" value="https://"/>
-            <input type="password" id="user" data-l10n-id="user" placeholder="user"/>
-            <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"/>
-            <input type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path"/>
-            <button id="start" data-l10n-id="start">Start Live Replication</button>
-            <button id="stop" data-l10n-id="stop">Stop Replication</button>
-        </section>
-    </body>
+                <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
+                <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
+        </head>
+        <body role="application">
+                <gaia-header>
+                        <h1>Punchcard</h1>
+                        <a data-icon="compose" href="/new.html"></a>
+                        <a class="save" data-icon="select" href="/index.html"></a>
+                        <a data-icon="settings" href="/options.html"></a>
+                        <a data-icon="more" href="/about.html"></a>
+                </gaia-header>
+                <section>
+                        <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
+                        <a class="save" href="/index.html"></a>
+                        <input type="checkbox" id="include_case" data-l10n-id="include_case"/>
+                        <input type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
+                        <input type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
+                </section>
+                <!--         <section>
+<button id="import" data-l10n-id="import">Import</button>
+<button id="export" data-l10n-id="export">Export</button>
+</section> -->
+                <section>
+                        <input type="text" id="protocol" data-l10n-id="protocol" value="https://"/>
+                        <input type="password" id="user" data-l10n-id="user" placeholder="user"/>
+                        <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"/>
+                        <input type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path"/>
+                        <button id="start" data-l10n-id="start">Start Live Replication</button>
+                        <button id="stop" data-l10n-id="stop">Stop Replication</button>
+                </section>
+        </body>
 </html>

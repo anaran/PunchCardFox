@@ -8,11 +8,80 @@ window.addEventListener('DOMContentLoaded', function() {
   'use strict';
   var DEBUG = false;
   var startNow = function (event) {
-    window.alert('start now!');
-    // window.alert(event.type);
-    window.alert(event.target.parentElement.dataset.id);
-    // window.alert(this.target.id);
+    var id = event.target.parentElement.dataset.id;
+    db.get(id).then(function(otherDoc) {
+      otherDoc.start = new Date;
+      return db.put(otherDoc);
+    }).catch(function(err) {
+      //errors
+      window.alert(err);
+    });
+    // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
+    // document.location.reload('force');
   };
+  var startNowItem = document.querySelector('#start_now');
+  if (startNowItem) {
+    startNowItem.addEventListener('click', startNow);
+  }
+  var endNow = function (event) {
+    var id = event.target.parentElement.dataset.id;
+    db.get(id).then(function(otherDoc) {
+      otherDoc.end = new Date;
+      return db.put(otherDoc);
+    }).catch(function(err) {
+      //errors
+      window.alert(err);
+    });
+  };
+  var endNowItem = document.querySelector('#end_now');
+  if (endNowItem) {
+    endNowItem.addEventListener('click', endNow);
+  }
+  var edit = function (event) {
+    var id = event.target.parentElement.dataset.id;
+    var a = document.createElement('a');
+    a.href = '/new.html#' + id;
+    document.body.appendChild(a);
+    a.click();
+    // db.get(id).then(function(otherDoc) {
+    //   otherDoc.activity = window.prompt('edit activity', otherDoc.activity);
+    //   otherDoc.start = new Date(window.prompt('edit start', otherDoc.start));
+    //   otherDoc.end = new Date(window.prompt('edit end', otherDoc.end));
+    //   return db.put(otherDoc);
+    // }).catch(function(err) {
+    //   //errors
+    //   window.alert(err);
+    // });
+  };
+  var editItem = document.querySelector('#edit');
+  if (editItem) {
+    editItem.addEventListener('click', edit);
+  }
+  var repeatNow = function (event) {
+    var id = event.target.parentElement.dataset.id;
+    db.get(id).then(function(otherDoc) {
+      var entry = {
+        // _id: db.post(),
+        activity: otherDoc.activity,
+        start: new Date,
+        end: new Date
+      };
+      DEBUG && window.alert(JSON.stringify(entry, null, 2));
+      db.post(entry).then(function(response) {
+        saveLink.click();
+      }).catch(function(err) {
+        //errors
+        window.alert(err);
+      });
+    }).catch(function(err) {
+      //errors
+      window.alert(err);
+    });
+  };
+  var repeatNowItem = document.querySelector('#repeat_now');
+  if (repeatNowItem) {
+    repeatNowItem.addEventListener('click', repeatNow);
+  }
   var translate = navigator.mozL10n.get;
 
   // We want to wait until the localisations library has loaded all the strings.
@@ -44,7 +113,7 @@ window.addEventListener('DOMContentLoaded', function() {
   db.query('foolin/by_start', {/*stale: 'ok',*/reduce: false,
                                // startkey: "2015-02",
                                // endkey: "2015-03",
-                               limit: /*450*/20, include_docs: true, descending: true }, function(err, doc) {
+                               limit: /*20 */450, include_docs: true, descending: true }, function(err, doc) {
                                  if (err) {
                                    alert(err);
                                  } else {
@@ -60,9 +129,9 @@ window.addEventListener('DOMContentLoaded', function() {
                                      var start = document.createElement('pre');
                                      var end = document.createElement('pre');
                                      var activity = document.createElement('pre');
-                                     // start.contentEditable = true;
-                                     // end.contentEditable = true;
-                                     // activity.contentEditable = true;
+                                     start.contentEditable = true;
+                                     end.contentEditable = true;
+                                     activity.contentEditable = true;
                                      // start.setAttribute('readonly', true);
                                      // end.setAttribute('readonly', true);
                                      // activity.setAttribute('readonly', true);
@@ -81,15 +150,15 @@ window.addEventListener('DOMContentLoaded', function() {
                                      start.setAttribute('contextmenu', 'start_menu');
                                      start.addEventListener('contextmenu', function (event) {
                                        this.contextMenu.dataset.id = event.target.parentElement.id;
-                                       // this.contextMenu.setAttribute('data-id', event.target.parentElement.id);
-                                       console.log(event);
                                      });
                                      end.setAttribute('contextmenu', 'end_menu');
+                                     end.addEventListener('contextmenu', function (event) {
+                                       this.contextMenu.dataset.id = event.target.parentElement.id;
+                                     });
                                      activity.setAttribute('contextmenu', 'activity_menu');
-                                     var startNowItem = document.querySelector('#start_now');
-                                     if (startNowItem) {
-                                       startNowItem.addEventListener('click', startNow);
-                                     }
+                                     activity.addEventListener('contextmenu', function (event) {
+                                       this.contextMenu.dataset.id = event.target.parentElement.id;
+                                     });
                                      //         activity.addEventListener('focus', function (event) {
                                      //           event.target.removeAttribute('rows');
                                      //         });
@@ -119,9 +188,9 @@ window.addEventListener('DOMContentLoaded', function() {
                                      if (select) {
                                        if (select.style.display == 'none') {
                                          select.style.display = 'block';
-                                       select.style.left = event.layerX + 'px';
-                                       select.style.top = event.layerY + 'px';
-                                       select.style.backgroundColor = document.body.style.backgroundColor;
+                                         select.style.left = event.layerX + 'px';
+                                         select.style.top = event.layerY + 'px';
+                                         select.style.backgroundColor = document.body.style.backgroundColor;
                                        }
                                        else {
                                          select.style.display = 'none';

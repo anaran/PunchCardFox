@@ -32,6 +32,12 @@ Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-def
         <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
         <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
 -->
+        <script src="/bower_components/gaia-header/lib/font-fit.js"></script>
+        <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
+        <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css"/>
+        <script src="/bower_components/gaia-component/gaia-component.js"></script>
+        <script src="/bower_components/gaia-header/gaia-header.js"></script>
+        <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
 
         <!--
 The following two lines are for loading the localisations library
@@ -41,14 +47,15 @@ own language (as long as you provide translations).
         <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
         <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
     </head>
-    <body>
+    <body role="application">
+        <gaia-header>
+            <h1>Punchcard</h1>
+            <a data-icon="compose" href="/new.html"></a>
+            <a class="save" data-icon="select" href="/index.html"></a>
+            <a data-icon="settings" href="/options.html"></a>
+            <a data-icon="more" href="/about.html"></a>
+        </gaia-header>
         <section>
-            <nav>
-                <a href="/new.html">New</a>
-                <a href="/index.html">Overview</a>
-                <a href="/options.html">Options</a>
-                <a href="/about.html">About</a>
-            </nav>
             <!--       <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
             <pre id="activity" title="activity" contentEditable>Activity</pre>
         </section>
@@ -85,12 +92,12 @@ own language (as long as you provide translations).
                 <span class="minute">-00</span>
                 <span class="sign"> </span>
                 <span class="second">-00</span>
-                <label for="shist">Start Time History</label>
-                <select name="shist">
-                    <option>old</option>
-                    <option>older</option>
-                    <option>oldest</option>
-                </select>
+                <!--                 <label for="shist">Start Time History</label>
+<select name="shist">
+<option>old</option>
+<option>older</option>
+<option>oldest</option>
+</select> -->
             </div>
         </section>
         <section>
@@ -143,7 +150,6 @@ own language (as long as you provide translations).
         <section>
             <footer>
                 <input type="button" class="save" value="Save"/>
-                <a class="save" href="/about.html"></a>
             </footer>
         </section>
     </body>

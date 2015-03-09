@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Privileged app</title>
-        <meta name="description" content="A privileged app stub">
+        <head>
+                <meta charset="utf-8">
+                <title>Privileged app</title>
+                <meta name="description" content="A privileged app stub">
 
-        <!--
+                <!--
 viewport allows you to control how mobile browsers will render your content.
 width=device-width tells mobile browsers to render your content across the
 full width of the screen, without being zoomed out (by default it would render
@@ -13,10 +13,10 @@ it at a desktop width, then shrink it to fit.)
 Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
-        <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="/css/about.css">
+                <meta name="viewport" content="width=device-width">
+                <link rel="stylesheet" href="/css/about.css">
 
-        <!--
+                <!--
 Inline JavaScript code is not allowed for privileged and certified apps,
 due to Content Security Policy restrictions.
 You can read more about it here: https://developer.mozilla.org/Apps/CSP
@@ -28,13 +28,18 @@ resources in the page. Then, once everything has been loaded, it will parse and
 execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
-        <script type="text/javascript" src="/js/about.js" defer></script>
-        <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
-<!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
- -->
+                <script type="text/javascript" src="/js/about.js" defer></script>
+                <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
+                <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
+-->
+                <script src="/bower_components/gaia-header/lib/font-fit.js"></script>
+                <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
+                <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css"/>
+                <script src="/bower_components/gaia-component/gaia-component.js"></script>
+                <script src="/bower_components/gaia-header/gaia-header.js"></script>
+                <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
+                <link rel="stylesheet" type="text/css" href="/bower_components/gaia-fonts/style.css"></link>
 
-        <link rel="stylesheet" type="text/css" href="/bower_components/gaia-fonts/style.css"></link>
-    
         <!--
 The following two lines are for loading the localisations library
 and the localisation data-so people can use the app in their
@@ -42,20 +47,26 @@ own language (as long as you provide translations).
 -->
         <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
         <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
-    </head>
-    <body>
+        </head>
+<body role="application">
+        <gaia-header>
+                <h1>Punchcard</h1>
+                <a data-icon="compose" href="/new.html"></a>
+                <a class="save" data-icon="select" href="/index.html"></a>
+                <a data-icon="settings" href="/options.html"></a>
+                <a data-icon="more" href="/about.html"></a>
+        </gaia-header>
         <section>
-            <nav>
-                <!--       <ul> -->
-                <a href="/new.html">New</a>
-                <a href="/index.html">Overview</a>
-                <a href="/options.html">Options</a>
-                <a href="/about.html">About</a>
-                <!--       </ul> -->
-            </nav>
-            <h1 data-l10n-id="app_title">Privileged empty app</h1>
-            <p data-l10n-id="app_description">This app will hopefully soon replace my well tried PunchCard Android app.</p>
-            <p id="message"></p>
+                <div>
+                        <p>A</p>
+                        <h1 data-l10n-id="app_title">Privileged empty app</h1>
+                        <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
+                        <p id="message"></p>
+                        <section>
+                                <gaia-sub-header><a href="/readme.html#/README.md">README.md</a></gaia-sub-header>
+                                <gaia-sub-header><a href="/readme.html#/README2.md">README2.md</a></gaia-sub-header>
+                        </section>
+                </div>
         </section>
-    </body>
+</body>
 </html>

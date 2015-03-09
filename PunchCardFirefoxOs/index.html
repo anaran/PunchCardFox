@@ -58,7 +58,7 @@ own language (as long as you provide translations).
         <gaia-header>
                 <h1>Punchcard</h1>
                 <a data-icon="compose" href="/new.html"></a>
-                <a data-icon="select" href="/index.html"></a>
+                <a class="save" data-icon="select" href="/index.html"></a>
                 <a data-icon="settings" href="/options.html"></a>
                 <a data-icon="more" href="/about.html"></a>
         </gaia-header>
@@ -67,31 +67,30 @@ own language (as long as you provide translations).
 <!--                 NOTE: Firefox OS support only one level of menu. -->
                 <menu label="Entry ... Start Menu" type="context" id="start_menu">
                                 <menuitem id="start_now" label="start now"></menuitem>
-                                <menuitem label="start is undefined"><a>start is undefined</a></menuitem>
-                                <menuitem label="start at end"><a>start at end</a></menuitem>
+<!--                                 <a id="start_now" href="/index.html">start now</a> -->
+                                <menuitem id="start_undefined" label="start is undefined"></menuitem>
+                                <menuitem id="start_at_end" label="start at end"></menuitem>
                 </menu>
-                <menu type="context" id="end_menu">
+                <menu label="Entry ... End Menu" type="context" id="end_menu">
+                                <menuitem id="end_now" label="end now"></menuitem>
+                                <menuitem id="end_undefined" label="end is undefined"></menuitem>
+                                <menuitem id="end_at_start" label="end at start"></menuitem>
+                </menu>
+<!--                 <menu type="context" id="end_menu">
                         <li><a>end now</a></li>
                         <li><a href="/index.html#b">end is undefined</a></li>
                         <li><a>end at start</a></li>
-                </menu>
+                </menu> -->
                 <menu type="context" id="activity_menu">
+                                <menuitem id="edit" label="edit"></menuitem>
+                                <menuitem id="repeat_now" label="repeat now"></menuitem>
+                                <menuitem id="insert_parallel_activity" label="insert parallel activity"></menuitem>
                         <li><a>edit</a></li>
                         <li><a>insert parallel activity</a></li>
                         <li><a href="/options.html#c">show only this activity</a></li>
                         <li><a>show all activities</a></li>
                 </menu>
                 <!--                 <article class="view-body"> -->
-                <div>
-                        <p>A</p>
-                        <h1 data-l10n-id="app_title">Privileged empty app</h1>
-                        <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
-                        <p id="message"></p>
-                        <section>
-                                <gaia-sub-header><a href="/readme.html#/README.md">README.md</a></gaia-sub-header>
-                                <gaia-sub-header><a href="/readme.html#/README2.md">README2.md</a></gaia-sub-header>
-                        </section>
-                </div>
                 <div id="entries">
                         <button id="remote" data-l10n-id="remote">Get Remote</button>
                 </div>

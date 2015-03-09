@@ -1,25 +1,6 @@
-# Table of Contents
-
-* [Developer Notes](#developer-notes)
-
-* [Web Components](#web-components)
-
-* [Content Security Policy](#content-security-policy)
-
-* [TODO](#todo)
-
-* [App Documentation](#app-documentation)
-
-* [App Permissions](#app-permissions)
-
-* [Couchdb Cookie Authentication](#couchdb-cookie-authentication)
-
 # Developer Notes
-[Table of Contents](#table-of-contents)
 
 ## Web Components
-
-[Table of Contents](#table-of-contents)
 
 Mostly using web-components via bower, except for:
 
@@ -27,7 +8,6 @@ https://raw.githubusercontent.com/mozilla-b2g/gaia/v2.0/shared/style/scrolling.c
 which was modified from absolute to fixed position.
 
 ## Content Security Policy
-[Table of Contents](#table-of-contents)
 
 Did not work:
     "csp": "default-src *; script-src *; object-src 'none'; style-src 'self' 'unsafe-inline' 'unsafe-eval'",
@@ -37,11 +17,12 @@ According to daleharvey#pouchdb views cannot work in fxos privileged apps.
 I was able to run a trivial `by_clockout` query from a couchdb replicated view using
 [pouchdb.mapreduce.noeval](https://github.com/evidenceprime/pouchdb.mapreduce.noeval#pouchdbmapreducenoeval)
 ## TODO
-[Table of Contents](#table-of-contents)
 
 - ◻ admin password exposed via options.js, change it!
 
 - ✓ use marked.js to parse .md and render it to html document.
+
+- ✓ generate table of contents using marked.js custom renderer (following [Table of contents · Issue #545 · chjj/marked](https://github.com/chjj/marked/issues/545#issuecomment-74505539)).
 
   - ✗ Used `bower install marked`
   
@@ -50,14 +31,12 @@ I was able to run a trivial `by_clockout` query from a couchdb replicated view u
 - ◻ [markdown-editor](http://jbt.github.io/markdown-editor) looks good too, uses marked, CM, highlight.js, js-deflate.
 
 ## App Documentation
-[Table of Contents](#table-of-contents)
 
 I try
 bower install remarkable --save
 for github GFM task list support, which works neither in [marked](https://github.com/chjj/marked) nor [remarkable](https://github.com/jonschlinkert/remarkable).
 
 ## App Permissions
-[Table of Contents](#table-of-contents)
 
 Missing `systemXHR` permission leads to:
 
@@ -72,6 +51,5 @@ Missing `systemXHR` permission leads to:
 ```
 
 ## Couchdb Cookie Authentication
-[Table of Contents](#table-of-contents)
 
 Works fine in this sample app.
