@@ -90,8 +90,9 @@ body {
 
 textarea {
 /*   min-height: 40%;
-  min-width: 90%; */
-  font-size: larger;
+  min-height: 40%;
+  font-size: larger; */
+  min-width: 90%;
   resize: both;
 }
 

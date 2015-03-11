@@ -47,6 +47,28 @@ try {
         // DEBUG && console.log(doc);
       });
     });
+    var exportButton = document.getElementById('export');
+    exportButton.addEventListener('click', function (event) {
+      db.allDocs({
+        include_docs: true/*, 
+  attachments: true*/
+      }).then(function (result) {
+        // handle result
+        var div = document.createElement('div');
+        var download = document.createElement('a');
+        var blob = new window.Blob([JSON.stringify(result, null, 2)], {
+          type: 'text/plain; charset=utf-8'
+        });
+        download.href = window.URL.createObjectURL(blob);
+        download.download = 'punchcard-' + result.total_rows + '-' + Date.now() + '.txt';
+        download.textContent = 'Download exported data';
+        div.appendChild(download);
+        document.body.insertBefore(div, exportButton.nextElementSibling);
+        // document.body.appendChild(div);
+      }).catch(function (err) {
+        window.alert(err);
+      });
+    });
     var start = document.getElementById('start');
     var stop = document.getElementById('stop');
     start.addEventListener('click', function (event) {
@@ -148,8 +170,8 @@ try {
 
     include.addEventListener('keypress', function (event) {
       if (event.keyCode == 13) {
-        if (include.value.length < 5) {
-          window.alert(include.value + ' is too short (< 5)');
+        if (include.value.length < 3) {
+          window.alert(include.value + ' is too short (< 3)');
           return;
         }
         searchMatchingActivities();
@@ -158,8 +180,8 @@ try {
     });
     exclude.addEventListener('keypress', function (event) {
       if (event.keyCode == 13) {
-        if (include.value.length < 5) {
-          window.alert(include.value + ' is too short (< 5)');
+        if (include.value.length < 3) {
+          window.alert(include.value + ' is too short (< 3)');
           return;
         }
         searchMatchingActivities();

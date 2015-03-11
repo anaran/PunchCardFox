@@ -8,20 +8,56 @@ window.addEventListener('DOMContentLoaded', function() {
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   'use strict';
   var DEBUG = false, LOG = true;
+  var saved = false;
+  var db = new PouchDB('punchcard3');
   var id = document.location.hash.substring(1);
   var startDateTime = new Date;
   var endDateTime = new Date;
   // NOTE: does don't prompt user when called from beforeunload event listener.
   var maybeSave = function () {
     if (window.confirm('Save changes?')) {
-      // saveButton.click();
+      saveButton.click();
     }
   };
-  window.addEventListener("beforeunload", function (e) {
+  window.addEventListener("beforeunload", function (event) {
+    // event.preventDefault();
     // maybeSave();
-    var confirmationMessage = "too bad! \o/";
-    (e || window.event).returnValue = confirmationMessage;     //Gecko + IE
-    return confirmationMessage;                                //Webkit, Safari, Chrome etc.
+    // if (id) {
+    //   db.get(id).then(function(otherDoc) {
+    //     otherDoc.activity = activity.textContent;
+    //     otherDoc.start = startDateTime;
+    //     otherDoc.end = endDateTime;
+    //     return db.put(otherDoc).then(function(response) {
+    //       // saveLink.click();
+    //       event.returnValue = 'saved';
+    //     }).catch(function(err) {
+    //       //errors
+    //       window.alert(err);
+    //     });
+    //   }).catch(function(err) {
+    //     //errors
+    //     window.alert(err);
+    //   });
+    // } else {
+    //   var entry = {
+    //     // _id: db.post(),
+    //     activity: activity.textContent,
+    //     start: startDateTime,
+    //     end: endDateTime
+    //   };
+    //   DEBUG && window.alert(JSON.stringify(entry, null, 2));
+    //   db.post(entry).then(function(response) {
+    //     // saveLink.click();
+    //     event.returnValue = 'saved';
+    //   }).catch(function(err) {
+    //     //errors
+    //     window.alert(err);
+    //   });
+    // }
+    // var confirmationMessage = "too bad! \o/";
+    // (event || window.event).returnValue = confirmationMessage;     //Gecko + IE
+    // return confirmationMessage;                                //Webkit, Safari, Chrome etc.
+    event.returnValue = (saved ? "" : "unsaved");
   });
   var setDateFromStringOrNumber = function (ticker, setDate, updater) {
     return function (event) {
@@ -181,20 +217,22 @@ window.addEventListener('DOMContentLoaded', function() {
   // So we'll tell it to let us know once it's ready.
   // navigator.mozL10n.once(start);
   var saveButton = document.querySelector('input.save');
-  var saveLink = document.querySelector('a.save');
-  var activity = document.querySelector('pre#activity');
+  // var saveLink = document.querySelector('a.save');
+  // var activity = document.querySelector('pre#activity');
+  var activity = document.querySelector('textarea#activity');
   saveButton.addEventListener('click', function (event) {
     // event.preventDefault();
     // event.stopPropagation();
-    var db = new PouchDB('punchcard3');
     DEBUG && window.alert('saving...');
     if (id) {
       db.get(id).then(function(otherDoc) {
-        otherDoc.activity = activity.textContent;
+        // otherDoc.activity = activity.textContent;
+        otherDoc.activity = activity.value;
         otherDoc.start = startDateTime;
         otherDoc.end = endDateTime;
         return db.put(otherDoc).then(function(response) {
-          saveLink.click();
+          // saveLink.click();
+          saved = true;
         }).catch(function(err) {
           //errors
           window.alert(err);
@@ -206,14 +244,16 @@ window.addEventListener('DOMContentLoaded', function() {
     } else {
       var entry = {
         // _id: db.post(),
-        activity: activity.textContent,
+        // activity: activity.textContent,
+        activity: activity.value,
         start: startDateTime,
         end: endDateTime
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
-          saveLink.click();
-        }).catch(function(err) {
+        // saveLink.click();
+        saved = true;
+      }).catch(function(err) {
         //errors
         window.alert(err);
       });
@@ -272,9 +312,9 @@ window.addEventListener('DOMContentLoaded', function() {
   var id = document.location.hash.substring(1);
   if (id) {
     startTicking = endTicking = false;
-    var db = new PouchDB('punchcard3');
     db.get(id).then(function(otherDoc) {
-      activity.textContent = otherDoc.activity;
+      // activity.textContent = otherDoc.activity;
+      activity.value = otherDoc.activity;
       var start = new Date(otherDoc.start);
       startDateTime = start;
       startUpdater(start);

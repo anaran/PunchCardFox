@@ -68,7 +68,8 @@ window.addEventListener('DOMContentLoaded', function() {
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
-        saveLink.click();
+        document.location.reload('force');
+        // saveLink.click();
       }).catch(function(err) {
         //errors
         window.alert(err);
@@ -81,6 +82,20 @@ window.addEventListener('DOMContentLoaded', function() {
   var repeatNowItem = document.querySelector('#repeat_now');
   if (repeatNowItem) {
     repeatNowItem.addEventListener('click', repeatNow);
+  }
+  var deleteEntry = function (event) {
+    var id = event.target.parentElement.dataset.id;
+    db.get(id).then(function(doc) {
+      return db.remove(doc).then(function(response) {
+        document.location.reload('force');
+      });
+    }).catch(function(err){
+      //errors
+    });
+  };
+  var deleteEntryItem = document.querySelector('#delete');
+  if (deleteEntryItem) {
+    deleteEntryItem.addEventListener('click', deleteEntry);
   }
   var translate = navigator.mozL10n.get;
 
@@ -113,7 +128,7 @@ window.addEventListener('DOMContentLoaded', function() {
   db.query('foolin/by_start', {/*stale: 'ok',*/reduce: false,
                                // startkey: "2015-02",
                                // endkey: "2015-03",
-                               limit: /*20 */450, include_docs: true, descending: true }, function(err, doc) {
+                               limit: /*20 */100, include_docs: true, descending: true }, function(err, doc) {
                                  if (err) {
                                    alert(err);
                                  } else {
@@ -124,6 +139,7 @@ window.addEventListener('DOMContentLoaded', function() {
                                    DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
                                    doc.rows.forEach(function (row, index) {
                                      var entry = document.createElement('div');
+                                     var span = document.createElement('span');
                                      entry.id = row.doc._id;
                                      entry.className = 'entry';
                                      var start = document.createElement('pre');
@@ -144,8 +160,8 @@ window.addEventListener('DOMContentLoaded', function() {
                                      // activity.contentEditable = true;
                                      // activity.addEventListener('input', null);
                                      // activity.readOnly = true;
-                                     start.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toLocaleString();
-                                     end.textContent = (new Date(row.doc.end || row.doc.clockout_ms)).toLocaleString();
+                                     start.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toString().substring(0);
+                                     end.textContent = (new Date(row.doc.end || row.doc.clockout_ms)).toString().substring(4);
                                      activity.textContent = row.doc.activity;
                                      start.setAttribute('contextmenu', 'start_menu');
                                      start.addEventListener('contextmenu', function (event) {
@@ -165,8 +181,11 @@ window.addEventListener('DOMContentLoaded', function() {
                                      //         activity.addEventListener('blur', function (event) {
                                      //           event.target.setAttribute('rows', 1);
                                      //         });
-                                     entry.appendChild(start);
-                                     entry.appendChild(end);
+                                     // entry.appendChild(start);
+                                     // entry.appendChild(end);
+                                     span.appendChild(start);
+                                     span.appendChild(end);
+                                     entry.appendChild(span);
                                      entry.appendChild(activity);
                                      if (scrollLinks.length && (index % rowsPerLink) < 1) {
                                        entry.classList.add('linked');

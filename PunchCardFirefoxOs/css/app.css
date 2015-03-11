@@ -2,16 +2,16 @@
 */
 
 body {
-font-size: 1rem;
+/* font-size: 1rem; */
 }
 
 h1 {
-  margin: 0 0 1rem 0;
+/*   margin: 0 0 1rem 0; */
 }
 
-p {
+/* p {
   font-size: inherit;
-}
+} */
 
 div {
   /*   font-size: small; */
@@ -33,14 +33,40 @@ div.linked {
   margin: 0 0 1rem; */
 }
 
+span {
+  margin: 0 0 0;
+}
+
 pre {
   margin: 0 0 0;
-  /*   border: 1px solid; */
+/*   border: 1px solid; */
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis ellipsis;
-  /*   white-space: normal; */
 }
+
+pre.activity {
+  text-overflow: ellipsis ellipsis;
+}
+
+pre.start {
+  display: inline-block;
+  width: 55%;
+  overflow: auto;
+}
+
+pre.end {
+  display: inline-block;
+  width: 45%;
+  overflow: auto;
+}
+
+/* pre.start:focus {
+  width: 95%;
+}
+
+pre.end:focus {
+  width: 95%;
+} */
 
 /*pre:focus {
   color: red;
@@ -56,10 +82,11 @@ pre {
   / *   white-space: pre; * /
 }*/
 
-pre:focus {
-  color:blue;
+pre.activity:focus {
+/*   color:blue; */
 /*   font-size: larger; */
   overflow: visible;
+/*   display: block; */
   white-space: pre-wrap;
 /*     white-space: pre; */
 }
@@ -152,7 +179,7 @@ width: -moz-calc(100% + 1.5rem);
 }
 
 div#entries {
-  margin:  0 2.5rem 0 0.5rem;
+  margin:  0 0.5rem 0 0.5rem;
 /*   max-height: 50%; */
 }
 
