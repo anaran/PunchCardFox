@@ -320,7 +320,7 @@ try {
       // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
       // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
       // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-      request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+      request = new XMLHttpRequest({ mozSystem: false, withCredentials: true });
       // request.overrideMimeType("application/json");
       request.open('GET', url, !!'async');
       request.setRequestHeader('Cookie', cookie);
@@ -368,10 +368,11 @@ try {
     // request.send();
     request.onreadystatechange = function() {
       if (this.readyState == 4) {
-        alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-        alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
+        // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
+        // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
         cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
         if (cookie && cookie.length) {
+          addReadOnlyInfo(cookie, document.body);
           // load.removeAttribute('disabled');
         }
         // alert('request.responseText = ' + request.responseText);

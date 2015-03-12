@@ -17,6 +17,9 @@
   "permissions": {
     "storage": {
       "description": "luxury"
+    },
+    "systemXHR": {
+      "description": "Required to load remote content"
     }
   },
   "installs_allowed_from": [
