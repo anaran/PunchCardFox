@@ -11,7 +11,13 @@ window.addEventListener('DOMContentLoaded', function() {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
       otherDoc.start = new Date;
-      return db.put(otherDoc);
+      return db.put(otherDoc).then(function(response) {
+        document.location.reload('force');
+        // saveLink.click();
+      }).catch(function(err) {
+        //errors
+        window.alert(err);
+      });
     }).catch(function(err) {
       //errors
       window.alert(err);
@@ -27,7 +33,13 @@ window.addEventListener('DOMContentLoaded', function() {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
       otherDoc.end = new Date;
-      return db.put(otherDoc);
+      return db.put(otherDoc).then(function(response) {
+        document.location.reload('force');
+        // saveLink.click();
+      }).catch(function(err) {
+        //errors
+        window.alert(err);
+      });
     }).catch(function(err) {
       //errors
       window.alert(err);
@@ -134,7 +146,7 @@ window.addEventListener('DOMContentLoaded', function() {
                                  } else {
                                    var rowCount = doc.rows.length;
                                    var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-                                   var rowsPerLink = (rowCount / scrollLinks.length);
+                                   var rowsPerLink = (rowCount / (scrollLinks.length - 3));
                                    DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
                                    DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
                                    doc.rows.forEach(function (row, index) {
@@ -160,8 +172,8 @@ window.addEventListener('DOMContentLoaded', function() {
                                      // activity.contentEditable = true;
                                      // activity.addEventListener('input', null);
                                      // activity.readOnly = true;
-                                     start.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toString().substring(0);
-                                     end.textContent = (new Date(row.doc.end || row.doc.clockout_ms)).toString().substring(4);
+                                     start.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toString().substring(0, 24);
+                                     end.textContent = (new Date(row.doc.end || row.doc.clockout_ms)).toString().substring(4, 24);
                                      activity.textContent = row.doc.activity;
                                      start.setAttribute('contextmenu', 'start_menu');
                                      start.addEventListener('contextmenu', function (event) {
@@ -183,13 +195,13 @@ window.addEventListener('DOMContentLoaded', function() {
                                      //         });
                                      // entry.appendChild(start);
                                      // entry.appendChild(end);
-                                     span.appendChild(start);
-                                     span.appendChild(end);
-                                     entry.appendChild(span);
+                                     entry.appendChild(start);
+                                     entry.appendChild(end);
+                                     // entry.appendChild(span);
                                      entry.appendChild(activity);
                                      if (scrollLinks.length && (index % rowsPerLink) < 1) {
                                        entry.classList.add('linked');
-                                       var link = scrollLinks[Math.floor(index / rowsPerLink)];
+                                       var link = scrollLinks[Math.floor(index / rowsPerLink) + 2];
                                        link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
                                        link.href = '#' + row.doc._id;
                                        DEBUG && console.log("index, rowsPerLink, (index % rowsPerLink)");

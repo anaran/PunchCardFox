@@ -166,29 +166,13 @@ window.addEventListener('DOMContentLoaded', function() {
       }, false);
     })();
   };
-  var tick = function () {
-    var now = new Date;
-    window.clearTimeout(timerId);
-    if (startTicking) {
-      startDateTime = now;
-      startUpdater(now);
-    }
-    if (endTicking) {
-      endDateTime = now;
-      endUpdater(now);
-    }
-    var millisToNextSecond = 1000 - now % 1000;
-    timerId = window.setTimeout(tick, millisToNextSecond);
-  };
-  // See tick function for timer rescheduling, start after 20ms delay initially.
-  var timerId = window.setTimeout(tick, 20);
-  function pad(text, length, padding) {
+  var pad = function(text, length, padding) {
     text += '';
     while (text.length < length) {
       text = padding + text;
     }
     return text;
-  }
+  };
   var updateDateTime = function _updateDateTime(element) {
     var year = element.querySelector('.year');
     var month = element.querySelector('.month');
@@ -289,9 +273,6 @@ window.addEventListener('DOMContentLoaded', function() {
   var endUpdater = updateDateTime(endDiv);
   // var endnow = document.querySelector('#endnow');
   var endTicking = true;
-  endDiv.addEventListener('click', function (event) {
-    endTicking = !endTicking;
-  });
   var endAtStart = document.querySelector('#end_at_start');
   endAtStart.addEventListener('click', function (event) {
     endTicking = false;
@@ -309,6 +290,59 @@ window.addEventListener('DOMContentLoaded', function() {
     d.setMinutes(d.getMinutes() + delta);
     return d;
   }, 2);
+  var Tacker = function() {
+    this.callbacks = [];
+    this.timerId = false;
+  };
+  Tacker.prototype.addCallback = function(callback) {
+    this.callbacks.push(callback);
+  };
+  Tacker.prototype.toggleCallback = function(callback) {
+    this.removeCallback(callback) || this.addCallback(callback);
+  };
+  Tacker.prototype.removeCallback = function(callback) {
+    var found = this.callbacks.some(function(registeredCallback, index) {
+      if (registeredCallback == callback) {
+        delete this.callbacks[index];
+        return true;
+      }}, this);
+    if (!found) {
+      DEBUG && window.alert(callback.toSource() + ' was never registered');
+    }
+    return found;
+  };
+  Tacker.prototype.tick = function () {
+    var now = new Date;
+    this.timerId && window.clearTimeout(this.timerId);
+    this.callbacks.forEach(function(callback) {
+      callback(now);
+    });
+    var millisToNextSecond = 1000 - now % 1000;
+    // See [Function.prototype.bind() - JavaScript | MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#Example.3A_With_setTimeout)
+    this.timerId = window.setTimeout(this.tick.bind(this), millisToNextSecond);
+  };
+  Tacker.prototype.start = function () {
+    // See tick function for timer rescheduling, start after 20ms delay initially.
+    this.timerId = window.setTimeout(this.tick.bind(this), 20);
+  };
+  var tack = new Tacker();
+  var updateStart = function(time) {
+    startDateTime = time;
+    startUpdater(time);
+  };
+  var updateEnd = function(time) {
+    endDateTime = time;
+    endUpdater(time);
+  };
+  tack.addCallback(updateStart);
+  tack.addCallback(updateEnd);
+  startDiv.addEventListener('click', (function (event) {
+    tack.toggleCallback.bind(tack)(updateStart);
+  }));
+  endDiv.addEventListener('click', (function (event) {
+    tack.toggleCallback.bind(tack)(updateEnd);
+  }));
+  tack.start();
   var id = document.location.hash.substring(1);
   if (id) {
     startTicking = endTicking = false;

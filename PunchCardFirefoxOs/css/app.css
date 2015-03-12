@@ -2,25 +2,28 @@
 */
 
 body {
-/* font-size: 1rem; */
+  /* font-size: 1rem; */
 }
 
 h1 {
-/*   margin: 0 0 1rem 0; */
+  /*   margin: 0 0 1rem 0; */
 }
 
 /* p {
-  font-size: inherit;
+font-size: inherit;
 } */
 
 div {
   /*   font-size: small; */
   /*   border: 1px solid; */
+  margin: 0 0 0;
   padding: 0 0 0;
   /*   display: inline; */
 }
 
 div.entry {
+  margin: 0 0 0;
+  padding: 0 0 0;
   /*   font-size: small; */
   border: 0.1em solid;
   /*   margin: 0 0 1rem; */
@@ -39,60 +42,61 @@ span {
 
 pre {
   margin: 0 0 0;
-/*   border: 1px solid; */
+  padding: 0 0 0;
+  /*   border: 1px solid; */
   white-space: nowrap;
   overflow: hidden;
-}
-
-pre.activity {
   text-overflow: ellipsis ellipsis;
 }
 
 pre.start {
   display: inline-block;
   width: 55%;
-  overflow: auto;
+  direction: ltr;
+  text-overflow: clip ellipsis;
 }
 
 pre.end {
   display: inline-block;
   width: 45%;
-  overflow: auto;
+  direction: ltr;
+  text-overflow: ellipsis clip;
 }
 
-/* pre.start:focus {
-  width: 95%;
+pre.start:focus {
+  direction: rtl;
 }
 
-pre.end:focus {
-  width: 95%;
-} */
+pre.start:focus + pre.end {
+  direction: rtl;
+  text-overflow: ellipsis clip;
+}
 
 /*pre:focus {
-  color: red;
-  overflow: visible;
-  white-space: pre-wrap;
-  / *   white-space: pre; * /
+color: red;
+overflow: visible;
+white-space: pre-wrap;
+/ *   white-space: pre; * /
 }*/
 
 /*pre:hover {
-  color: hotpink;
-  overflow: visible;
-  white-space: pre-wrap;
-  / *   white-space: pre; * /
+color: hotpink;
+overflow: visible;
+white-space: pre-wrap;
+/ *   white-space: pre; * /
 }*/
 
 pre.activity:focus {
-/*   color:blue; */
-/*   font-size: larger; */
+  /*   color:blue; */
+  /*   font-size: larger; */
   overflow: visible;
-/*   display: block; */
+  display: block;
   white-space: pre-wrap;
-/*     white-space: pre; */
+  /*     white-space: pre; */
 }
 
 menu {
-/*   display: none; */
+  /*   display: none; */
   position: fixed;
   top: 2em;
   left: 2em;
@@ -109,17 +113,17 @@ z-index: 2;
 /* JUMPER */
 
 /* nav#punchcard_scrollbar li {
-  width: 3em;
+width: 3em;
 }
 
 nav#punchcard_scrollbar:active li {
-  width: 100%;
+width: 100%;
 } */
 
 nav#punchcard_scrollbar {
   top: 3rem;
-  right: -6em;
-/*   z-index: 2; */
+  right: -5em;
+  /*   z-index: 2; */
 }
 
 nav#punchcard_scrollbar li a {
@@ -127,7 +131,6 @@ nav#punchcard_scrollbar li a {
   display: inline;
   font-family: monospace;
   font-size: smaller;
-/*   color: black; */
 }
 
 /* nav[data-type="scrollbar"] {
@@ -179,8 +182,9 @@ width: -moz-calc(100% + 1.5rem);
 }
 
 div#entries {
-  margin:  0 0.5rem 0 0.5rem;
-/*   max-height: 50%; */
+  margin:  0 1rem 0 0.5rem;
+/*   width: 90%; */
+  /*   max-height: 50%; */
 }
 
 /* .view-noscroll {

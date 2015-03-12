@@ -15,7 +15,9 @@
   },
   "type": "privileged",
   "permissions": {
-    "storage": {"description": "luxury" }
+    "storage": {
+      "description": "luxury"
+    }
   },
   "installs_allowed_from": [
     "*"
