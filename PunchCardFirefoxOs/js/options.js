@@ -91,8 +91,10 @@ try {
          'password': document.getElementById('pass').value
         },
         // ajax: {
+        // 'Cookie': cookie/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
+        // },
           headers: {
-          // 'Cookie': cookie/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
+        // 'AuthSession': cookie.split('=')[1]/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
           //'Accept': 'application/json',
           //'Content-Type': 'application/json',
           // 'Accept': 'text/chunked',
@@ -212,7 +214,7 @@ try {
               };
               DEBUG && window.alert(JSON.stringify(entry, null, 2));
               db.post(entry).then(function(response) {
-                saveLink.click();
+                document.querySelector('a.save').click();
               }).catch(function(err) {
                 //errors
                 window.alert(err);

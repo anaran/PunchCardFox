@@ -38,7 +38,8 @@ window.addEventListener('DOMContentLoaded', function() {
     //     //errors
     //     window.alert(err);
     //   });
-    // } else {
+    // }
+    // else {
     //   var entry = {
     //     // _id: db.post(),
     //     activity: activity.textContent,
@@ -70,12 +71,14 @@ window.addEventListener('DOMContentLoaded', function() {
         var milliSeconds = Number(event.target.textContent);
         if (Number.isNaN(milliSeconds)) {
           newDateTime = new Date(event.target.textContent);
-        } else {
+        }
+        else {
           newDateTime = new Date(milliSeconds);
         }
         if (Number.isNaN(newDateTime.getMilliseconds())) {
           window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
-        } else {
+        }
+        else {
           setDate(newDateTime);
           updater(newDateTime);
         }
@@ -137,8 +140,6 @@ window.addEventListener('DOMContentLoaded', function() {
         LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY, event.x, event.y);
         LOG && console.log(event);
         // TODO Need to stop only associated element.
-        // startTicking = false;
-        // endTicking = false;
         deltaX = event.touches[event.touches.length - 1].clientX - prevX;
         deltaY = prevY - event.touches[event.touches.length - 1].clientY;
         if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
@@ -191,6 +192,23 @@ window.addEventListener('DOMContentLoaded', function() {
       second.textContent = pad(time.getSeconds(), 2, '0');
     };
   };
+  var getDateTime = function (element) {
+    var year = element.querySelector('.year');
+    var month = element.querySelector('.month');
+    var date = element.querySelector('.date');
+    var week = element.querySelector('.week');
+    var hour = element.querySelector('.hour');
+    var minute = element.querySelector('.minute');
+    var second = element.querySelector('.second');
+    var time = new Date;
+    time.setFullYear(year.textContent);
+    time.setMonth(month.textContent - 1);
+    time.setDate(date.textContent);
+    time.setHours(hour.textContent);
+    time.setMinutes(minute.textContent);
+    time.setSeconds(second.textContent);
+    return time;
+  };
 
   // var translate = navigator.mozL10n.get;
 
@@ -212,10 +230,10 @@ window.addEventListener('DOMContentLoaded', function() {
       db.get(id).then(function(otherDoc) {
         // otherDoc.activity = activity.textContent;
         otherDoc.activity = activity.value;
-        otherDoc.start = startDateTime;
-        otherDoc.end = endDateTime;
+        otherDoc.start = getDateTime(startDiv);
+        otherDoc.end = getDateTime(endDiv);
         return db.put(otherDoc).then(function(response) {
-          // saveLink.click();
+          document.querySelector('a.save').click();
           saved = true;
         }).catch(function(err) {
           //errors
@@ -225,17 +243,18 @@ window.addEventListener('DOMContentLoaded', function() {
         //errors
         window.alert(err);
       });
-    } else {
+    }
+    else {
       var entry = {
         // _id: db.post(),
         // activity: activity.textContent,
         activity: activity.value,
-        start: startDateTime,
-        end: endDateTime
+        start: getDateTime(startDiv),
+        end: getDateTime(endDiv)
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
-        // saveLink.click();
+        document.querySelector('a.save').click();
         saved = true;
       }).catch(function(err) {
         //errors
@@ -247,17 +266,13 @@ window.addEventListener('DOMContentLoaded', function() {
   var startDiv = document.querySelector('div.start_div');
   var startUpdater = updateDateTime(startDiv);
   // var startnow = document.querySelector('#startnow');
-  var startTicking = true;
-  startDiv.addEventListener('click', function (event) {
-    startTicking = !startTicking;
-  });
   var startAtEnd = document.querySelector('#start_at_end');
   startAtEnd.addEventListener('click', function (event) {
-    startTicking = false;
+    tack.removeCallback(updateStart);
     startDateTime = endDateTime;
     startUpdater(endDateTime);
   });
-  start.addEventListener('keypress', setDateFromStringOrNumber(function () { startTicking = false; }, function (date) { startDateTime = date; }, startUpdater));
+  start.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateStart); }, function (date) { startDateTime = date; }, startUpdater));
   addTouchable(document.querySelector('.start_delta_div>.year'), startDiv, startDateTime, function (value, delta) {
     var d = new Date(value);
     value.setFullYear(d.getFullYear() + delta);
@@ -272,14 +287,13 @@ window.addEventListener('DOMContentLoaded', function() {
   var endDiv = document.querySelector('div.end_div');
   var endUpdater = updateDateTime(endDiv);
   // var endnow = document.querySelector('#endnow');
-  var endTicking = true;
   var endAtStart = document.querySelector('#end_at_start');
   endAtStart.addEventListener('click', function (event) {
-    endTicking = false;
+    tack.removeCallback(updateEnd);
     endDateTime = startDateTime;
     endUpdater(startDateTime);
   });
-  end.addEventListener('keypress', setDateFromStringOrNumber(function () { endTicking = false; }, function (date) { endDateTime = date; }, endUpdater));
+  end.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateEnd); }, function (date) { endDateTime = date; }, endUpdater));
   addTouchable(document.querySelector('.end_delta_div>.year'), endDiv, endDateTime, function (value, delta) {
     var d = new Date(value);
     d.setFullYear(d.getFullYear() + delta);
@@ -334,8 +348,6 @@ window.addEventListener('DOMContentLoaded', function() {
     endDateTime = time;
     endUpdater(time);
   };
-  tack.addCallback(updateStart);
-  tack.addCallback(updateEnd);
   startDiv.addEventListener('click', (function (event) {
     tack.toggleCallback.bind(tack)(updateStart);
   }));
@@ -345,7 +357,6 @@ window.addEventListener('DOMContentLoaded', function() {
   tack.start();
   var id = document.location.hash.substring(1);
   if (id) {
-    startTicking = endTicking = false;
     db.get(id).then(function(otherDoc) {
       // activity.textContent = otherDoc.activity;
       activity.value = otherDoc.activity;
@@ -359,6 +370,10 @@ window.addEventListener('DOMContentLoaded', function() {
       //errors
       window.alert(err);
     });
+  }
+  else {
+    tack.addCallback(updateStart);
+    tack.addCallback(updateEnd);
   }
   // maybeSave();
   // ---
