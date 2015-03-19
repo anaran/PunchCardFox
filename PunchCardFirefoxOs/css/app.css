@@ -2,7 +2,7 @@
 */
 
 body {
-  /* font-size: 1rem; */
+/*   font-size: x-large; */
 }
 
 h1 {
@@ -95,13 +95,6 @@ pre.activity:focus {
   /*     white-space: pre; */
 }
 
-menu {
-  /*   display: none; */
-  position: fixed;
-  top: 2em;
-  left: 2em;
-}
-
 /* gaia-header {
 padding: 0 0 0 1.5rem;
 position: sticky;
@@ -127,7 +120,8 @@ nav#punchcard_scrollbar {
 }
 
 nav#punchcard_scrollbar li a {
-  text-align: end;
+/*   direction: ltr; */
+  text-align: left;
   display: inline;
   font-family: monospace;
   font-size: smaller;

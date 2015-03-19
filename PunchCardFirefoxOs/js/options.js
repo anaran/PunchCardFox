@@ -9,8 +9,8 @@ try {
     'use strict';
     var DEBUG = false;
 
-  var XHR_TIMEOUT_MS = 30000;
-  var cookie;
+    var XHR_TIMEOUT_MS = 30000;
+    var cookie;
     var translate = navigator.mozL10n.get;
     var addReadOnlyInfo = function (info, element) {
       var pre = document.createElement('pre');
@@ -93,8 +93,8 @@ try {
         // ajax: {
         // 'Cookie': cookie/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
         // },
-          headers: {
-        // 'AuthSession': cookie.split('=')[1]/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
+        headers: {
+          // 'AuthSession': cookie.split('=')[1]/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
           //'Accept': 'application/json',
           //'Content-Type': 'application/json',
           // 'Accept': 'text/chunked',
@@ -105,7 +105,7 @@ try {
           //           'Authorization': 'Basic ' +
           //           window.btoa(document.getElementById('user').value + ':' +
           //                       document.getElementById('pass').value)
-          }
+        }
         //}
       };
       var remoteDB = new PouchDB(destination, opts);
@@ -182,12 +182,12 @@ try {
     var searchMatchingActivities = function () {
       var includeRegExp = new RegExp(include.value, include_case.checked ? '' : 'i');
       var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
-      db.allDocs({ limit: 450, include_docs: true, descending: true }, function(err, doc) {
+      db.allDocs({ limit: 4500, include_docs: true, descending: true }, function(err, doc) {
         if (err) {
           window.alert(err);
         } else {
           var search = document.getElementById('search');
-          search && document.body.removeChild(search);
+          search && include.parentElement.removeChild(search);
           search = document.createElement('div');
           search.id = 'search';
           doc.rows.forEach(function (row) {
@@ -200,7 +200,9 @@ try {
             // white-space: pre-wrap;
             var div = document.createElement('div');
             var diva = document.createElement('div');
-            var activity = document.createElement('span');
+            var start = document.createElement('span');
+            // var end = document.createElement('span');
+            var activity = document.createElement('pre');
             var repeat = document.createElement('a');
             repeat.href = '#';
             repeat.textContent = 'Repeat now';
@@ -220,11 +222,17 @@ try {
                 window.alert(err);
               });
             });
+            var edit = document.createElement('a');
+            edit.href = '/new.html#' + row.doc._id;
+            edit.textContent = 'Edit';
+
             // activity.contentEditable = true;
             // activity.addEventListener('input', null);
             // activity.readOnly = true;
             // start.textContent = (new Date(row.doc.start)).toLocaleString();
             // end.textContent = (new Date(row.doc.end)).toLocaleString();
+            start.textContent = (new Date(row.doc.start)).toString().substring(0, 24);
+            // end.textContent = (new Date(row.doc.end)).toString().substring(0, 24);
             activity.textContent = row.doc.activity;
             activity.contentEditable = true;
             // activity.setAttribute('readonly', true);
@@ -236,14 +244,17 @@ try {
             //         });
             // search.appendChild(start);
             // search.appendChild(end);
-            div.appendChild(activity);
-            div.appendChild(diva);
+            diva.appendChild(start);
+            // div.appendChild(end);
+            search.appendChild(activity);
+            // div.appendChild(diva);
             diva.appendChild(repeat);
-            search.appendChild(div);
+            diva.appendChild(edit);
+            search.appendChild(diva);
             // activity.appendChild(repeat);
             // search.appendChild(activity);
           });
-          document.body.appendChild(search);
+          include.parentElement.appendChild(search);
           //     var pre = document.createElement('pre');
           //     pre.textContent = JSON.stringify(doc.rows, null, 2);
           //     document.body.appendChild(pre);
@@ -252,242 +263,242 @@ try {
     };
     // ---
 
-      var login = document.querySelector('button#login');
-  var logout = document.querySelector('button#logout');
+    var login = document.querySelector('button#login');
+    var logout = document.querySelector('button#logout');
 
-  // Forms will take the values in the input fields they contain
-  // and send them to a server for further processing,
-  // but since we want to stay in this page AND make a request to another server,
-  // we will listen to the 'submit' event, and prevent the form from doing what
-  // it would usually do, using preventDefault.
-  // Read more about it here:
-  // https://developer.mozilla.org/Web/API/event.preventDefault
-  //
-  // Then we search without leaving this page, just as we wanted.
+    // Forms will take the values in the input fields they contain
+    // and send them to a server for further processing,
+    // but since we want to stay in this page AND make a request to another server,
+    // we will listen to the 'submit' event, and prevent the form from doing what
+    // it would usually do, using preventDefault.
+    // Read more about it here:
+    // https://developer.mozilla.org/Web/API/event.preventDefault
+    //
+    // Then we search without leaving this page, just as we wanted.
     document.getElementById('pass').addEventListener('keypress', function (event) {
-    var sessionUrl = document.getElementById('protocol').value +
+      var sessionUrl = document.getElementById('protocol').value +
           document.getElementById('hostportpath').value + '_session';
       if (event.keyCode == 13) {
-    if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
-    }
+        if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
+        }
       }
       // console.log(event.type, event);
     });
-  // login.addEventListener('click', function(e) {
-  //   e.preventDefault();
-  //   
-  //   // FIXME: async!
-  //   if (sessionLogin(sessionUrl, document.getElementById('user').value, password)) {
-  //   }
-  // });
-  logout.addEventListener('click', function(e) {
-    e.preventDefault();
-    if (sessionLogout(sessionUrl)) {
-      cookie = '';
-    }
-  });
-
-  // We want to wait until the localisations library has loaded all the strings.
-  // So we'll tell it to let us know once it's ready.
-  // navigator.mozL10n.once(search);
-
-  function search() {
-
-    // Are we searching already? Then stop that search
-    if(request && request.abort) {
-      request.abort();
-    }
-
-    results.textContent = translate('searching');
-
-    // We will be using the 'hidden' attribute throughout the app rather than a
-    // 'hidden' CSS class because it enhances accessibility.
-    // See: http://www.whatwg.org/specs/web-apps/current-work/multipage/editing.html#the-hidden-attribute
-    results.hidden = false;
-    errorMsg.hidden = true;
-
-
-    var term = searchInput.value;
-    if(term.length === 0) {
-      term = searchInput.placeholder;
-    }
-
-    var url = term;
-    jsonFrame.src = url;
-    try {
-      if (!cookie) {
-        window.alert('Please press Login');
-        return;
+    // login.addEventListener('click', function(e) {
+    //   e.preventDefault();
+    //   
+    //   // FIXME: async!
+    //   if (sessionLogin(sessionUrl, document.getElementById('user').value, password)) {
+    //   }
+    // });
+    logout.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (sessionLogout(sessionUrl)) {
+        cookie = '';
       }
-      // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
-      // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
-      // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-      request = new XMLHttpRequest({ mozSystem: false, withCredentials: true });
-      // request.overrideMimeType("application/json");
-      request.open('GET', url, !!'async');
+    });
+
+    // We want to wait until the localisations library has loaded all the strings.
+    // So we'll tell it to let us know once it's ready.
+    // navigator.mozL10n.once(search);
+
+    function search() {
+
+      // Are we searching already? Then stop that search
+      if(request && request.abort) {
+        request.abort();
+      }
+
+      results.textContent = translate('searching');
+
+      // We will be using the 'hidden' attribute throughout the app rather than a
+      // 'hidden' CSS class because it enhances accessibility.
+      // See: http://www.whatwg.org/specs/web-apps/current-work/multipage/editing.html#the-hidden-attribute
+      results.hidden = false;
+      errorMsg.hidden = true;
+
+
+      var term = searchInput.value;
+      if(term.length === 0) {
+        term = searchInput.placeholder;
+      }
+
+      var url = term;
+      jsonFrame.src = url;
+      try {
+        if (!cookie) {
+          window.alert('Please press Login');
+          return;
+        }
+        // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
+        // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
+        // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+        request = new XMLHttpRequest({ mozSystem: false, withCredentials: true });
+        // request.overrideMimeType("application/json");
+        request.open('GET', url, !!'async');
+        request.setRequestHeader('Cookie', cookie);
+        request.timeout = XHR_TIMEOUT_MS;
+        request.ontimeout = onRequestError;
+        request.onerror = onRequestError;
+        // request.addEventListener('error', onRequestError);
+        request.send();
+        request.onreadystatechange = function() {
+          if (this.readyState == 4) {
+            // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
+            // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
+            // cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
+            // alert('request.responseText = ' + request.responseText);
+            // alert('request.response = ' + request.response);
+            if(request.response === null) {
+              showError(translate('searching_error'));
+              return;
+            }
+            jsonText.textContent = request.response;
+            reportError(jsonText);
+          }
+        }
+      } catch (e) {
+        alert(e.message + '\n' + e.stack);
+        // alert(JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
+      }
+    }
+
+    function sessionLogin(url, username, password) {
+      var request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+      // TODO: sends username:password@ as part of the URL, exposing password in firefox net log!
+      // NOTE: fauxton uses Authorization Basic
+      // request.open('POST', url, !!'async'/*, username, password*/);
+      request.open('POST', url, !!'async'/*, username, password*/);
+      // request.open('POST', url, !!'async', username, password);
+      // request.open('POST', url, !!'async', '_', '_');
+      request.setRequestHeader('Authorization', 'Basic ' + btoa(username + ':' + password));
+      request.timeout = XHR_TIMEOUT_MS;
+      request.ontimeout = onRequestError;
+      request.onerror = onRequestError;
+      request.setRequestHeader('Content-Type', 'application/json');
+      // request.setRequestHeader('Accept', 'application/json, text/javascript, */*; q=0.01');
+      request.send(JSON.stringify({'name': username, 'password': password}));
+      // request.send();
+      request.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
+          // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
+          cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
+          if (cookie && cookie.length) {
+            addReadOnlyInfo(cookie, document.body);
+            // load.removeAttribute('disabled');
+          }
+          // alert('request.responseText = ' + request.responseText);
+          // alert('request.response = ' + request.response);
+        }
+      }
+      // FIXME: async!
+      // return cookie;
+    }
+
+    function sessionLogout(url) {
+      var request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+      request.open('DELETE', url, !!'async');
       request.setRequestHeader('Cookie', cookie);
       request.timeout = XHR_TIMEOUT_MS;
       request.ontimeout = onRequestError;
       request.onerror = onRequestError;
-      // request.addEventListener('error', onRequestError);
       request.send();
       request.onreadystatechange = function() {
         if (this.readyState == 4) {
           // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
           // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-          // cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
-          // alert('request.responseText = ' + request.responseText);
-          // alert('request.response = ' + request.response);
-          if(request.response === null) {
-            showError(translate('searching_error'));
-            return;
+          var data = JSON.parse(request.response);
+          if (data && data.ok) {
+            // load.setAttribute('disabled', true);
           }
-          jsonText.textContent = request.response;
-          reportError(jsonText);
+          // FIXME: async!
+          // return data.ok;
         }
       }
-    } catch (e) {
-      alert(e.message + '\n' + e.stack);
-      // alert(JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
+      // FIXME: async!
+      // return false;
     }
-  }
 
-  function sessionLogin(url, username, password) {
-    var request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-    // TODO: sends username:password@ as part of the URL, exposing password in firefox net log!
-    // NOTE: fauxton uses Authorization Basic
-    // request.open('POST', url, !!'async'/*, username, password*/);
-    request.open('POST', url, !!'async'/*, username, password*/);
-    // request.open('POST', url, !!'async', username, password);
-    // request.open('POST', url, !!'async', '_', '_');
-    request.setRequestHeader('Authorization', 'Basic ' + btoa(username + ':' + password));
-    request.timeout = XHR_TIMEOUT_MS;
-    request.ontimeout = onRequestError;
-    request.onerror = onRequestError;
-    request.setRequestHeader('Content-Type', 'application/json');
-    // request.setRequestHeader('Accept', 'application/json, text/javascript, */*; q=0.01');
-    request.send(JSON.stringify({'name': username, 'password': password}));
-    // request.send();
-    request.onreadystatechange = function() {
-      if (this.readyState == 4) {
-        // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-        // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-        cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
-        if (cookie && cookie.length) {
-          addReadOnlyInfo(cookie, document.body);
-          // load.removeAttribute('disabled');
-        }
-        // alert('request.responseText = ' + request.responseText);
-        // alert('request.response = ' + request.response);
+    function onRequestError(event) {
+      var errorMessage = JSON.stringify(event, [ 'type', 'lengthComputable', 'loaded', 'total' ], 2);
+      if (event.type == 'error') {
+        window.alert('Please press Login');
       }
+      // alert(errorMessage);
+      showError(errorMessage);
     }
-    // FIXME: async!
-    // return cookie;
-  }
 
-  function sessionLogout(url) {
-    var request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-    request.open('DELETE', url, !!'async');
-    request.setRequestHeader('Cookie', cookie);
-    request.timeout = XHR_TIMEOUT_MS;
-    request.ontimeout = onRequestError;
-    request.onerror = onRequestError;
-    request.send();
-    request.onreadystatechange = function() {
-      if (this.readyState == 4) {
-        // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-        // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-        var data = JSON.parse(request.response);
-        if (data && data.ok) {
-          // load.setAttribute('disabled', true);
-        }
-        // FIXME: async!
-        // return data.ok;
+
+    function onRequestLoad() {
+
+      //     var response = request.responseText;
+      var arraybuffer = request.response;
+      if(response === null) {
+        showError(translate('searching_error'));
+        return;
       }
-    }
-    // FIXME: async!
-    // return false;
-  }
-
-  function onRequestError(event) {
-    var errorMessage = JSON.stringify(event, [ 'type', 'lengthComputable', 'loaded', 'total' ], 2);
-    if (event.type == 'error') {
-      window.alert('Please press Login');
-    }
-    // alert(errorMessage);
-    showError(errorMessage);
-  }
-
-
-  function onRequestLoad() {
-
-    //     var response = request.responseText;
-    var arraybuffer = request.response;
-    if(response === null) {
-      showError(translate('searching_error'));
+      jsonText.textContent = response;
+      reportError(jsonText);
       return;
-    }
-    jsonText.textContent = response;
-    reportError(jsonText);
-    return;
-    results.textContent = '';
+      results.textContent = '';
 
-    var documents = response.documents;
+      var documents = response.documents;
 
-    if(documents.length === 0) {
+      if(documents.length === 0) {
 
-      var p = document.createElement('p');
-      p.textContent = translate('search_no_results');
-      results.appendChild(p);
+        var p = document.createElement('p');
+        p.textContent = translate('search_no_results');
+        results.appendChild(p);
 
-    } else {
+      } else {
 
-      documents.forEach(function(doc) {
+        documents.forEach(function(doc) {
 
-        // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
-        // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
-        var docLink = document.createElement('a');
-        docLink.textContent = doc.title;
-        docLink.href = doc.url;
+          // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
+          // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
+          var docLink = document.createElement('a');
+          docLink.textContent = doc.title;
+          docLink.href = doc.url;
 
-        // We want the links to open in a pop up window with a 'close'
-        // button, so that the user can consult the result and then close it and
-        // be brought back to our app.
-        // If we did nothing, these external links would take over the entirety
-        // our app and there would be no way for a user to go back to the app.
-        // But Firefox OS allows us to open ONE new window per app; these new
-        // windows will have a close button, so the user can close the overlay
-        // when they're happy with what they've read.
-        // Therefore we will capture click events on links, stop them from
-        // doing their usual thing using preventDefault(),
-        // and then open the link but in a new window.
-        docLink.addEventListener('click', function(evt) {
-          evt.preventDefault();
-          window.open(evt.target.href, 'overlay');
+          // We want the links to open in a pop up window with a 'close'
+          // button, so that the user can consult the result and then close it and
+          // be brought back to our app.
+          // If we did nothing, these external links would take over the entirety
+          // our app and there would be no way for a user to go back to the app.
+          // But Firefox OS allows us to open ONE new window per app; these new
+          // windows will have a close button, so the user can close the overlay
+          // when they're happy with what they've read.
+          // Therefore we will capture click events on links, stop them from
+          // doing their usual thing using preventDefault(),
+          // and then open the link but in a new window.
+          docLink.addEventListener('click', function(evt) {
+            evt.preventDefault();
+            window.open(evt.target.href, 'overlay');
+          });
+
+          var h2 = document.createElement('h2');
+          h2.appendChild(docLink);
+          results.appendChild(h2);
+
         });
 
-        var h2 = document.createElement('h2');
-        h2.appendChild(docLink);
-        results.appendChild(h2);
+      }
 
-      });
+      // And once we have all the content in place, we can show it.
+      results.hidden = false;
 
     }
 
-    // And once we have all the content in place, we can show it.
-    results.hidden = false;
 
-  }
+    function showError(text) {
+      addReadOnlyInfo(text, document.body);
+      // errorMsg.textContent = text;
+      // errorMsg.hidden = false;
+      // results.hidden = true;
+    }
 
 
-  function showError(text) {
-          addReadOnlyInfo(text, document.body);
-    // errorMsg.textContent = text;
-    // errorMsg.hidden = false;
-    // results.hidden = true;
-  }
-
-    
     function start() {
 
       var message = document.getElementById('message');

@@ -64,32 +64,38 @@ own language (as long as you provide translations).
         </gaia-header>
         <!--         <section role="region" id="main"> -->
         <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-<!--                 NOTE: Firefox OS support only one level of menu. -->
-                <menu label="Entry ... Start Menu" type="context" id="start_menu">
-                                <menuitem id="start_now" label="start now"></menuitem>
-<!--                                 <a id="start_now" href="/index.html">start now</a> -->
-                                <menuitem id="start_undefined" label="start is undefined"></menuitem>
-                                <menuitem id="start_at_end" label="start at end"></menuitem>
+                <!--                 NOTE: Firefox OS support only one level of menu. -->
+                <menu type="context" id="start_menu">
+                        <!--                         <menu label="Start Menu"> -->
+                        <menuitem id="start_now" label="start now"></menuitem>
+                        <!--                                 <a id="start_now" href="/index.html">start now</a> -->
+                        <menuitem id="start_undefined" label="start is undefined"></menuitem>
+                        <menuitem id="start_at_end" label="start at end"></menuitem>
                 </menu>
-                <menu label="Entry ... End Menu" type="context" id="end_menu">
-                                <menuitem id="end_now" label="end now"></menuitem>
-                                <menuitem id="end_undefined" label="end is undefined"></menuitem>
-                                <menuitem id="end_at_start" label="end at start"></menuitem>
+                <!--                 </menu> -->
+                <menu type="context" id="end_menu">
+                        <!--                         <menu label="End Menu"> -->
+                        <menuitem id="end_now" label="end now"></menuitem>
+                        <menuitem id="end_undefined" label="end is undefined"></menuitem>
+                        <menuitem id="end_at_start" label="end at start"></menuitem>
+                        <!--                         </menu> -->
                 </menu>
-<!--                 <menu type="context" id="end_menu">
-                        <li><a>end now</a></li>
-                        <li><a href="/index.html#b">end is undefined</a></li>
-                        <li><a>end at start</a></li>
-                </menu> -->
+                <!--                 <menu type="context" id="end_menu">
+<li><a>end now</a></li>
+<li><a href="/index.html#b">end is undefined</a></li>
+<li><a>end at start</a></li>
+</menu> -->
                 <menu type="context" id="activity_menu">
-                                <menuitem id="edit" label="edit"></menuitem>
-                                <menuitem id="repeat_now" label="repeat now"></menuitem>
-                                <menuitem id="insert_parallel_activity" label="insert parallel activity"></menuitem>
-                                <menuitem id="delete" label="delete"></menuitem>
-                        <li><a>edit</a></li>
-                        <li><a>insert parallel activity</a></li>
-                        <li><a href="/options.html#c">show only this activity</a></li>
-                        <li><a>show all activities</a></li>
+                        <!--                         <menu label="Activity Menu"> -->
+                        <menuitem id="edit" label="edit"></menuitem>
+                        <menuitem id="repeat_now" label="repeat now"></menuitem>
+                        <menuitem id="insert_parallel_activity" label="insert parallel activity"></menuitem>
+                        <menuitem id="delete" label="delete"></menuitem>
+                        <!--                                 <li><a>edit</a></li>
+<li><a>insert parallel activity</a></li>
+<li><a href="/options.html#c">show only this activity</a></li>
+<li><a>show all activities</a></li> -->
+                        <!--                         </menu> -->
                 </menu>
                 <!--                 <article class="view-body"> -->
                 <div id="entries">
@@ -128,7 +134,7 @@ own language (as long as you provide translations).
                         <li><a href="#">X</a></li>
                         <li><a href="#">Y</a></li>
                         <li><a href="#">Z</a></li>
-                        <li><a href="#entries">to the top</a></li>
+                        <li><a href="#entries">Top of the list</a></li>
                 </ol>
         </nav>
         <!--                 </article> -->

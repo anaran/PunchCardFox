@@ -7,6 +7,42 @@ window.addEventListener('DOMContentLoaded', function() {
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   'use strict';
   var DEBUG = false;
+  var pad = function (text, length, padding) {
+    padding = padding ? padding : '0';
+    text += '';
+    while (text.length < length) {
+      text = padding + text;
+    }
+    return text;
+  };
+  function reportDateTimeDiff(d1, d2) {
+    var dt = d2.getTime() - d1.getTime();
+    var milliSecondsPerDay = 24 * 3600000;
+    var dtd = Math.floor(dt / milliSecondsPerDay);
+    var dtDayFraction = dt % milliSecondsPerDay;
+    var dth = Math.floor(dtDayFraction / 3600000);
+    var dtHourFraction = dtDayFraction % 3600000;
+    var dtm = Math.floor(dtHourFraction / 60000);
+    var dtMinuteFraction = dtHourFraction % 60000;
+    var dts = dtMinuteFraction / 1000;
+    // return [
+    //   d2.getFullYear() - d1.getFullYear(),
+    //   d2.getUTCMonth() - d1.getMonth(),
+    //   d2.getUTCDate() - d1.getUTCDate(),
+    //   d2.getUTCHours() - d1.getUTCHours(),
+    //   d2.getUTCMinutes() - d1.getUTCMinutes(),
+    //   d2.getUTCSeconds() - d1.getUTCSeconds(),
+    //   d2.getUTCMilliseconds() - d1.getMilliseconds(),
+    //   new Date(dt).toJSON(),
+    //   [
+    //     dtd,
+    //     dth,
+    //     dtm,
+    //     dts
+    //   ],
+    // ];
+    return (dt > 0 ? '+' : '-') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 5) + 's'
+  }
   var startNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
@@ -151,11 +187,12 @@ window.addEventListener('DOMContentLoaded', function() {
                                    DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
                                    doc.rows.forEach(function (row, index) {
                                      var entry = document.createElement('div');
-                                     var span = document.createElement('span');
+                                     // var span = document.createElement('span');
                                      entry.id = row.doc._id;
                                      entry.className = 'entry';
                                      var start = document.createElement('pre');
                                      var end = document.createElement('pre');
+                                     var delta = document.createElement('pre');
                                      var activity = document.createElement('pre');
                                      start.contentEditable = true;
                                      end.contentEditable = true;
@@ -172,8 +209,11 @@ window.addEventListener('DOMContentLoaded', function() {
                                      // activity.contentEditable = true;
                                      // activity.addEventListener('input', null);
                                      // activity.readOnly = true;
-                                     start.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toString().substring(0, 24);
-                                     end.textContent = (new Date(row.doc.end || row.doc.clockout_ms)).toString().substring(4, 24);
+                                     var startDate = new Date(row.doc.start || row.doc.clockin_ms);
+                                     var endDate = new Date(row.doc.end || row.doc.clockout_ms);
+                                     start.textContent = startDate.toString().substring(0, 24);
+                                     end.textContent = endDate.toString().substring(4, 24);
+                                     delta.textContent = reportDateTimeDiff(startDate, endDate);
                                      activity.textContent = row.doc.activity;
                                      start.setAttribute('contextmenu', 'start_menu');
                                      start.addEventListener('contextmenu', function (event) {
@@ -198,6 +238,7 @@ window.addEventListener('DOMContentLoaded', function() {
                                      entry.appendChild(start);
                                      entry.appendChild(end);
                                      // entry.appendChild(span);
+                                     entry.appendChild(delta);
                                      entry.appendChild(activity);
                                      if (scrollLinks.length && (index % rowsPerLink) < 1) {
                                        entry.classList.add('linked');
