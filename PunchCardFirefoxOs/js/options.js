@@ -202,7 +202,7 @@ try {
             var diva = document.createElement('div');
             var start = document.createElement('span');
             // var end = document.createElement('span');
-            var activity = document.createElement('pre');
+            var activity = document.createElement('div');
             var repeat = document.createElement('a');
             repeat.href = '#';
             repeat.textContent = 'Repeat now';
@@ -211,8 +211,8 @@ try {
               var entry = {
                 // _id: db.post(),
                 activity: activity.textContent,
-                start: new Date,
-                end: new Date
+                start: (new Date).toJSON(),
+                end: (new Date).toJSON()
               };
               DEBUG && window.alert(JSON.stringify(entry, null, 2));
               db.post(entry).then(function(response) {
@@ -244,12 +244,13 @@ try {
             //         });
             // search.appendChild(start);
             // search.appendChild(end);
+            diva.className = 'entry';
             diva.appendChild(start);
             // div.appendChild(end);
-            search.appendChild(activity);
             // div.appendChild(diva);
             diva.appendChild(repeat);
             diva.appendChild(edit);
+            diva.appendChild(activity);
             search.appendChild(diva);
             // activity.appendChild(repeat);
             // search.appendChild(activity);

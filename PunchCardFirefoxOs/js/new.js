@@ -235,8 +235,8 @@ try {
         db.get(id).then(function(otherDoc) {
           // otherDoc.activity = activity.textContent;
           otherDoc.activity = activity.value;
-          otherDoc.start = getDateTime(startDiv),
-            otherDoc.end = getDateTime(endDiv)
+          otherDoc.start = getDateTime(startDiv).toJSON(),
+            otherDoc.end = getDateTime(endDiv).toJSON()
           return db.put(otherDoc).then(function(response) {
             document.querySelector('a.save').click();
             saved = true;
@@ -254,8 +254,8 @@ try {
           // _id: db.post(),
           // activity: activity.textContent,
           activity: activity.value,
-          start: getDateTime(startDiv),
-          end: getDateTime(endDiv)
+          start: getDateTime(startDiv).toJSON(),
+          end: getDateTime(endDiv).toJSON()
         };
         DEBUG && window.alert(JSON.stringify(entry, null, 2));
         db.post(entry).then(function(response) {

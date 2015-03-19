@@ -46,7 +46,7 @@ window.addEventListener('DOMContentLoaded', function() {
   var startNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
-      otherDoc.start = new Date;
+      otherDoc.start = (new Date).toJSON();
       return db.put(otherDoc).then(function(response) {
         document.location.reload('force');
         // saveLink.click();
@@ -68,7 +68,7 @@ window.addEventListener('DOMContentLoaded', function() {
   var endNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
-      otherDoc.end = new Date;
+      otherDoc.end = (new Date).toJSON();
       return db.put(otherDoc).then(function(response) {
         document.location.reload('force');
         // saveLink.click();
