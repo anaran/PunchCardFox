@@ -27,8 +27,8 @@ it should not wait for this file to load before continuing to load the rest of
 resources in the page. Then, once everything has been loaded, it will parse and
 execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
--->
                 <script type="text/javascript" src="/js/options.js" defer></script>
+-->
                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
                 <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
 -->
@@ -45,6 +45,7 @@ own language (as long as you provide translations).
 -->
                 <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
                 <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
+                <script type="text/javascript" data-main="config" src="bower_components/alameda/alameda.js" defer></script>
         </head>
         <body role="application">
                 <gaia-header>
@@ -54,32 +55,34 @@ own language (as long as you provide translations).
                         <a data-icon="settings" href="/options.html"></a>
                         <a data-icon="more" href="/about.html"></a>
                 </gaia-header>
-                <section>
-                        <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
-                        <a class="save" href="/index.html"></a>
-                        <input type="checkbox" id="include_case" data-l10n-id="include_case"/>
-                        <input type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
-                        <input type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
-                </section>
+                <section class="view">
                         <section>
-<button id="import" data-l10n-id="import">Import</button>
-            <p>
-            </p>
-<button id="export" data-l10n-id="export">Export</button>
-            <p>
-            </p>
-            <p>
-                <button id="login" data-l10n-id="login">Login</button>
-                <button id="logout" data-l10n-id="logout">Logout</button>
-            </p>
-</section>
-                <section>
-                        <input type="text" id="protocol" data-l10n-id="protocol" value="https://"/>
-                        <input type="password" id="user" data-l10n-id="user" placeholder="user"/>
-                        <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"/>
-                        <input type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path"/>
-                        <button id="start" data-l10n-id="start">Start Live Replication</button>
-                        <button id="stop" data-l10n-id="stop">Stop Replication</button>
+                                <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
+                                <a class="save" href="/index.html"></a>
+                                <input type="checkbox" id="include_case" data-l10n-id="include_case"/>
+                                <input type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
+                                <input type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
+                        </section>
+                        <section>
+                                <button id="import" data-l10n-id="import">Import</button>
+                                <p>
+                                </p>
+                                <button id="export" data-l10n-id="export">Export</button>
+                                <p>
+                                </p>
+                                <p>
+                                        <button id="login" data-l10n-id="login">Login</button>
+                                        <button id="logout" data-l10n-id="logout">Logout</button>
+                                </p>
+                        </section>
+                        <section>
+                                <input type="text" id="protocol" data-l10n-id="protocol" value="https://"/>
+                                <input type="password" id="user" data-l10n-id="user" placeholder="user"/>
+                                <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"/>
+                                <input type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path"/>
+                                <button id="start" data-l10n-id="start">Start Live Replication</button>
+                                <button id="stop" data-l10n-id="stop">Stop Replication</button>
+                        </section>
                 </section>
         </body>
 </html>

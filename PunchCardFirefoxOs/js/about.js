@@ -15,12 +15,9 @@ window.addEventListener('DOMContentLoaded', function() {
   // So we'll tell it to let us know once it's ready.
   // navigator.mozL10n.once(start);
   var db = new PouchDB('punchcard3');
+      var view = document.querySelector('.view');
   db.info().then(function (info) {
-    var pre = document.createElement('pre');
-    // pre.textContent = info;
-    pre.textContent = JSON.stringify(info, null, 2);
-    pre.contentEditable = true;
-    document.body.appendChild(pre);
+        addReadOnlyInfo(info, view);
     // DEBUG && console.log(info);
   });
   var optionsDB = new PouchDB('options');
