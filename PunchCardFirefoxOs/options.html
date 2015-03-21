@@ -14,7 +14,8 @@ Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
                 <meta name="viewport" content="width=device-width">
-                <link rel="stylesheet" href="/css/options.css">
+                <link rel="import" href="/new_entry.html">
+                <link rel="stylesheet" href="/css/options.css"/>
 
                 <!--
 Inline JavaScript code is not allowed for privileged and certified apps,
@@ -27,7 +28,7 @@ it should not wait for this file to load before continuing to load the rest of
 resources in the page. Then, once everything has been loaded, it will parse and
 execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
-                <script type="text/javascript" src="/js/options.js" defer></script>
+<script type="text/javascript" src="/js/options.js" defer></script>
 -->
                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
                 <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
@@ -46,6 +47,7 @@ own language (as long as you provide translations).
                 <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
                 <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
                 <script type="text/javascript" data-main="config" src="bower_components/alameda/alameda.js" defer></script>
+<!--                 <script type="text/javascript" src="bower_components/requirejs-tmpl/tmpl.js" defer></script> -->
         </head>
         <body role="application">
                 <gaia-header>
@@ -56,6 +58,7 @@ own language (as long as you provide translations).
                         <a data-icon="more" href="/about.html"></a>
                 </gaia-header>
                 <section class="view">
+    <section is="new-entry" role="region" id="new-entry" data-section="ne"></section>
                         <section>
                                 <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
                                 <a class="save" href="/index.html"></a>

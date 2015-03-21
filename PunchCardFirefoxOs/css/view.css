@@ -1,0 +1,10 @@
+
+.view {
+  position: absolute;
+  overflow: scroll;
+  top: 3rem;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 3rem);
+  transform: translate(0, 0);
+}

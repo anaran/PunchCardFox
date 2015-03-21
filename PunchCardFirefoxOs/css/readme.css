@@ -1,0 +1,20 @@
+@import url(view.css);
+
+#edit_markdown {
+  position: absolute;
+  top: 0;
+  overflow: scroll;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-all;
+  left: 0;
+}
+
+#render_markdown {
+  position: absolute;
+  opacity: 1.0;
+  overflow: scroll;
+  top: 0;
+  left: 100%;
+  width: 100%;
+}
