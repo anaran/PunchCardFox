@@ -1,14 +1,22 @@
+requirejs.config({
+  waitSeconds: 7,
+  baseUrl: '/js'/*,
+  paths: {
+        info: '/js/info'
+  }*/});
+define(function(require) {
 // DOMContentLoaded is fired once the document has been loaded and parsed,
 // but without waiting for other external resources to load (css/images/etc)
 // That makes the app more responsive and perceived as faster.
 // https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
-window.addEventListener('DOMContentLoaded', function() {
+// window.addEventListener('DOMContentLoaded', function() {
 
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   'use strict';
   var DEBUG = false;
 
+  var addReadOnlyInfo = require('info');
   var translate = navigator.mozL10n.get;
 
   // We want to wait until the localisations library has loaded all the strings.
@@ -22,29 +30,17 @@ window.addEventListener('DOMContentLoaded', function() {
   });
   var optionsDB = new PouchDB('options');
   optionsDB.info().then(function (info) {
-    var pre = document.createElement('pre');
-    // pre.textContent = info;
-    pre.textContent = JSON.stringify(info, null, 2);
-    pre.contentEditable = true;
-    document.body.appendChild(pre);
+        addReadOnlyInfo(info, view);
     // DEBUG && console.log(info);
   });
   var db2 = new PouchDB('apa-test-2');
   db2.info().then(function (info) {
-    var pre = document.createElement('pre');
-    // pre.textContent = info;
-    pre.textContent = JSON.stringify(info, null, 2);
-    pre.contentEditable = true;
-    document.body.appendChild(pre);
+        addReadOnlyInfo(info, view);
     // DEBUG && console.log(info);
   });
   var db3 = new PouchDB('apa-test-3');
   db3.info().then(function (info) {
-    var pre = document.createElement('pre');
-    // pre.textContent = info;
-    pre.textContent = JSON.stringify(info, null, 2);
-    pre.contentEditable = true;
-    document.body.appendChild(pre);
+        addReadOnlyInfo(info, view);
     // DEBUG && console.log(info);
   });
   false && db.allDocs({include_docs: true, descending: false}, function(err, doc) {
@@ -92,5 +88,6 @@ window.addEventListener('DOMContentLoaded', function() {
 //     message.textContent = translate('message');
 
 //   }
-
+// });
 });
+requirejs(['about']);

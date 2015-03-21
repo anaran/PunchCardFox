@@ -14,7 +14,7 @@ Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
                 <meta name="viewport" content="width=device-width">
-                <link rel="import" href="/new_entry.html">
+<!--                 <link rel="import" href="new_entry.html"> -->
                 <link rel="stylesheet" href="/css/options.css"/>
 
                 <!--
@@ -46,19 +46,13 @@ own language (as long as you provide translations).
 -->
                 <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
                 <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
-                <script type="text/javascript" data-main="config" src="bower_components/alameda/alameda.js" defer></script>
+                <script type="text/javascript" data-main="/config" src="bower_components/alameda/alameda.js" defer></script>
 <!--                 <script type="text/javascript" src="bower_components/requirejs-tmpl/tmpl.js" defer></script> -->
         </head>
         <body role="application">
-                <gaia-header>
-                        <h1>Punchcard</h1>
-                        <a data-icon="compose" href="/new.html"></a>
-                        <a class="save" data-icon="select" href="/index.html"></a>
-                        <a data-icon="settings" href="/options.html"></a>
-                        <a data-icon="more" href="/about.html"></a>
-                </gaia-header>
+                <link rel="import" href="common-header.html">
                 <section class="view">
-    <section is="new-entry" role="region" id="new-entry" data-section="ne"></section>
+<!--     <section is="new-entry" role="region" id="new-entry" data-section="ne"></section> -->
                         <section>
                                 <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
                                 <a class="save" href="/index.html"></a>

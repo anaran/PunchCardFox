@@ -28,7 +28,6 @@ resources in the page. Then, once everything has been loaded, it will parse and
 execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
-                <script type="text/javascript" src="/js/about.js" defer></script>
                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js" defer></script>
                 <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
 -->
@@ -49,13 +48,7 @@ own language (as long as you provide translations).
         <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
         </head>
 <body role="application">
-        <gaia-header>
-                <h1>Punchcard</h1>
-                <a data-icon="compose" href="/new.html"></a>
-                <a class="save" data-icon="select" href="/index.html"></a>
-                <a data-icon="settings" href="/options.html"></a>
-                <a data-icon="more" href="/about.html"></a>
-        </gaia-header>
+                <link rel="import" href="common-header.html">
         <section class="view">
                 <div>
                         <p>A</p>
@@ -68,5 +61,6 @@ own language (as long as you provide translations).
                         </section>
                 </div>
         </section>
+                <script type="text/javascript" data-main="/js/about.js" src="bower_components/alameda/alameda.js" defer></script>
 </body>
 </html>
