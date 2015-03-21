@@ -49,6 +49,21 @@ window.addEventListener('DOMContentLoaded', function() {
     smartypants: false
   });
   try {
+    var toggleEdit = document.querySelector('a.edit');
+    var edit = document.querySelector('#edit_markdown');
+    edit.style.display = 'none';
+    // window.scrollTo(0, 0);
+    var render = document.querySelector('#render_markdown');
+    toggleEdit.addEventListener('click', function(event) {
+      if (edit.style.display == 'none') {
+        edit.style.display = 'block';
+        render.style.display = 'none';
+      }
+      else {
+        edit.style.display = 'none';
+        render.style.display = 'block';
+      }
+    });
     var request = new XMLHttpRequest({ mozSystem: true });
     request.open('get', url, !!'async');
     request.timeout = XHR_TIMEOUT_MS;
@@ -63,7 +78,7 @@ window.addEventListener('DOMContentLoaded', function() {
         if(request.response === null) {
           return;
         }
-        document.querySelector('#edit_markdown').textContent = request.response;
+        edit.textContent = request.response;
         if (true) {
           var html = marked(request.response);
           var tocHTML = '<h1 id="table-of-contents">Table of Contents</h1>\n<ul>';
@@ -71,15 +86,15 @@ window.addEventListener('DOMContentLoaded', function() {
             tocHTML += '<li><a href="#'+entry.anchor+'">'+entry.text+'<a></li>\n';
           });
           tocHTML += '</ul>\n';
-          document.querySelector('#render_markdown').innerHTML = tocHTML + html;
+          render.innerHTML = tocHTML + html;
           DEBUG && window.alert(tocHTML);
           DEBUG && window.alert(html);
           DEBUG && window.alert(JSON.stringify(toc, null, 2));
         } else {
-          // document.querySelector('#render_markdown').innerHTML = (new Remarkable('commonmark')).render(request.response);
-          document.querySelector('#render_markdown').innerHTML = (new Remarkable('full')).render(request.response);
+          // render.innerHTML = (new Remarkable('commonmark')).render(request.response);
+          render.innerHTML = (new Remarkable('full')).render(request.response);
         }
-        document.querySelector('#render_markdown').scrollIntoView();
+        // render.scrollIntoView();
       }
     }
   } catch (e) {
