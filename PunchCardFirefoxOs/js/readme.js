@@ -58,10 +58,12 @@ window.addEventListener('DOMContentLoaded', function() {
       if (edit.style.display == 'none') {
         edit.style.display = 'block';
         render.style.display = 'none';
+        event.target.style.opacity = '0.5';
       }
       else {
         edit.style.display = 'none';
         render.style.display = 'block';
+        event.target.style.opacity = '1.0';
       }
     });
     var request = new XMLHttpRequest({ mozSystem: true });
