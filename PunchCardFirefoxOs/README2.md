@@ -43,11 +43,11 @@ Missing `systemXHR` permission leads to:
 `22:11:56.821 NS_ERROR_DOM_BAD_URI: Access to restricted URI denied app.js:140:0`
 
 ```
-  "permissions": {
-    "systemXHR": {
-      "description": "Required to load remote content"
-    }
-  },
+"permissions": {
+  "systemXHR": {
+    "description": "Required to load remote content"
+  }
+},
 ```
 
 ## Couchdb Cookie Authentication
@@ -56,7 +56,7 @@ Works fine in this sample app.
 
 ## Build Environment
 
-While I liked the build-less setup I am now using spock to preprocess link rel import my .html files.
+While I liked the build-less setup I am now using [spock](https://www.npmjs.com/package/spock) to preprocess link rel import my .html files.
 
 This allows modularization while I investigate how to do this dynamically without a build step.
 

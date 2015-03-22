@@ -75,7 +75,7 @@ define(['require', 'info'], function (require, info) {
       start.addEventListener('click', function (event) {
         // TODO Adjust when using more than one template!
         // var imp = document.createElement('link');
-        // imp.href = '/new_entry.html';
+        // imp.href = '/build/new_entry.html';
         // imp.rel = 'import';
         // imp.onload = function(e) {
         //   window.alert(e.type, e.target.import);
@@ -239,7 +239,7 @@ define(['require', 'info'], function (require, info) {
                 });
               });
               var edit = document.createElement('a');
-              edit.href = '/new.html#' + row.doc._id;
+              edit.href = '/build/new.html#' + row.doc._id;
               edit.textContent = 'Edit';
 
               // activity.contentEditable = true;

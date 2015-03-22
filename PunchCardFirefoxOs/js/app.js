@@ -20,13 +20,13 @@ window.addEventListener('DOMContentLoaded', function(event) {
   function reportDateTimeDiff(d1, d2) {
     var dt = d2.getTime() - d1.getTime();
     var milliSecondsPerDay = 24 * 3600000;
-    var dtd = Math.floor(dt / milliSecondsPerDay);
+    var dtd = (dt / milliSecondsPerDay).toFixed();
     var dtDayFraction = dt % milliSecondsPerDay;
-    var dth = Math.floor(dtDayFraction / 3600000);
+    var dth = (dtDayFraction / 3600000).toFixed();
     var dtHourFraction = dtDayFraction % 3600000;
-    var dtm = Math.floor(dtHourFraction / 60000);
+    var dtm = (dtHourFraction / 60000).toFixed();
     var dtMinuteFraction = dtHourFraction % 60000;
-    var dts = dtMinuteFraction / 1000;
+    var dts = (dtMinuteFraction / 1000).toFixed();
     // return [
     //   d2.getFullYear() - d1.getFullYear(),
     //   d2.getUTCMonth() - d1.getMonth(),
@@ -90,7 +90,7 @@ window.addEventListener('DOMContentLoaded', function(event) {
   var edit = function (event) {
     var id = event.target.parentElement.dataset.id;
     var a = document.createElement('a');
-    a.href = '/new.html#' + id;
+    a.href = '/build/new.html#' + id;
     document.body.appendChild(a);
     a.click();
     // db.get(id).then(function(otherDoc) {
