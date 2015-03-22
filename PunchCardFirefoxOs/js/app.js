@@ -27,23 +27,7 @@ window.addEventListener('DOMContentLoaded', function(event) {
     var dtm = (dtHourFraction / 60000).toFixed();
     var dtMinuteFraction = dtHourFraction % 60000;
     var dts = (dtMinuteFraction / 1000).toFixed();
-    // return [
-    //   d2.getFullYear() - d1.getFullYear(),
-    //   d2.getUTCMonth() - d1.getMonth(),
-    //   d2.getUTCDate() - d1.getUTCDate(),
-    //   d2.getUTCHours() - d1.getUTCHours(),
-    //   d2.getUTCMinutes() - d1.getUTCMinutes(),
-    //   d2.getUTCSeconds() - d1.getUTCSeconds(),
-    //   d2.getUTCMilliseconds() - d1.getMilliseconds(),
-    //   new Date(dt).toJSON(),
-    //   [
-    //     dtd,
-    //     dth,
-    //     dtm,
-    //     dts
-    //   ],
-    // ];
-    return (dt > 0 ? '+' : '-') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 5) + 's'
+    return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
   }
   var startNow = function (event) {
     var id = event.target.parentElement.dataset.id;
