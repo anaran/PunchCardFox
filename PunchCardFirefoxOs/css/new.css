@@ -5,7 +5,7 @@ body {
 /*   margin: 0; */
 /*  padding: 0.5em;
   font-size: 1em; */
-  font-size: larger;
+/*   font-size: larger; */
   background: #fff;
 }
 
@@ -22,16 +22,18 @@ body {
   margin: 0 0 1rem 0;
 } */
 
-/* .start_delta_div, .end_delta_div {
+.start_delta_div, .end_delta_div {
   width: 100%;
 }
 
-.start_div, .end_div {
+/* .start_div, .end_div {
   width: 100%;
 } */
 
-.start, .end {
-/*   width: 100%; */
+#start, #end {
+  font-family: monospace;
+  font-size: large;
+/*   width: 90%; */
 }
 
 /* .start_delta_div:active, .end_delta_div:active {
@@ -60,7 +62,7 @@ body {
   display: inline-block;
 }
 
-.month, .date, .week, .hour, .minute, .second {
+.year, .month, .date, .week, .hour, .minute, .second {
   font-family: monospace;
 /*   margin: 0;
   padding: 0; */
@@ -68,19 +70,6 @@ body {
 /*   border: 0 solid; */
 /*   display: inline-block; */
 }
-
-.year {
-  font-family: monospace;
-/*   margin: 0;
-  padding: 0; */
-  text-align: end;
-/*   border: 0 solid; */
-/*   display: inline-block; */
-}
-
-/* .year::after, .month::after {
-  content: "-";
-} */
 
 /* input[type=text] {
   font-family: monospace;
@@ -101,7 +90,7 @@ textarea {
 pre {
   border: 1px dashed;
   color:blue;
-  font-size: larger;
+/*   font-size: larger; */
   min-height: 1em;
   overflow: visible;
   white-space: pre-wrap;

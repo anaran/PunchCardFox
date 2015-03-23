@@ -61,7 +61,7 @@ try {
       // return confirmationMessage;                                //Webkit, Safari, Chrome etc.
       event.returnValue = (saved ? "" : "unsaved");
     });
-    var setDateFromStringOrNumber = function (ticker, setDate, updater) {
+    var setDateFromStringOrNumber = function (ticker, elementUpdater) {
       return function (event) {
         if (event.keyCode == 13) {
           event.preventDefault();
@@ -83,15 +83,14 @@ try {
             window.alert('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).');
           }
           else {
-            setDate(newDateTime);
-            updater(newDateTime);
+            elementUpdater(newDateTime);
             // Update weekday, in case user did not do it.
             event.target.value = newDateTime;
           }
         }
       };
     };
-    var addTouchable = function(delta_element, update_element, value_element, getDateTime, updater, padWidth) {
+    var addTouchable = function(delta_element, elementUpdater, getDateTime, timeFromDeltaUpdater, padWidth) {
       var offset = delta_element;
       // offset.contentEditable = false;
       // offset.textContent = pad('0', padWidth, '0');
@@ -117,19 +116,19 @@ try {
           // event.dataTransfer.effectAllowed = "all";
           // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         }, false);
-        true && offset.addEventListener('click', function(event) {
+        true && offset.addEventListener('contextmenu', function(event) {
           event.preventDefault();
           event.stopPropagation();
           LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
           LOG && console.log(event);
           // NOTE: Cannot distinguish between mouse click with and without mouse move.
           // Therefor we only reset value for single click on touch device.
-          if (! "touches" in event) {
+          // if ("touches" in event) {
             offset.style.backgroundColor = 'white';
             offset.textContent = '-' + pad('0', padWidth, '0');
             prevX = prevY = deltaX = deltaY = deltaSum = 0;
-            (updateDateTime(update_element, value_element))(getDateTime());
-          }
+            elementUpdater(getDateTime());
+          // }
           // prevX = event.touches[event.touches.length - 1].clientX;
           // prevY = event.touches[event.touches.length - 1].clientY;
           // event.dataTransfer.effectAllowed = "all";
@@ -144,7 +143,7 @@ try {
           offset.style.backgroundColor = 'white';
           offset.textContent = '-' + pad('0', padWidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
-          (updateDateTime(update_element, value_element))(getDateTime());
+          elementUpdater(getDateTime());
           // prevX = event.touches[event.touches.length - 1].clientX;
           // prevY = event.touches[event.touches.length - 1].clientY;
           // event.dataTransfer.effectAllowed = "all";
@@ -155,8 +154,8 @@ try {
         //   event.stopPropagation();
         //   LOG && console.log(event.type);
         //   offset.textContent = '-' + pad('0', padWidth, '0');
-        //   // updater(getDateTime, Math.round(-deltaSum));
-        //   (updateDateTime(update_element, value_element))(getDateTime());
+        //   // timeFromDeltaUpdater(getDateTime(), Math.round(-deltaSum));
+        //   elementUpdater(getDateTime());
         //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
         //   // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         // }, false);
@@ -199,8 +198,8 @@ try {
             }
           }
           LOG && console.log(deltaX, deltaY, offset.textContent);
-          var d = updater(getDateTime(), Math.round(deltaSum));
-          (updateDateTime(update_element, value_element))(d);
+          var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
+          elementUpdater(d);
           prevX = event.touches[event.touches.length - 1].clientX;
           prevY = event.touches[event.touches.length - 1].clientY;
         }, false);
@@ -231,8 +230,8 @@ try {
                 offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
               }
             }
-            var d = updater(getDateTime(), Math.round(deltaSum));
-            (updateDateTime(update_element, value_element))(d);
+            var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
+            elementUpdater(d);
             LOG && console.log(deltaX, deltaY, offset.textContent);
             prevX = event.clientX;
             prevY = event.clientY;
@@ -251,40 +250,40 @@ try {
       }
       return text;
     };
-    var updateDateTime = function _updateDateTime(element, input_element) {
-      var year = element.querySelector('.year');
-      var month = element.querySelector('.month');
-      var date = element.querySelector('.date');
-      var week = element.querySelector('.week');
-      var hour = element.querySelector('.hour');
-      var minute = element.querySelector('.minute');
-      var second = element.querySelector('.second');
+    var updateDateTime = function _updateDateTime(input_element) {
+      // var year = element.querySelector('.year');
+      // var month = element.querySelector('.month');
+      // var date = element.querySelector('.date');
+      // var week = element.querySelector('.week');
+      // var hour = element.querySelector('.hour');
+      // var minute = element.querySelector('.minute');
+      // var second = element.querySelector('.second');
       return function (time) {
-        year.textContent = time.getFullYear();
-        month.textContent = pad(time.getMonth() + 1, 2, '0');
-        date.textContent = pad(time.getDate(), 2, '0');
-        week.textContent = pad('0', 2, '0');
-        hour.textContent = pad(time.getHours(), 2, '0');
-        minute.textContent = pad(time.getMinutes(), 2, '0');
-        second.textContent = pad(time.getSeconds(), 2, '0');
+        // year.textContent = time.getFullYear();
+        // month.textContent = pad(time.getMonth() + 1, 2, '0');
+        // date.textContent = pad(time.getDate(), 2, '0');
+        // week.textContent = pad('0', 2, '0');
+        // hour.textContent = pad(time.getHours(), 2, '0');
+        // minute.textContent = pad(time.getMinutes(), 2, '0');
+        // second.textContent = pad(time.getSeconds(), 2, '0');
         input_element.value = time.toString();
       };
     };
     var getDateTime = function (element) {
-      var year = element.querySelector('.year');
-      var month = element.querySelector('.month');
-      var date = element.querySelector('.date');
-      var week = element.querySelector('.week');
-      var hour = element.querySelector('.hour');
-      var minute = element.querySelector('.minute');
-      var second = element.querySelector('.second');
-      var time = new Date;
-      time.setFullYear(year.textContent);
-      time.setMonth(month.textContent - 1);
-      time.setDate(date.textContent);
-      time.setHours(hour.textContent);
-      time.setMinutes(minute.textContent);
-      time.setSeconds(second.textContent);
+      // var year = element.querySelector('.year');
+      // var month = element.querySelector('.month');
+      // var date = element.querySelector('.date');
+      // var week = element.querySelector('.week');
+      // var hour = element.querySelector('.hour');
+      // var minute = element.querySelector('.minute');
+      // var second = element.querySelector('.second');
+      var time = new Date(element.value);
+      // time.setFullYear(year.textContent);
+      // time.setMonth(month.textContent - 1);
+      // time.setDate(date.textContent);
+      // time.setHours(hour.textContent);
+      // time.setMinutes(minute.textContent);
+      // time.setSeconds(second.textContent);
       return time;
     };
 
@@ -308,8 +307,8 @@ try {
         db.get(id).then(function(otherDoc) {
           // otherDoc.activity = activity.textContent;
           otherDoc.activity = activity.value;
-          otherDoc.start = getDateTime(startDiv).toJSON(),
-            otherDoc.end = getDateTime(endDiv).toJSON()
+          otherDoc.start = getDateTime(start).toJSON(),
+            otherDoc.end = getDateTime(end).toJSON()
           return db.put(otherDoc).then(function(response) {
             document.querySelector('a.save').click();
             saved = true;
@@ -327,8 +326,8 @@ try {
           // _id: db.post(),
           // activity: activity.textContent,
           activity: activity.value,
-          start: getDateTime(startDiv).toJSON(),
-          end: getDateTime(endDiv).toJSON()
+          start: getDateTime(start).toJSON(),
+          end: getDateTime(end).toJSON()
         };
         DEBUG && window.alert(JSON.stringify(entry, null, 2));
         db.post(entry).then(function(response) {
@@ -341,85 +340,83 @@ try {
       }
     });
     var start = document.getElementById('start');
-    var startDiv = document.querySelector('div.start_div');
-    var startUpdater = updateDateTime(startDiv, start);
+    var startUpdater = updateDateTime(start);
     // var startnow = document.querySelector('#startnow');
     var startAtEnd = document.querySelector('#start_at_end');
     startAtEnd.addEventListener('click', function (event) {
       tack.removeCallback(updateStart);
-      startDateTime = getDateTime(endDiv);
+      startDateTime = getDateTime(end);
       startUpdater(startDateTime);
     });
     var getStartTime = function() { return startDateTime; };
-    start.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateStart); }, function (date) { startDateTime = date; }, startUpdater));
-    addTouchable(document.querySelector('.start_delta_div>.year'), startDiv, start, getStartTime, function (value, delta) {
+    start.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateStart); }, startUpdater));
+    addTouchable(document.querySelector('.start_delta_div>.year'), startUpdater, start, function (value, delta) {
       var d = new Date(value);
       d.setFullYear(d.getFullYear() + delta);
       return d;
-    }, 3);
-    addTouchable(document.querySelector('.start_delta_div>.month'), startDiv, start, getStartTime, function (value, delta) {
+    }, 2);
+    addTouchable(document.querySelector('.start_delta_div>.month'), startUpdater, start, function (value, delta) {
       var d = new Date(value);
       d.setMonth(d.getMonth() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.date'), startDiv, start, getStartTime, function (value, delta) {
+    addTouchable(document.querySelector('.start_delta_div>.date'), startUpdater, start, function (value, delta) {
       var d = new Date(value);
       d.setDate(d.getDate() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.hour'), startDiv, start, getStartTime, function (value, delta) {
+    addTouchable(document.querySelector('.start_delta_div>.hour'), startUpdater, start, function (value, delta) {
       var d = new Date(value);
       d.setHours(d.getHours() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.minute'), startDiv, start, getStartTime, function (value, delta) {
+    addTouchable(document.querySelector('.start_delta_div>.minute'), startUpdater, start, function (value, delta) {
       var d = new Date(value);
       d.setMinutes(d.getMinutes() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.second'), startDiv, start, getStartTime, function (value, delta) {
+    addTouchable(document.querySelector('.start_delta_div>.second'), startUpdater, start, function (value, delta) {
       var d = new Date(value);
       d.setSeconds(d.getSeconds() + delta);
       return d;
     }, 2);
     var end = document.getElementById('end');
-    var endDiv = document.querySelector('div.end_div');
-    var endUpdater = updateDateTime(endDiv, end);
+    var endUpdater = updateDateTime(end);
     // var endnow = document.querySelector('#endnow');
     var endAtStart = document.querySelector('#end_at_start');
     endAtStart.addEventListener('click', function (event) {
       tack.removeCallback(updateEnd);
-      endDateTime = getDateTime(startDiv);
+      endDateTime = getDateTime(start);
       endUpdater(endDateTime);
     });
     var getEndTime = function() { return endDateTime; };
-    end.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateEnd); }, function (date) { endDateTime = date; }, endUpdater));
-    addTouchable(document.querySelector('.end_delta_div>.year'), endDiv, end, getEndTime, function (value, delta) {
+    end.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateEnd); }, endUpdater));
+    addTouchable(document.querySelector('.end_delta_div>.year'), endUpdater, getEndTime, function (value, delta) {
       var d = new Date(value);
       d.setFullYear(d.getFullYear() + delta);
       return d;
-    }, 3);
-    addTouchable(document.querySelector('.end_delta_div>.month'), endDiv, end, getEndTime, function (value, delta) {
+    }, 2);
+    addTouchable(document.querySelector('.end_delta_div>.month'), endUpdater, getEndTime, function (value, delta) {
       var d = new Date(value);
       d.setMonth(d.getMonth() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.date'), endDiv, end, getEndTime, function (value, delta) {
+    addTouchable(document.querySelector('.end_delta_div>.date'), endUpdater, getEndTime, function (value, delta) {
       var d = new Date(value);
       d.setDate(d.getDate() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.hour'), endDiv, end, getEndTime, function (value, delta) {
+    addTouchable(document.querySelector('.end_delta_div>.hour'), endUpdater, getEndTime, function (value, delta) {
       var d = new Date(value);
       d.setHours(d.getHours() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.minute'), endDiv, end, getEndTime, function (value, delta) {
+    addTouchable(document.querySelector('.end_delta_div>.minute'), endUpdater, getEndTime, function (value, delta) {
       var d = new Date(value);
       d.setMinutes(d.getMinutes() + delta);
       return d;
     }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.second'), endDiv, end, getEndTime, function (value, delta) {
+    addTouchable(document.querySelector('.end_delta_div>.second'), endUpdater, getEndTime, function (value, delta) {
       var d = new Date(value);
       d.setSeconds(d.getSeconds() + delta);
       return d;
@@ -470,10 +467,10 @@ try {
       endUpdater(time);
       end.value = time;
     };
-    startDiv.addEventListener('click', (function (event) {
+    start.addEventListener('click', (function (event) {
       tack.toggleCallback.bind(tack)(updateStart);
     }));
-    endDiv.addEventListener('click', (function (event) {
+    end.addEventListener('click', (function (event) {
       tack.toggleCallback.bind(tack)(updateEnd);
     }));
     tack.start();
