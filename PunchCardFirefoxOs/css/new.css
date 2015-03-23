@@ -22,9 +22,9 @@ body {
   margin: 0 0 1rem 0;
 } */
 
-.start_delta_div, .end_delta_div {
+/* .start_delta_div, .end_delta_div {
   width: 100%;
-}
+} */
 
 /* .start_div, .end_div {
   width: 100%;
@@ -32,8 +32,8 @@ body {
 
 #start, #end {
   font-family: monospace;
-  font-size: large;
-/*   width: 90%; */
+  font-size: medium;
+/*   width: 80%; */
 }
 
 /* .start_delta_div:active, .end_delta_div:active {

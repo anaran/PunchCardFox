@@ -90,22 +90,38 @@ try {
         }
       };
     };
-    var addTouchable = function(delta_element, elementUpdater, getDateTime, timeFromDeltaUpdater, padWidth) {
-      var offset = delta_element;
-      // offset.contentEditable = false;
-      // offset.textContent = pad('0', padWidth, '0');
-      // offset.style.display = 'inline-block';
-      // offset.style.textAlign = 'end';
-      // offset.style.width = '3ex';
-      // offset.style.fontFamily = 'monospace';
-      // offset.style.border = 'solid 2px';
-      (function() {
+    var addTouchable = function(options) {
+      var setupDeltaUpdater = function (options) {
+        var dy = document.querySelector(options.year.selector);
+        var dmo = document.querySelector(options.month.selector);
+        var dd = document.querySelector(options.date.selector);
+        var dh = document.querySelector(options.hour.selector);
+        var dmi = document.querySelector(options.minute.selector);
+        var ds = document.querySelector(options.second.selector);
+        var element = document.querySelector(options.datetime.selector);
+        return function () {
+          // Construct a copy.
+          // new Date(new Date) loses fractional seconds, hence getTime().
+          var d = new Date(options.datetime.getter().getTime());
+          d.setUTCFullYear(d.getUTCFullYear() + Number(dy.textContent));
+          d.setUTCMonth(d.getUTCMonth() + Number(dmo.textContent));
+          d.setUTCDate(d.getUTCDate() + Number(dd.textContent));
+          d.setUTCHours(d.getUTCHours() + Number(dh.textContent));
+          d.setUTCMinutes(d.getUTCMinutes() + Number(dmi.textContent));
+          d.setUTCSeconds(d.getUTCSeconds() + Number(ds.textContent));
+          element.value = d.toString();
+        }
+      };
+      var updateDateTimeGui = setupDeltaUpdater(options);
+      var setupListener = function(options) {
         var prevX,
             prevY,
             deltaX,
             deltaY,
             deltaSum;
         prevX = prevY = deltaX = deltaY = deltaSum = 0;
+        var offset = document.querySelector(options.selector);
+        var padWidth = options.padwidth;
         offset.draggable = true;
         offset.addEventListener('touchstart', function(event) {
           // event.preventDefault();
@@ -124,10 +140,10 @@ try {
           // NOTE: Cannot distinguish between mouse click with and without mouse move.
           // Therefor we only reset value for single click on touch device.
           // if ("touches" in event) {
-            offset.style.backgroundColor = 'white';
-            offset.textContent = '-' + pad('0', padWidth, '0');
-            prevX = prevY = deltaX = deltaY = deltaSum = 0;
-            elementUpdater(getDateTime());
+          offset.style.backgroundColor = 'white';
+          offset.textContent = '-' + pad('0', padWidth, '0');
+          prevX = prevY = deltaX = deltaY = deltaSum = 0;
+          updateDateTimeGui();
           // }
           // prevX = event.touches[event.touches.length - 1].clientX;
           // prevY = event.touches[event.touches.length - 1].clientY;
@@ -143,7 +159,7 @@ try {
           offset.style.backgroundColor = 'white';
           offset.textContent = '-' + pad('0', padWidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
-          elementUpdater(getDateTime());
+          updateDateTimeGui();
           // prevX = event.touches[event.touches.length - 1].clientX;
           // prevY = event.touches[event.touches.length - 1].clientY;
           // event.dataTransfer.effectAllowed = "all";
@@ -198,8 +214,9 @@ try {
             }
           }
           LOG && console.log(deltaX, deltaY, offset.textContent);
-          var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
-          elementUpdater(d);
+          // var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
+          // elementUpdater(d);
+          updateDateTimeGui();
           prevX = event.touches[event.touches.length - 1].clientX;
           prevY = event.touches[event.touches.length - 1].clientY;
         }, false);
@@ -230,8 +247,9 @@ try {
                 offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
               }
             }
-            var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
-            elementUpdater(d);
+            // var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
+            // elementUpdater(d);
+            updateDateTimeGui();
             LOG && console.log(deltaX, deltaY, offset.textContent);
             prevX = event.clientX;
             prevY = event.clientY;
@@ -240,7 +258,13 @@ try {
           LOG && console.log(event);
           LOG && console.log(event.buttons);
         }, false);
-      })();
+      };
+      setupListener(options.year);
+      setupListener(options.month);
+      setupListener(options.date);
+      setupListener(options.hour);
+      setupListener(options.minute);
+      setupListener(options.second);
     };
     var pad = function (text, length, padding) {
       padding = padding ? padding : '0';
@@ -251,39 +275,12 @@ try {
       return text;
     };
     var updateDateTime = function _updateDateTime(input_element) {
-      // var year = element.querySelector('.year');
-      // var month = element.querySelector('.month');
-      // var date = element.querySelector('.date');
-      // var week = element.querySelector('.week');
-      // var hour = element.querySelector('.hour');
-      // var minute = element.querySelector('.minute');
-      // var second = element.querySelector('.second');
       return function (time) {
-        // year.textContent = time.getFullYear();
-        // month.textContent = pad(time.getMonth() + 1, 2, '0');
-        // date.textContent = pad(time.getDate(), 2, '0');
-        // week.textContent = pad('0', 2, '0');
-        // hour.textContent = pad(time.getHours(), 2, '0');
-        // minute.textContent = pad(time.getMinutes(), 2, '0');
-        // second.textContent = pad(time.getSeconds(), 2, '0');
         input_element.value = time.toString();
       };
     };
     var getDateTime = function (element) {
-      // var year = element.querySelector('.year');
-      // var month = element.querySelector('.month');
-      // var date = element.querySelector('.date');
-      // var week = element.querySelector('.week');
-      // var hour = element.querySelector('.hour');
-      // var minute = element.querySelector('.minute');
-      // var second = element.querySelector('.second');
       var time = new Date(element.value);
-      // time.setFullYear(year.textContent);
-      // time.setMonth(month.textContent - 1);
-      // time.setDate(date.textContent);
-      // time.setHours(hour.textContent);
-      // time.setMinutes(minute.textContent);
-      // time.setSeconds(second.textContent);
       return time;
     };
 
@@ -340,87 +337,45 @@ try {
       }
     });
     var start = document.getElementById('start');
+    var updateStartButton = document.getElementById('update_start');
     var startUpdater = updateDateTime(start);
     // var startnow = document.querySelector('#startnow');
     var startAtEnd = document.querySelector('#start_at_end');
     startAtEnd.addEventListener('click', function (event) {
+      updateStartButton.removeAttribute('disabled');
       tack.removeCallback(updateStart);
       startDateTime = getDateTime(end);
       startUpdater(startDateTime);
     });
     var getStartTime = function() { return startDateTime; };
     start.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateStart); }, startUpdater));
-    addTouchable(document.querySelector('.start_delta_div>.year'), startUpdater, start, function (value, delta) {
-      var d = new Date(value);
-      d.setFullYear(d.getFullYear() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.month'), startUpdater, start, function (value, delta) {
-      var d = new Date(value);
-      d.setMonth(d.getMonth() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.date'), startUpdater, start, function (value, delta) {
-      var d = new Date(value);
-      d.setDate(d.getDate() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.hour'), startUpdater, start, function (value, delta) {
-      var d = new Date(value);
-      d.setHours(d.getHours() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.minute'), startUpdater, start, function (value, delta) {
-      var d = new Date(value);
-      d.setMinutes(d.getMinutes() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.start_delta_div>.second'), startUpdater, start, function (value, delta) {
-      var d = new Date(value);
-      d.setSeconds(d.getSeconds() + delta);
-      return d;
-    }, 2);
+    addTouchable({ year: { selector: '.start_delta_div>.year', padwidth: 2},
+                  month: { selector: '.start_delta_div>.month', padwidth: 2},
+                  date: { selector: '.start_delta_div>.date', padwidth: 2},
+                  hour: { selector: '.start_delta_div>.hour', padwidth: 2},
+                  minute: { selector: '.start_delta_div>.minute', padwidth: 2},
+                  second: { selector: '.start_delta_div>.second', padwidth: 2},
+                  datetime: { selector: '#start', getter: getStartTime }});
     var end = document.getElementById('end');
+    var updateEndButton = document.getElementById('update_end');
     var endUpdater = updateDateTime(end);
     // var endnow = document.querySelector('#endnow');
     var endAtStart = document.querySelector('#end_at_start');
     endAtStart.addEventListener('click', function (event) {
+      updateEndButton.removeAttribute('disabled');
       tack.removeCallback(updateEnd);
       endDateTime = getDateTime(start);
       endUpdater(endDateTime);
     });
     var getEndTime = function() { return endDateTime; };
     end.addEventListener('keypress', setDateFromStringOrNumber(function () { tack.removeCallback(updateEnd); }, endUpdater));
-    addTouchable(document.querySelector('.end_delta_div>.year'), endUpdater, getEndTime, function (value, delta) {
-      var d = new Date(value);
-      d.setFullYear(d.getFullYear() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.month'), endUpdater, getEndTime, function (value, delta) {
-      var d = new Date(value);
-      d.setMonth(d.getMonth() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.date'), endUpdater, getEndTime, function (value, delta) {
-      var d = new Date(value);
-      d.setDate(d.getDate() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.hour'), endUpdater, getEndTime, function (value, delta) {
-      var d = new Date(value);
-      d.setHours(d.getHours() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.minute'), endUpdater, getEndTime, function (value, delta) {
-      var d = new Date(value);
-      d.setMinutes(d.getMinutes() + delta);
-      return d;
-    }, 2);
-    addTouchable(document.querySelector('.end_delta_div>.second'), endUpdater, getEndTime, function (value, delta) {
-      var d = new Date(value);
-      d.setSeconds(d.getSeconds() + delta);
-      return d;
-    }, 2);
+    addTouchable({ year: { selector: '.end_delta_div>.year', padwidth: 2},
+                  month: { selector: '.end_delta_div>.month', padwidth: 2},
+                  date: { selector: '.end_delta_div>.date', padwidth: 2},
+                  hour: { selector: '.end_delta_div>.hour', padwidth: 2},
+                  minute: { selector: '.end_delta_div>.minute', padwidth: 2},
+                  second: { selector: '.end_delta_div>.second', padwidth: 2},
+                  datetime: { selector: '#end', getter: getEndTime }});
     var Tacker = function() {
       this.callbacks = [];
       this.timerId = false;
@@ -468,10 +423,20 @@ try {
       end.value = time;
     };
     start.addEventListener('click', (function (event) {
-      tack.toggleCallback.bind(tack)(updateStart);
+      tack.removeCallback.bind(tack)(updateStart);
+      updateStartButton.removeAttribute('disabled');
     }));
     end.addEventListener('click', (function (event) {
-      tack.toggleCallback.bind(tack)(updateEnd);
+      tack.removeCallback.bind(tack)(updateEnd);
+      updateEndButton.removeAttribute('disabled');
+    }));
+    updateStartButton.addEventListener('click', (function (event) {
+      tack.addCallback.bind(tack)(updateStart);
+      event.target.setAttribute('disabled', true)
+    }));
+    updateEndButton.addEventListener('click', (function (event) {
+      tack.addCallback.bind(tack)(updateEnd);
+      event.target.setAttribute('disabled', true)
     }));
     tack.start();
     var id = document.location.hash.substring(1);
