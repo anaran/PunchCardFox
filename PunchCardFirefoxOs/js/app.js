@@ -1,8 +1,8 @@
 'use strict';
-requirejs.config({
-  waitSeconds: 7,
-  baseUrl: '/js'});
-define(['require', 'new', 'options'], function(require, newjs, optionsjs) {
+//Load common code that includes config, then load the app logic for this page.
+require(['./common'], function (common) {
+    require(['app']);
+define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -76,42 +76,52 @@ define(['require', 'new', 'options'], function(require, newjs, optionsjs) {
     endNowItem.addEventListener('click', endNow);
   }
   var edit = function (event) {
-    if (newEntry.style.display == 'none') {
-      newEntry.style.display = 'block';
-      // TODO: Re-use of header icon for existing and new entries may be confusing.
-      ediNewItem.style.opacity = '0.3';
-      var id = event.target.parentElement.dataset.id;
-      newjs.init(id);
-      var a = document.createElement('a');
-      // a.href = '/build/new.html#' + id;
-      a.href = '#new_entry'/* + id*/;
-      document.body.appendChild(a);
-      a.click();
+    var newEntry = document.querySelector('#new_entry');
+    var newjs = require('new');
+    if (newEntry && newjs) {
+      // newEntry.style.display = 'none';
+      if (newEntry.style.display == 'none') {
+        newEntry.style.display = 'block';
+        // TODO: Re-use of header icon for existing and new entries may be confusing.
+
+        ediNewItem.style.opacity = '0.3';
+        var id = event.target.parentElement.dataset.id;
+        newjs.init(id);
+        var a = document.createElement('a');
+        // a.href = '/build/new.html#' + id;
+        a.href = '#new_entry'/* + id*/;
+        document.body.appendChild(a);
+        a.click();
+      }
     }
   };
   var editItem = document.querySelector('#edit');
   if (editItem) {
     editItem.addEventListener('click', edit);
   }
-  var newEntry = document.querySelector('#new_entry');
-  newEntry.style.display = 'none';
   var toggleEdit = function(event) {
     event.preventDefault();
     event.stopPropagation();
-    if (newEntry.style.display == 'none') {
-      newEntry.style.display = 'block';
-      event.target.style.opacity = '0.3';
-      var id = event.target.parentElement.dataset.id;
-      var a = document.createElement('a');
-      // a.href = '/build/new.html#' + id;
-      a.href = '#new_entry'/* + id*/;
-      document.body.appendChild(a);
-      a.click();
-    }
-    else {
-      newjs.save();
-      newEntry.style.display = 'none';
-      event.target.style.opacity = '1.0';
+    var newjs = requirejs(['new']);
+    if (newjs) {
+    var newEntry = document.querySelector('#new_entry');
+      if (newEntry) {
+        if (newEntry.style.display == 'none') {
+          newEntry.style.display = 'block';
+          event.target.style.opacity = '0.3';
+          var id = event.target.parentElement.dataset.id;
+          var a = document.createElement('a');
+          // a.href = '/build/new.html#' + id;
+          a.href = '#new_entry'/* + id*/;
+          document.body.appendChild(a);
+          a.click();
+        }
+        else {
+          newjs.save();
+          newEntry.style.display = 'none';
+          event.target.style.opacity = '1.0';
+        }
+      }
     }
   };
   var ediNewItem = document.querySelector('a.edit');
@@ -119,21 +129,23 @@ define(['require', 'new', 'options'], function(require, newjs, optionsjs) {
     ediNewItem.addEventListener('click', toggleEdit);
   }
 
-  var optionsElement = document.querySelector('#options');
-  optionsElement.style.display = 'none';
   var toggleOptionDisplay = function(event) {
     event.preventDefault();
     event.stopPropagation();
-    if (optionsElement.style.display == 'none') {
-      optionsElement.style.display = 'block';
-      event.target.style.opacity = '0.3';
-      // Let user change options...
-    }
-    else {
-      // reload document location.
-      optionsElement.style.display = 'none';
-      event.target.style.opacity = '1.0';
-      document.location.reload('force');
+    var optionsElement = document.querySelector('#options');
+    // optionsElement.style.display = 'none';
+    if (optionsElement) {
+      if (optionsElement.style.display == 'none') {
+        optionsElement.style.display = 'block';
+        event.target.style.opacity = '0.3';
+        // Let user change options...
+      }
+      else {
+        // reload document location.
+        optionsElement.style.display = 'none';
+        event.target.style.opacity = '1.0';
+        document.location.reload('force');
+      }
     }
   };
   var editOptions = document.querySelector('a.settings');
@@ -223,126 +235,126 @@ define(['require', 'new', 'options'], function(require, newjs, optionsjs) {
         }
       });
       var n = options.limit.length ? Number(options.limit) : undefined;
-  var dec = !!options.descending;
-  var opts = { reduce: false, include_docs: true, descending: dec, limit: n };
-  // startkey: "2015-02",
-  // endkey: "2015-03",
-  db.query('foolin/by_start', opts, function(err, doc) {
-    if (err) {
-      alert(err);
-    } else {
-      var rowCount = doc.rows.length;
-      var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-      var rowsPerLink = (rowCount / (scrollLinks.length - 3));
-      DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
-      DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
-      var includeRegExp = new RegExp(options.include, options.include_case ? '' : 'i');
-      var excludeRegExp = new RegExp(options.exclude, options.exclude_case ? '' : 'i');
-      doc.rows.forEach(function (row, index) {
-        if (!includeRegExp.test(row.doc.activity) ||
-            exclude.value.length && excludeRegExp.test(row.doc.activity)) {
-          return;
+      var dec = !!options.descending;
+      var opts = { reduce: false, include_docs: true, descending: dec, limit: n };
+      // startkey: "2015-02",
+      // endkey: "2015-03",
+      db.query('foolin/by_start', opts, function(err, doc) {
+        if (err) {
+          alert(err);
+        } else {
+          var rowCount = doc.rows.length;
+          var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
+          var rowsPerLink = (rowCount / (scrollLinks.length - 3));
+          DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
+          DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
+          var includeRegExp = new RegExp(options.include, options.include_case ? '' : 'i');
+          var excludeRegExp = new RegExp(options.exclude, options.exclude_case ? '' : 'i');
+          doc.rows.forEach(function (row, index) {
+            if (!includeRegExp.test(row.doc.activity) ||
+                options.exclude && options.exclude.value.length && excludeRegExp.test(row.doc.activity)) {
+              return;
+            }
+            var entry = document.createElement('div');
+            // var span = document.createElement('span');
+            entry.id = row.doc._id;
+            entry.className = 'entry';
+            var start = document.createElement('pre');
+            var end = document.createElement('pre');
+            var delta = document.createElement('pre');
+            var activity = document.createElement('pre');
+            start.contentEditable = true;
+            end.contentEditable = true;
+            activity.contentEditable = true;
+            // start.setAttribute('readonly', true);
+            // end.setAttribute('readonly', true);
+            // activity.setAttribute('readonly', true);
+            start.classList.add('start');
+            end.classList.add('end');
+            activity.classList.add('activity');
+            // activity.addEventListener('*', function (event) {
+            //   console.log(event.type + ' fired for activity');
+            // })
+            // activity.contentEditable = true;
+            // activity.addEventListener('input', null);
+            // activity.readOnly = true;
+            var startDate = new Date(row.doc.start || row.doc.clockin_ms);
+            var endDate = new Date(row.doc.end || row.doc.clockout_ms);
+            start.textContent = startDate.toString().substring(0, 24);
+            end.textContent = endDate.toString().substring(4, 24);
+            delta.textContent = reportDateTimeDiff(startDate, endDate);
+            activity.textContent = row.doc.activity;
+            start.setAttribute('contextmenu', 'start_menu');
+            start.addEventListener('contextmenu', function (event) {
+              this.contextMenu.dataset.id = event.target.parentElement.id;
+            });
+            end.setAttribute('contextmenu', 'end_menu');
+            end.addEventListener('contextmenu', function (event) {
+              this.contextMenu.dataset.id = event.target.parentElement.id;
+            });
+            activity.setAttribute('contextmenu', 'activity_menu');
+            activity.addEventListener('contextmenu', function (event) {
+              this.contextMenu.dataset.id = event.target.parentElement.id;
+            });
+            //         activity.addEventListener('focus', function (event) {
+            //           event.target.removeAttribute('rows');
+            //         });
+            //         activity.addEventListener('blur', function (event) {
+            //           event.target.setAttribute('rows', 1);
+            //         });
+            // entry.appendChild(start);
+            // entry.appendChild(end);
+            entry.appendChild(start);
+            entry.appendChild(end);
+            // entry.appendChild(span);
+            entry.appendChild(delta);
+            entry.appendChild(activity);
+            if (scrollLinks.length && (index % rowsPerLink) < 1) {
+              entry.classList.add('linked');
+              var link = scrollLinks[Math.floor(index / rowsPerLink) + 2];
+              link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
+              link.href = '#' + row.doc._id;
+              DEBUG && console.log("index, rowsPerLink, (index % rowsPerLink)");
+              DEBUG && console.log(index, rowsPerLink, (index % rowsPerLink));
+            }
+            entries.appendChild(entry);
+          });
+          false && entries.addEventListener('click', function (event) {
+            // window.alert(getElementPath(event.target));
+            // window.alert(event.target.textContent);
+            event.preventDefault();
+            event.stopPropagation();
+            var select = document.querySelector('menu#' + event.target.className);
+            if (select) {
+              if (select.style.display == 'none') {
+                select.style.display = 'block';
+                select.style.left = event.layerX + 'px';
+                select.style.top = event.layerY + 'px';
+                select.style.backgroundColor = document.body.style.backgroundColor;
+              }
+              else {
+                select.style.display = 'none';
+              }
+            }
+            // switch (event.target.className) {
+            //   case 'start':
+            //     break;
+            //   case 'end':
+            //     break;
+            //   case 'activity':
+            //     break;
+            //   default:
+            //     window.alert('unhandled case ' + event.target.className);
+            // }
+          });
+          //                                         if (scrollLinks.length) {
+          //                                           scrollLinks.parentElement.parentElement.parentElement.style.top = "3rem;";
+          //                                         }
+          //     var pre = document.createElement('pre');
+          //     pre.textContent = JSON.stringify(doc.rows, null, 2);
+          //     document.body.appendChild(pre);
         }
-        var entry = document.createElement('div');
-        // var span = document.createElement('span');
-        entry.id = row.doc._id;
-        entry.className = 'entry';
-        var start = document.createElement('pre');
-        var end = document.createElement('pre');
-        var delta = document.createElement('pre');
-        var activity = document.createElement('pre');
-        start.contentEditable = true;
-        end.contentEditable = true;
-        activity.contentEditable = true;
-        // start.setAttribute('readonly', true);
-        // end.setAttribute('readonly', true);
-        // activity.setAttribute('readonly', true);
-        start.classList.add('start');
-        end.classList.add('end');
-        activity.classList.add('activity');
-        // activity.addEventListener('*', function (event) {
-        //   console.log(event.type + ' fired for activity');
-        // })
-        // activity.contentEditable = true;
-        // activity.addEventListener('input', null);
-        // activity.readOnly = true;
-        var startDate = new Date(row.doc.start || row.doc.clockin_ms);
-        var endDate = new Date(row.doc.end || row.doc.clockout_ms);
-        start.textContent = startDate.toString().substring(0, 24);
-        end.textContent = endDate.toString().substring(4, 24);
-        delta.textContent = reportDateTimeDiff(startDate, endDate);
-        activity.textContent = row.doc.activity;
-        start.setAttribute('contextmenu', 'start_menu');
-        start.addEventListener('contextmenu', function (event) {
-          this.contextMenu.dataset.id = event.target.parentElement.id;
-        });
-        end.setAttribute('contextmenu', 'end_menu');
-        end.addEventListener('contextmenu', function (event) {
-          this.contextMenu.dataset.id = event.target.parentElement.id;
-        });
-        activity.setAttribute('contextmenu', 'activity_menu');
-        activity.addEventListener('contextmenu', function (event) {
-          this.contextMenu.dataset.id = event.target.parentElement.id;
-        });
-        //         activity.addEventListener('focus', function (event) {
-        //           event.target.removeAttribute('rows');
-        //         });
-        //         activity.addEventListener('blur', function (event) {
-        //           event.target.setAttribute('rows', 1);
-        //         });
-        // entry.appendChild(start);
-        // entry.appendChild(end);
-        entry.appendChild(start);
-        entry.appendChild(end);
-        // entry.appendChild(span);
-        entry.appendChild(delta);
-        entry.appendChild(activity);
-        if (scrollLinks.length && (index % rowsPerLink) < 1) {
-          entry.classList.add('linked');
-          var link = scrollLinks[Math.floor(index / rowsPerLink) + 2];
-          link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
-          link.href = '#' + row.doc._id;
-          DEBUG && console.log("index, rowsPerLink, (index % rowsPerLink)");
-          DEBUG && console.log(index, rowsPerLink, (index % rowsPerLink));
-        }
-        entries.appendChild(entry);
       });
-      false && entries.addEventListener('click', function (event) {
-        // window.alert(getElementPath(event.target));
-        // window.alert(event.target.textContent);
-        event.preventDefault();
-        event.stopPropagation();
-        var select = document.querySelector('menu#' + event.target.className);
-        if (select) {
-          if (select.style.display == 'none') {
-            select.style.display = 'block';
-            select.style.left = event.layerX + 'px';
-            select.style.top = event.layerY + 'px';
-            select.style.backgroundColor = document.body.style.backgroundColor;
-          }
-          else {
-            select.style.display = 'none';
-          }
-        }
-        // switch (event.target.className) {
-        //   case 'start':
-        //     break;
-        //   case 'end':
-        //     break;
-        //   case 'activity':
-        //     break;
-        //   default:
-        //     window.alert('unhandled case ' + event.target.className);
-        // }
-      });
-      //                                         if (scrollLinks.length) {
-      //                                           scrollLinks.parentElement.parentElement.parentElement.style.top = "3rem;";
-      //                                         }
-      //     var pre = document.createElement('pre');
-      //     pre.textContent = JSON.stringify(doc.rows, null, 2);
-      //     document.body.appendChild(pre);
-    }
-  });
     }
   }).catch(function (err) {
     console.log(err);
