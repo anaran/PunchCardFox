@@ -55,7 +55,10 @@ try {
       // var confirmationMessage = "too bad! \o/";
       // (event || window.event).returnValue = confirmationMessage;     //Gecko + IE
       // return confirmationMessage;                                //Webkit, Safari, Chrome etc.
-      event.returnValue = (saved ? "" : "unsaved");
+      var newEntry = document.querySelector('#new_entry');
+      if (newEntry.style.display != 'none') {
+        event.returnValue = "unsaved";
+      }
     });
     var setDateFromStringOrNumber = function (ticker, elementUpdater) {
       return function (event) {
@@ -439,26 +442,26 @@ try {
     tack.start();
     var id = document.location.hash.substring(1);
     var initEntry = function (id) {
-    if (id) {
-      activity.dataset.id = id;
-      db.get(id).then(function(otherDoc) {
-        // activity.textContent = otherDoc.activity;
-        activity.value = otherDoc.activity;
-        var start = new Date(otherDoc.start);
-        startDateTime = start;
-        startUpdater(start);
-        var end = new Date(otherDoc.end);
-        endDateTime = end;
-        endUpdater(end);
-      }).catch(function(err) {
-        //errors
-        window.alert(err);
-      });
-    }
-    else {
-      tack.addCallback(updateStart);
-      tack.addCallback(updateEnd);
-    }
+      if (id) {
+        activity.dataset.id = id;
+        db.get(id).then(function(otherDoc) {
+          // activity.textContent = otherDoc.activity;
+          activity.value = otherDoc.activity;
+          var start = new Date(otherDoc.start);
+          startDateTime = start;
+          startUpdater(start);
+          var end = new Date(otherDoc.end);
+          endDateTime = end;
+          endUpdater(end);
+        }).catch(function(err) {
+          //errors
+          window.alert(err);
+        });
+      }
+      else {
+        tack.addCallback(updateStart);
+        tack.addCallback(updateEnd);
+      }
     };
     // maybeSave();
     // ---
@@ -471,7 +474,7 @@ try {
       // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
       message.textContent = translate('message');
     }
-  // };
+    // };
     return {
       save: saveEntry,
       init: initEntry
