@@ -25,24 +25,24 @@ define(['require', 'info'], function(require, info) {
   // So we'll tell it to let us know once it's ready.
   // navigator.mozL10n.once(start);
   var db = new PouchDB('punchcard3');
-  var view = document.querySelector('.view');
+  var infoNode = document.getElementById('message');
   db.info().then(function (info) {
-    addReadOnlyInfo(info, view);
+    addReadOnlyInfo(info, infoNode);
     // DEBUG && console.log(info);
   });
   var optionsDB = new PouchDB('options');
   optionsDB.info().then(function (info) {
-    addReadOnlyInfo(info, view);
+    addReadOnlyInfo(info, infoNode);
     // DEBUG && console.log(info);
   });
   var db2 = new PouchDB('apa-test-2');
   db2.info().then(function (info) {
-    addReadOnlyInfo(info, view);
+    addReadOnlyInfo(info, infoNode);
     // DEBUG && console.log(info);
   });
   var db3 = new PouchDB('apa-test-3');
   db3.info().then(function (info) {
-    addReadOnlyInfo(info, view);
+    addReadOnlyInfo(info, infoNode);
     // DEBUG && console.log(info);
   });
   false && db.allDocs({include_docs: true, descending: false}, function(err, doc) {

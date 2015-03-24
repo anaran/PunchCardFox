@@ -2,47 +2,14 @@
 @import url(view.css);
 
 body {
-/*   margin: 0; */
-/*  padding: 0.5em;
-  font-size: 1em; */
-/*   font-size: larger; */
   background: #fff;
 }
-
-/* .delta, .value {
-  font-family: monospace;
-  margin: 0;
-  padding: 0;
-  text-align: end;
-   border: 0 solid;
-  display: inline;
-} */
-
-/* h1 {
-  margin: 0 0 1rem 0;
-} */
-
-/* .start_delta_div, .end_delta_div {
-  width: 100%;
-} */
-
-/* .start_div, .end_div {
-  width: 100%;
-} */
 
 #start, #end {
   font-family: monospace;
   font-size: medium;
 /*   width: 80%; */
 }
-
-/* .start_delta_div:active, .end_delta_div:active {
-  transform: matrix(1.5, 0, 0, 1.5, 70, -50);
-} */
-
-/* .start_delta_div:hover, .end_delta_div:hover {
-  transform: matrix(1.5, 0, 0, 1.5, 70, -50);
-} */
 
 .delta {
   font-family: monospace;
@@ -71,14 +38,14 @@ body {
 /*   display: inline-block; */
 }
 
-/* input[type=text] {
-  font-family: monospace;
-  text-align: end;
-  border: 0 solid;
-  display: inline-block;
-} */
-
 textarea {
+height: 2em;
+  min-width: 90%;
+  resize: none;
+  text-overflow: ellipsis ellipsis;
+}
+
+textarea:focus {
 /*   min-height: 40%;
   min-height: 40%;
   font-size: larger; */
@@ -86,44 +53,3 @@ textarea {
   resize: both;
   text-overflow: ellipsis ellipsis;
 }
-
-pre {
-  border: 1px dashed;
-  color:blue;
-/*   font-size: larger; */
-  min-height: 1em;
-  overflow: visible;
-  white-space: pre-wrap;
-}
-
-/* pre {
-  margin: 0 0 0;
-  white-space: nowrap;
-  height: 10em;
-  overflow: hidden;
-  text-overflow: ellipsis ellipsis;
-  / *   white-space: normal; * /
-} */
-
-/*pre:focus {
-  color: red;
-  overflow: visible;
-  white-space: pre-wrap;
-  / *   white-space: pre; * /
-}*/
-
-/*pre:hover {
-  color: hotpink;
-  overflow: visible;
-  white-space: pre-wrap;
-  / *   white-space: pre; * /
-}*/
-
-/* pre:focus {
-  color:blue;
-  font-size: larger;
-  height: 100%;
-  overflow: visible;
-  white-space: pre-wrap;
-  / *   white-space: pre; * /
-} */

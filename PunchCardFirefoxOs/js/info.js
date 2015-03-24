@@ -1,4 +1,4 @@
-// 'use strict';
+'use strict';
 define(function(require) {
   return function (info, element) {
     var pre = document.createElement('pre');
@@ -7,6 +7,6 @@ define(function(require) {
     // pre.readOnly = true;
     pre.setAttribute('readonly', true);
     pre.textContent = JSON.stringify(info, null, 2);
-    element.appendChild(pre);
+    element.insertBefore(pre, element.firstElementChild);
   };
 });

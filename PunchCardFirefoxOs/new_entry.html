@@ -1,106 +1,75 @@
-<element name="new-entry" extends="section">
-  <template>
-    <section>
-      <!--       <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
-      <span>
-        <input type="button" class="save" value="Save"/>
-        <textarea id="activity" placeholder="enter activity" rows="5"></textarea>
-      </span>
-      <!--             <pre id="activity" title="activity" contenteditable>Activity</pre> -->
-    </section>
-    <section class="start">
-      <div class="start_div">
-        <span class="year">0</span>
-        <span class="sign">-</span>
-        <span class="month">10</span>
-        <span class="sign">-</span>
-        <span class="date">0</span>
-        <span class="sign">W</span>
-        <span class="week">51</span>
-        <span class="sign">T</span>
-        <span class="hour">23</span>
-        <span class="sign">:</span>
-        <span class="minute">10</span>
-        <span class="sign">:</span>
-        <span class="second">59</span>
-      </div>
-      <span>
-        <input type="button" id="start_at_end" value="Up"/>
-      </span>
-      <div class="start_delta_div">
-        <span class="year">-000</span>
-        <span class="sign"> </span>
-        <span class="month">-00</span>
-        <span class="sign"> </span>
-        <span class="date">-00</span>
-        <span class="sign"> </span>
-        <span class="week">-00</span>
-        <span class="sign"> </span>
-        <span class="hour">-00</span>
-        <span class="sign"> </span>
-        <span class="minute">-00</span>
-        <span class="sign"> </span>
-        <span class="second">-00</span>
-        <label for="shist">Start Time History</label>
-        <!-- <select name="shist">
-<option>old</option>
-<option>older</option>
-<option>oldest</option>
-</select> -->
-      </div>
-    </section>
-    <section>
-      <input id="start" type="text"/>
-      <!--             <pre id="start" contenteditable></pre> -->
-      <!--         <span>
+<section id="new_entry">
+  <section>
+    <!--       <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
+    <span>
+      <textarea id="activity" placeholder="enter activity" rows="5"></textarea>
+    </span>
+    <!--             <pre id="activity" title="activity" contenteditable>Activity</pre> -->
+  </section>
+  <section>
+    <input id="start" type="text" size="30"/>
+    <!--             <pre id="start" contenteditable></pre> -->
+    <!--         <span>
 <input type="button" id="startnow" value="&circlearrowright;"/>
 </span> -->
-    </section>
-    <section class="end">
-      <div class="end_div">
-        <span class="year">0</span>
-        <span class="sign">-</span>
-        <span class="month">10</span>
-        <span class="sign">-</span>
-        <span class="date">0</span>
-        <span class="sign">W</span>
-        <span class="week">51</span>
-        <span class="sign">T</span>
-        <span class="hour">23</span>
-        <span class="sign">:</span>
-        <span class="minute">10</span>
-        <span class="sign">:</span>
-        <span class="second">59</span>
-      </div>
-      <span>
-        <input type="button" id="end_at_start" value="Down"/>
-      </span>
-      <div class="end_delta_div">
-        <span class="year">-000</span>
-        <span class="sign"> </span>
-        <span class="month">-00</span>
-        <span class="sign"> </span>
-        <span class="date">-00</span>
-        <span class="sign"> </span>
-        <span class="week">-00</span>
-        <span class="sign"> </span>
-        <span class="hour">-00</span>
-        <span class="sign"> </span>
-        <span class="minute">-00</span>
-        <span class="sign"> </span>
-        <span class="second">-00</span>
-      </div>
-    </section>
-    <section>
-      <input id="end" type="text"/>
-      <!--             <pre id="end" contenteditable></pre> -->
-      <!--             <span>
+    <span>
+      <input type="button" class="start_at_end" value="&UpTeeArrow;"/>
+    </span>
+    <span>
+      <input type="button" id="update_start" value="&circlearrowright;" disabled/>
+    </span>
+  </section>
+  <section class="start">
+    <div class="start_delta_div">
+      <span class="year">-00</span>
+      <span class="sign">Y</span>
+      <span class="month">-00</span>
+      <span class="sign">M</span>
+      <span class="date">-00</span>
+      <span class="sign">D</span>
+      <span class="week">-00</span>
+      <span class="sign">W</span>
+      <span class="hour">-00</span>
+      <span class="sign">H</span>
+      <span class="minute">-00</span>
+      <span class="sign">M</span>
+      <span class="second">-00</span>
+      <span class="sign">S</span>
+    </div>
+  </section>
+  <section>
+    <input id="end" type="text" size="30"/>
+    <!--             <pre id="end" contenteditable></pre> -->
+    <!--             <span>
 <input type="button" id="endnow" value="&circlearrowright;"/>
 </span> -->
-    </section>
-    <section>
-      <footer>
-      </footer>
-    </section>
-  </template>
-</element>
+    <span>
+      <input type="button" class="end_at_start" value="&DownTeeArrow;"/>
+    </span>
+    <span>
+      <input type="button" id="update_end" value="&circlearrowright;" disabled/>
+    </span>
+  </section>
+  <section class="end">
+    <div class="end_delta_div">
+      <span class="year">-00</span>
+      <span class="sign">Y</span>
+      <span class="month">-00</span>
+      <span class="sign">M</span>
+      <span class="date">-00</span>
+      <span class="sign">D</span>
+      <span class="week">-00</span>
+      <span class="sign">W</span>
+      <span class="hour">-00</span>
+      <span class="sign">H</span>
+      <span class="minute">-00</span>
+      <span class="sign">M</span>
+      <span class="second">-00</span>
+      <span class="sign">S</span>
+    </div>
+  </section>
+  <section>
+    <footer>
+    </footer>
+  </section>
+</section>

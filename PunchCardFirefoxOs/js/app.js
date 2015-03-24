@@ -1,11 +1,15 @@
-// DOMContentLoaded is fired once the document has been loaded and parsed,
-// but without waiting for other external resources to load (css/images/etc)
-// That makes the app more responsive and perceived as faster.
-// https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
-window.addEventListener('DOMContentLoaded', function(event) {
+'use strict';
+requirejs.config({
+  waitSeconds: 7,
+  baseUrl: '/js'});
+define(['require', 'new', 'options'], function(require, newjs, optionsjs) {
+  // DOMContentLoaded is fired once the document has been loaded and parsed,
+  // but without waiting for other external resources to load (css/images/etc)
+  // That makes the app more responsive and perceived as faster.
+  // https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
+  // window.addEventListener('DOMContentLoaded', function(event) {
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
-  'use strict';
   var DEBUG = false;
   // var gep = require('/libs/getElementPath');
   // window.alert(gep.getElementPath(event.target));
@@ -72,25 +76,72 @@ window.addEventListener('DOMContentLoaded', function(event) {
     endNowItem.addEventListener('click', endNow);
   }
   var edit = function (event) {
-    var id = event.target.parentElement.dataset.id;
-    var a = document.createElement('a');
-    a.href = '/build/new.html#' + id;
-    document.body.appendChild(a);
-    a.click();
-    // db.get(id).then(function(otherDoc) {
-    //   otherDoc.activity = window.prompt('edit activity', otherDoc.activity);
-    //   otherDoc.start = new Date(window.prompt('edit start', otherDoc.start));
-    //   otherDoc.end = new Date(window.prompt('edit end', otherDoc.end));
-    //   return db.put(otherDoc);
-    // }).catch(function(err) {
-    //   //errors
-    //   window.alert(err);
-    // });
+    if (newEntry.style.display == 'none') {
+      newEntry.style.display = 'block';
+      // TODO: Re-use of header icon for existing and new entries may be confusing.
+      ediNewItem.style.opacity = '0.3';
+      var id = event.target.parentElement.dataset.id;
+      newjs.init(id);
+      var a = document.createElement('a');
+      // a.href = '/build/new.html#' + id;
+      a.href = '#new_entry'/* + id*/;
+      document.body.appendChild(a);
+      a.click();
+    }
   };
   var editItem = document.querySelector('#edit');
   if (editItem) {
     editItem.addEventListener('click', edit);
   }
+  var newEntry = document.querySelector('#new_entry');
+  newEntry.style.display = 'none';
+  var toggleEdit = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (newEntry.style.display == 'none') {
+      newEntry.style.display = 'block';
+      event.target.style.opacity = '0.3';
+      var id = event.target.parentElement.dataset.id;
+      var a = document.createElement('a');
+      // a.href = '/build/new.html#' + id;
+      a.href = '#new_entry'/* + id*/;
+      document.body.appendChild(a);
+      a.click();
+    }
+    else {
+      newjs.save();
+      newEntry.style.display = 'none';
+      event.target.style.opacity = '1.0';
+    }
+  };
+  var ediNewItem = document.querySelector('a.edit');
+  if (ediNewItem) {
+    ediNewItem.addEventListener('click', toggleEdit);
+  }
+
+  var optionsElement = document.querySelector('#options');
+  optionsElement.style.display = 'none';
+  var toggleOptionDisplay = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (optionsElement.style.display == 'none') {
+      optionsElement.style.display = 'block';
+      event.target.style.opacity = '0.3';
+      // Let user change options...
+    }
+    else {
+      // reload document location.
+      optionsElement.style.display = 'none';
+      event.target.style.opacity = '1.0';
+      document.location.reload('force');
+    }
+  };
+  var editOptions = document.querySelector('a.settings');
+  if (editOptions) {
+    editOptions.addEventListener('click', toggleOptionDisplay);
+  }
+
+
   var repeatNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
@@ -145,7 +196,6 @@ window.addEventListener('DOMContentLoaded', function(event) {
   // PouchDB.plugin(require('pouchdb.mapreduce.noeval'));
   // var db = new PouchDB('apa-test-2');
   var db = new PouchDB('punchcard3');
-  var remote = document.getElementById('remote');
   var entries = document.getElementById('entries');
   // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
   var map = {
@@ -159,120 +209,144 @@ window.addEventListener('DOMContentLoaded', function(event) {
   // db.query(map, {reduce: false, /*startkey: "2010-06-24T15:44:08", endkey: "2010-06-25T15:44:08", */limit: 33, include_docs: true, descending: false}, function(err, doc) {
   // var obj = db.mapreduce(db);
   // db.query(map, {/*stale: 'ok', */reduce: false,
-  db.query('foolin/by_start', {/*stale: 'ok',*/reduce: false,
-                               // startkey: "2015-02",
-                               // endkey: "2015-03",
-                               limit: /*20 */100, include_docs: true, descending: true }, function(err, doc) {
-                                 if (err) {
-                                   alert(err);
-                                 } else {
-                                   var rowCount = doc.rows.length;
-                                   var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-                                   var rowsPerLink = (rowCount / (scrollLinks.length - 3));
-                                   DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
-                                   DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
-                                   doc.rows.forEach(function (row, index) {
-                                     var entry = document.createElement('div');
-                                     // var span = document.createElement('span');
-                                     entry.id = row.doc._id;
-                                     entry.className = 'entry';
-                                     var start = document.createElement('pre');
-                                     var end = document.createElement('pre');
-                                     var delta = document.createElement('pre');
-                                     var activity = document.createElement('pre');
-                                     start.contentEditable = true;
-                                     end.contentEditable = true;
-                                     activity.contentEditable = true;
-                                     // start.setAttribute('readonly', true);
-                                     // end.setAttribute('readonly', true);
-                                     // activity.setAttribute('readonly', true);
-                                     start.classList.add('start');
-                                     end.classList.add('end');
-                                     activity.classList.add('activity');
-                                     // activity.addEventListener('*', function (event) {
-                                     //   console.log(event.type + ' fired for activity');
-                                     // })
-                                     // activity.contentEditable = true;
-                                     // activity.addEventListener('input', null);
-                                     // activity.readOnly = true;
-                                     var startDate = new Date(row.doc.start || row.doc.clockin_ms);
-                                     var endDate = new Date(row.doc.end || row.doc.clockout_ms);
-                                     start.textContent = startDate.toString().substring(0, 24);
-                                     end.textContent = endDate.toString().substring(4, 24);
-                                     delta.textContent = reportDateTimeDiff(startDate, endDate);
-                                     activity.textContent = row.doc.activity;
-                                     start.setAttribute('contextmenu', 'start_menu');
-                                     start.addEventListener('contextmenu', function (event) {
-                                       this.contextMenu.dataset.id = event.target.parentElement.id;
-                                     });
-                                     end.setAttribute('contextmenu', 'end_menu');
-                                     end.addEventListener('contextmenu', function (event) {
-                                       this.contextMenu.dataset.id = event.target.parentElement.id;
-                                     });
-                                     activity.setAttribute('contextmenu', 'activity_menu');
-                                     activity.addEventListener('contextmenu', function (event) {
-                                       this.contextMenu.dataset.id = event.target.parentElement.id;
-                                     });
-                                     //         activity.addEventListener('focus', function (event) {
-                                     //           event.target.removeAttribute('rows');
-                                     //         });
-                                     //         activity.addEventListener('blur', function (event) {
-                                     //           event.target.setAttribute('rows', 1);
-                                     //         });
-                                     // entry.appendChild(start);
-                                     // entry.appendChild(end);
-                                     entry.appendChild(start);
-                                     entry.appendChild(end);
-                                     // entry.appendChild(span);
-                                     entry.appendChild(delta);
-                                     entry.appendChild(activity);
-                                     if (scrollLinks.length && (index % rowsPerLink) < 1) {
-                                       entry.classList.add('linked');
-                                       var link = scrollLinks[Math.floor(index / rowsPerLink) + 2];
-                                       link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
-                                       link.href = '#' + row.doc._id;
-                                       DEBUG && console.log("index, rowsPerLink, (index % rowsPerLink)");
-                                       DEBUG && console.log(index, rowsPerLink, (index % rowsPerLink));
-                                     }
-                                     // remote.parentElement.insertBefore(entry, remote);
-                                     entries.appendChild(entry);
-                                   });
-                                   false && entries.addEventListener('click', function (event) {
-                                     // window.alert(getElementPath(event.target));
-                                     // window.alert(event.target.textContent);
-                                     event.preventDefault();
-                                     event.stopPropagation();
-                                     var select = document.querySelector('menu#' + event.target.className);
-                                     if (select) {
-                                       if (select.style.display == 'none') {
-                                         select.style.display = 'block';
-                                         select.style.left = event.layerX + 'px';
-                                         select.style.top = event.layerY + 'px';
-                                         select.style.backgroundColor = document.body.style.backgroundColor;
-                                       }
-                                       else {
-                                         select.style.display = 'none';
-                                       }
-                                     }
-                                     // switch (event.target.className) {
-                                     //   case 'start':
-                                     //     break;
-                                     //   case 'end':
-                                     //     break;
-                                     //   case 'activity':
-                                     //     break;
-                                     //   default:
-                                     //     window.alert('unhandled case ' + event.target.className);
-                                     // }
-                                   });
-                                   //                                         if (scrollLinks.length) {
-                                   //                                           scrollLinks.parentElement.parentElement.parentElement.style.top = "3rem;";
-                                   //                                         }
-                                   //     var pre = document.createElement('pre');
-                                   //     pre.textContent = JSON.stringify(doc.rows, null, 2);
-                                   //     document.body.appendChild(pre);
-                                 }
-                               });
+  var options = {};
+  var optionsDB = new PouchDB('options');
+  optionsDB.allDocs({
+    include_docs: true/*, 
+  attachments: true*/
+  }).then(function (result) {
+    // window.alert(JSON.stringify(result, null, 2));
+    if ('rows' in result) {
+      result.rows.forEach(function (option) {
+        if ('value' in option.doc) {
+          options[option.doc._id] = option.doc.value;
+        }
+      });
+      var n = options.limit.length ? Number(options.limit) : undefined;
+  var dec = !!options.descending;
+  var opts = { reduce: false, include_docs: true, descending: dec, limit: n };
+  // startkey: "2015-02",
+  // endkey: "2015-03",
+  db.query('foolin/by_start', opts, function(err, doc) {
+    if (err) {
+      alert(err);
+    } else {
+      var rowCount = doc.rows.length;
+      var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
+      var rowsPerLink = (rowCount / (scrollLinks.length - 3));
+      DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
+      DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
+      var includeRegExp = new RegExp(options.include, options.include_case ? '' : 'i');
+      var excludeRegExp = new RegExp(options.exclude, options.exclude_case ? '' : 'i');
+      doc.rows.forEach(function (row, index) {
+        if (!includeRegExp.test(row.doc.activity) ||
+            exclude.value.length && excludeRegExp.test(row.doc.activity)) {
+          return;
+        }
+        var entry = document.createElement('div');
+        // var span = document.createElement('span');
+        entry.id = row.doc._id;
+        entry.className = 'entry';
+        var start = document.createElement('pre');
+        var end = document.createElement('pre');
+        var delta = document.createElement('pre');
+        var activity = document.createElement('pre');
+        start.contentEditable = true;
+        end.contentEditable = true;
+        activity.contentEditable = true;
+        // start.setAttribute('readonly', true);
+        // end.setAttribute('readonly', true);
+        // activity.setAttribute('readonly', true);
+        start.classList.add('start');
+        end.classList.add('end');
+        activity.classList.add('activity');
+        // activity.addEventListener('*', function (event) {
+        //   console.log(event.type + ' fired for activity');
+        // })
+        // activity.contentEditable = true;
+        // activity.addEventListener('input', null);
+        // activity.readOnly = true;
+        var startDate = new Date(row.doc.start || row.doc.clockin_ms);
+        var endDate = new Date(row.doc.end || row.doc.clockout_ms);
+        start.textContent = startDate.toString().substring(0, 24);
+        end.textContent = endDate.toString().substring(4, 24);
+        delta.textContent = reportDateTimeDiff(startDate, endDate);
+        activity.textContent = row.doc.activity;
+        start.setAttribute('contextmenu', 'start_menu');
+        start.addEventListener('contextmenu', function (event) {
+          this.contextMenu.dataset.id = event.target.parentElement.id;
+        });
+        end.setAttribute('contextmenu', 'end_menu');
+        end.addEventListener('contextmenu', function (event) {
+          this.contextMenu.dataset.id = event.target.parentElement.id;
+        });
+        activity.setAttribute('contextmenu', 'activity_menu');
+        activity.addEventListener('contextmenu', function (event) {
+          this.contextMenu.dataset.id = event.target.parentElement.id;
+        });
+        //         activity.addEventListener('focus', function (event) {
+        //           event.target.removeAttribute('rows');
+        //         });
+        //         activity.addEventListener('blur', function (event) {
+        //           event.target.setAttribute('rows', 1);
+        //         });
+        // entry.appendChild(start);
+        // entry.appendChild(end);
+        entry.appendChild(start);
+        entry.appendChild(end);
+        // entry.appendChild(span);
+        entry.appendChild(delta);
+        entry.appendChild(activity);
+        if (scrollLinks.length && (index % rowsPerLink) < 1) {
+          entry.classList.add('linked');
+          var link = scrollLinks[Math.floor(index / rowsPerLink) + 2];
+          link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
+          link.href = '#' + row.doc._id;
+          DEBUG && console.log("index, rowsPerLink, (index % rowsPerLink)");
+          DEBUG && console.log(index, rowsPerLink, (index % rowsPerLink));
+        }
+        entries.appendChild(entry);
+      });
+      false && entries.addEventListener('click', function (event) {
+        // window.alert(getElementPath(event.target));
+        // window.alert(event.target.textContent);
+        event.preventDefault();
+        event.stopPropagation();
+        var select = document.querySelector('menu#' + event.target.className);
+        if (select) {
+          if (select.style.display == 'none') {
+            select.style.display = 'block';
+            select.style.left = event.layerX + 'px';
+            select.style.top = event.layerY + 'px';
+            select.style.backgroundColor = document.body.style.backgroundColor;
+          }
+          else {
+            select.style.display = 'none';
+          }
+        }
+        // switch (event.target.className) {
+        //   case 'start':
+        //     break;
+        //   case 'end':
+        //     break;
+        //   case 'activity':
+        //     break;
+        //   default:
+        //     window.alert('unhandled case ' + event.target.className);
+        // }
+      });
+      //                                         if (scrollLinks.length) {
+      //                                           scrollLinks.parentElement.parentElement.parentElement.style.top = "3rem;";
+      //                                         }
+      //     var pre = document.createElement('pre');
+      //     pre.textContent = JSON.stringify(doc.rows, null, 2);
+      //     document.body.appendChild(pre);
+    }
+  });
+    }
+  }).catch(function (err) {
+    console.log(err);
+  });
   //   var optionsDB = new PouchDB('options');
   //   var options = [
   //     'protocol',
@@ -374,3 +448,4 @@ window.addEventListener('DOMContentLoaded', function(event) {
   }
 
 });
+requirejs(['app']);

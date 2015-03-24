@@ -1,13 +1,14 @@
-// DOMContentLoaded is fired once the document has been loaded and parsed,
-// but without waiting for other external resources to load (css/images/etc)
-// That makes the app more responsive and perceived as faster.
-// https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
+'use strict';
 try {
-  window.addEventListener('DOMContentLoaded', function() {
+  define(function(require) {
+    // DOMContentLoaded is fired once the document has been loaded and parsed,
+    // but without waiting for other external resources to load (css/images/etc)
+    // That makes the app more responsive and perceived as faster.
+    // https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
+    //  window.addEventListener('DOMContentLoaded', function() {
 
     // We'll ask the browser to use strict code to help us catch errors earlier.
     // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
-    'use strict';
     var DEBUG = false, LOG = true;
     var saved = false;
     var db = new PouchDB('punchcard3');
@@ -15,11 +16,6 @@ try {
     var startDateTime = new Date;
     var endDateTime = new Date;
     // NOTE: does don't prompt user when called from beforeunload event listener.
-    var maybeSave = function () {
-      if (window.confirm('Save changes?')) {
-        saveButton.click();
-      }
-    };
     window.addEventListener("beforeunload", function (event) {
       // event.preventDefault();
       // maybeSave();
@@ -292,23 +288,25 @@ try {
     // We want to wait until the localisations library has loaded all the strings.
     // So we'll tell it to let us know once it's ready.
     // navigator.mozL10n.once(start);
-    var saveButton = document.querySelector('input.save');
-    // var saveLink = document.querySelector('a.save');
-    // var activity = document.querySelector('pre#activity');
-    var activity = document.querySelector('textarea#activity');
-    saveButton.addEventListener('click', function (event) {
+    // var saveButton = document.querySelector('input.save');
+    // // var saveLink = document.querySelector('a.save');
+    // // var activity = document.querySelector('pre#activity');
+    // var activity = document.querySelector('textarea#activity');
+    var saveEntry = function () {
       // event.preventDefault();
       // event.stopPropagation();
       DEBUG && window.alert('saving...');
-      if (id) {
+      if (activity.dataset.id) {
+        var id = activity.dataset.id;
+        activity.removeAttribute('data-id');
         db.get(id).then(function(otherDoc) {
           // otherDoc.activity = activity.textContent;
           otherDoc.activity = activity.value;
           otherDoc.start = getDateTime(start).toJSON(),
             otherDoc.end = getDateTime(end).toJSON()
           return db.put(otherDoc).then(function(response) {
-            document.querySelector('a.save').click();
-            saved = true;
+            // document.querySelector('a.save').click();
+            // saved = true;
           }).catch(function(err) {
             //errors
             window.alert(err);
@@ -335,12 +333,12 @@ try {
           window.alert(err);
         });
       }
-    });
+    };
     var start = document.getElementById('start');
     var updateStartButton = document.getElementById('update_start');
     var startUpdater = updateDateTime(start);
     // var startnow = document.querySelector('#startnow');
-    var startAtEnd = document.querySelector('#start_at_end');
+    var startAtEnd = document.querySelector('input.start_at_end');
     startAtEnd.addEventListener('click', function (event) {
       updateStartButton.removeAttribute('disabled');
       tack.removeCallback(updateStart);
@@ -360,7 +358,7 @@ try {
     var updateEndButton = document.getElementById('update_end');
     var endUpdater = updateDateTime(end);
     // var endnow = document.querySelector('#endnow');
-    var endAtStart = document.querySelector('#end_at_start');
+    var endAtStart = document.querySelector('input.end_at_start');
     endAtStart.addEventListener('click', function (event) {
       updateEndButton.removeAttribute('disabled');
       tack.removeCallback(updateEnd);
@@ -440,7 +438,9 @@ try {
     }));
     tack.start();
     var id = document.location.hash.substring(1);
+    var initEntry = function (id) {
     if (id) {
+      activity.dataset.id = id;
       db.get(id).then(function(otherDoc) {
         // activity.textContent = otherDoc.activity;
         activity.value = otherDoc.activity;
@@ -459,6 +459,7 @@ try {
       tack.addCallback(updateStart);
       tack.addCallback(updateEnd);
     }
+    };
     // maybeSave();
     // ---
 
@@ -470,8 +471,13 @@ try {
       // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
       message.textContent = translate('message');
     }
-
+  // };
+    return {
+      save: saveEntry,
+      init: initEntry
+    };
   });
-} catch (e) {
+}
+catch (e) {
   window.alert(e.message + '\n' + e.stack);
 }
