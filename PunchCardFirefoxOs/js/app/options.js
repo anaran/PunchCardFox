@@ -1,5 +1,5 @@
 'use strict';
-// try {
+try {
   define(function (require) {
     // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
     // DOMContentLoaded is fired once the document has been loaded and parsed,
@@ -567,7 +567,7 @@
       logout: sessionLogout
     };
   });
-// }
-// catch (e) {
-//   window.alert(e.message + '\n' + e.stack);
-// }
+}
+catch (e) {
+  window.alert(e.message + '\n' + e.stack);
+}

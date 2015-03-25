@@ -132,7 +132,8 @@ nav#punchcard_scrollbar li a {
   text-align: left;
   display: inline;
   font-family: monospace;
-  font-size: x-small;
+  font-size: small;
+  color: black;
 }
 
 /* nav[data-type="scrollbar"] {

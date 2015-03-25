@@ -1,6 +1,6 @@
-define(function(require) {
-  'use strict';
-  try {
+'use strict';
+try {
+  define(function(require) {
     // DOMContentLoaded is fired once the document has been loaded and parsed,
     // but without waiting for other external resources to load (css/images/etc)
     // That makes the app more responsive and perceived as faster.
@@ -361,7 +361,7 @@ define(function(require) {
         }
       }
     };
-                                var start = document.getElementById('start');
+    var start = document.getElementById('start');
     var updateStartButton = document.getElementById('update_start');
     var startUpdater = updateDateTime(start);
     // var startnow = document.querySelector('#startnow');
@@ -503,8 +503,8 @@ define(function(require) {
       save: saveEntry,
       init: initEntry
     };
-  }
-  catch (e) {
-    window.alert(e.message + '\n' + e.stack);
-  }
-});
+  });
+}
+catch (e) {
+  window.alert(e.message + '\n' + e.stack);
+}

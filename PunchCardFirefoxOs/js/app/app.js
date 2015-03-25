@@ -137,7 +137,7 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
     event.stopPropagation();
     var optionsElement = document.querySelector('#options');
     // optionsElement.style.display = 'none';
-    var optionjs = require('./options');
+    var optionjs = require('app/options');
     if (optionjs) {
       if (optionsElement) {
         if (optionsElement.style.display == 'none') {
