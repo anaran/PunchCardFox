@@ -1,6 +1,6 @@
-'use strict';
-try {
-  define(function(require) {
+define(function(require) {
+  'use strict';
+  try {
     // DOMContentLoaded is fired once the document has been loaded and parsed,
     // but without waiting for other external resources to load (css/images/etc)
     // That makes the app more responsive and perceived as faster.
@@ -295,28 +295,47 @@ try {
     // // var saveLink = document.querySelector('a.save');
     // // var activity = document.querySelector('pre#activity');
     // var activity = document.querySelector('textarea#activity');
-    var saveEntry = function () {
+    var isValidEntry = function (entry) {
+      if (!!entry.activity &&
+          !!entry.activity.length &&
+          !!entry.start &&
+          !!entry.start.length &&
+          !!entry.end &&
+          !!entry.end.length) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    };
+    var saveEntry = function() {
       // event.preventDefault();
       // event.stopPropagation();
       DEBUG && window.alert('saving...');
       if (activity.dataset.id) {
-        var id = activity.dataset.id;
+        var id = activity.dataset.id.toString();
         activity.removeAttribute('data-id');
-        db.get(id).then(function(otherDoc) {
+        return db.get(id).then(function(otherDoc) {
           // otherDoc.activity = activity.textContent;
           otherDoc.activity = activity.value;
-          otherDoc.start = getDateTime(start).toJSON(),
-            otherDoc.end = getDateTime(end).toJSON()
-          return db.put(otherDoc).then(function(response) {
-            // document.querySelector('a.save').click();
-            // saved = true;
-          }).catch(function(err) {
-            //errors
-            window.alert(err);
-          });
+          otherDoc.start = getDateTime(start).toJSON();
+          otherDoc.end = getDateTime(end).toJSON();
+          if (isValidEntry(otherDoc)) {
+            return db.put(otherDoc).then(function(response) {
+              return true;
+            }).catch(function(err) {
+              //errors
+              window.alert(err);
+              return false;
+            });
+          }
+          else {
+            return false;
+          }
         }).catch(function(err) {
           //errors
           window.alert(err);
+          return false;
         });
       }
       else {
@@ -327,17 +346,22 @@ try {
           start: getDateTime(start).toJSON(),
           end: getDateTime(end).toJSON()
         };
-        DEBUG && window.alert(JSON.stringify(entry, null, 2));
-        db.post(entry).then(function(response) {
-          document.querySelector('a.save').click();
-          saved = true;
-        }).catch(function(err) {
-          //errors
-          window.alert(err);
-        });
+        if (isValidEntry(entry)) {
+          return db.post(entry).then(function(response) {
+            // document.querySelector('a.save').click();
+            return true;
+          }).catch(function(err) {
+            //errors
+            window.alert(err);
+            return false;
+          });
+        }
+        else {
+          return false;
+        }
       }
     };
-    var start = document.getElementById('start');
+                                var start = document.getElementById('start');
     var updateStartButton = document.getElementById('update_start');
     var startUpdater = updateDateTime(start);
     // var startnow = document.querySelector('#startnow');
@@ -466,7 +490,7 @@ try {
     // maybeSave();
     // ---
 
-    function start() {
+    var startMessage = function () {
 
       var message = document.getElementById('message');
 
@@ -479,8 +503,8 @@ try {
       save: saveEntry,
       init: initEntry
     };
-  });
-}
-catch (e) {
-  window.alert(e.message + '\n' + e.stack);
-}
+  }
+  catch (e) {
+    window.alert(e.message + '\n' + e.stack);
+  }
+});

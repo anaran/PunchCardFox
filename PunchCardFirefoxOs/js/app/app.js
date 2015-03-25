@@ -1,8 +1,5 @@
 'use strict';
-//Load common code that includes config, then load the app logic for this page.
-require(['./common'], function (common) {
-    require(['app']);
-define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/) {
+define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -77,7 +74,7 @@ define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/
   }
   var edit = function (event) {
     var newEntry = document.querySelector('#new_entry');
-    var newjs = require('new');
+    var newjs = require('./new');
     if (newEntry && newjs) {
       // newEntry.style.display = 'none';
       if (newEntry.style.display == 'none') {
@@ -102,9 +99,9 @@ define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/
   var toggleEdit = function(event) {
     event.preventDefault();
     event.stopPropagation();
-    var newjs = requirejs(['new']);
+    var newjs = require('./new');
     if (newjs) {
-    var newEntry = document.querySelector('#new_entry');
+      var newEntry = document.querySelector('#new_entry');
       if (newEntry) {
         if (newEntry.style.display == 'none') {
           newEntry.style.display = 'block';
@@ -117,9 +114,15 @@ define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/
           a.click();
         }
         else {
-          newjs.save();
-          newEntry.style.display = 'none';
-          event.target.style.opacity = '1.0';
+          var res = newjs.save();
+          console.log(res);
+          res.then(function (result) {
+            newEntry.style.display = 'none';
+            event.target.style.opacity = '1.0';
+            document.location.reload('force');
+          }).catch(function (err) {
+            window.alert('saving entry failed, please review values of start, end, activity.');
+          });
         }
       }
     }
@@ -134,17 +137,20 @@ define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/
     event.stopPropagation();
     var optionsElement = document.querySelector('#options');
     // optionsElement.style.display = 'none';
-    if (optionsElement) {
-      if (optionsElement.style.display == 'none') {
-        optionsElement.style.display = 'block';
-        event.target.style.opacity = '0.3';
-        // Let user change options...
-      }
-      else {
-        // reload document location.
-        optionsElement.style.display = 'none';
-        event.target.style.opacity = '1.0';
-        document.location.reload('force');
+    var optionjs = require('./options');
+    if (optionjs) {
+      if (optionsElement) {
+        if (optionsElement.style.display == 'none') {
+          optionsElement.style.display = 'block';
+          event.target.style.opacity = '0.3';
+          // Let user change options...
+        }
+        else {
+          // reload document location.
+          optionsElement.style.display = 'none';
+          event.target.style.opacity = '1.0';
+          document.location.reload('force');
+        }
       }
     }
   };
@@ -460,4 +466,3 @@ define(['require'/*, 'new', 'options'*/], function(require/*, newjs, optionsjs*/
   }
 
 });
-requirejs(['app']);

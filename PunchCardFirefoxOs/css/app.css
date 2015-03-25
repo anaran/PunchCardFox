@@ -117,8 +117,13 @@ width: 100%;
 } */
 
 nav#punchcard_scrollbar {
+  position: absolute;
+/*   overflow: scroll; */
   top: 3rem;
   right: -5em;
+/*   width: 100%; */
+/*   height: calc(100% - 3rem); */
+/*   transform: translate(0, 0); */
   /*   z-index: 2; */
 }
 
@@ -127,7 +132,7 @@ nav#punchcard_scrollbar li a {
   text-align: left;
   display: inline;
   font-family: monospace;
-  font-size: smaller;
+  font-size: x-small;
 }
 
 /* nav[data-type="scrollbar"] {

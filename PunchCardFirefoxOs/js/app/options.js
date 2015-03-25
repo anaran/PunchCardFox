@@ -1,15 +1,11 @@
 'use strict';
-try {
-  requirejs.config({
-    waitSeconds: 7,
-    baseUrl: '/js'});
-  define(['require', 'info'], function (require, infojs) {
+// try {
+  define(function (require) {
     // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
     // DOMContentLoaded is fired once the document has been loaded and parsed,
     // but without waiting for other external resources to load (css/images/etc)
     // That makes the app more responsive and perceived as faster.
     // https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
-    var addReadOnlyInfo = infojs;
     // NOTE TEmporarily comment out event listener to understand why code does not run when loaded by alameda (requirejs).
     // TODO See also https://github.com/jrburke/requirejs/issues/463
     // window.addEventListener('DOMContentLoaded', function() {
@@ -17,6 +13,7 @@ try {
     // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
     var DEBUG = false;
 
+    var addReadOnlyInfo = require('app/info');
     var XHR_TIMEOUT_MS = 30000;
     var cookie;
     // var translate = navigator.mozL10n.get;
@@ -41,7 +38,7 @@ try {
         //errors
         console.log(err);
         var value = element.type == 'checkbox' ? element.checked : element.value;
-          return optionsDB.put({ _id: element.id, value: value });
+        return optionsDB.put({ _id: element.id, value: value });
       });
       element.addEventListener('blur', function (event) {
         var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
@@ -565,9 +562,12 @@ try {
       message.textContent = 'message';
 
     };
+    return {
+      login: sessionLogin,
+      logout: sessionLogout
+    };
   });
-}
-catch (e) {
-  window.alert(e.message + '\n' + e.stack);
-}
-requirejs([options]);
+// }
+// catch (e) {
+//   window.alert(e.message + '\n' + e.stack);
+// }
