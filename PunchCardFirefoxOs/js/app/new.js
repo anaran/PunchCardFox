@@ -357,6 +357,7 @@ try {
           });
         }
         else {
+          window.alert('saving entry failed, please review values of start, end, activity.');
           return false;
         }
       }

@@ -1,4 +1,4 @@
-define(['app/info'], function(infojs) {
+define(['app/info', 'app/readme'], function(infojs, readmejs) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -39,6 +39,24 @@ define(['app/info'], function(infojs) {
     addReadOnlyInfo(info, infoNode);
     // DEBUG && console.log(info);
   });
+  // var url = window.location.hash.substring(1);
+  if (readmejs) {
+    var renderElement = document.querySelector('#render_markdown');
+    var editElement = document.querySelector('#edit_markdown');
+    var readmeLink = document.getElementById('readme_id');
+    var readme2Link = document.getElementById('readme2_id');
+    var toggleEdit = document.getElementById('readme_edit_toggle');
+    readmeLink.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      readmejs.render(event.target.href, renderElement, editElement, toggleEdit);
+    });
+    readme2Link.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      readmejs.render(event.target.href, renderElement, editElement, toggleEdit);
+    });
+  }
   false && db.allDocs({include_docs: true, descending: false}, function(err, doc) {
     if (err) {
       alert(err);

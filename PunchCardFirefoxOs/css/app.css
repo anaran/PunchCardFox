@@ -1,6 +1,8 @@
 @import url(view.css);
 @import url(new.css);
+@import url(options.css);
 @import url(info.css);
+@import url(readme.css);
 /* @import url(links.css);
 */
 
@@ -119,18 +121,25 @@ width: 100%;
 nav#punchcard_scrollbar {
   position: absolute;
   top: 3rem;
-  right: -5em;
+  right: -8ex;
+  transition: right 3s 3s;
   /*   z-index: 2; */
+    z-index: 20;
 }
 
-section#view-punchcard-list.view.view-noscroll:active + nav#punchcard_scrollbar {
+gaia-header:active + section + nav#punchcard_scrollbar {
   right: 0;
-  /*   z-index: 2; */
+  transition: right 0s 0s;
 }
 
-section#view-punchcard-list.view.view-noscroll:hover + nav#punchcard_scrollbar {
-  right: 0;
-  /*   z-index: 2; */
+section#view-punchcard-list {
+  width: calc(100% - 5ex);
+  transition: width 3s 3s;
+}
+
+gaia-header:active + section#view-punchcard-list {
+  width: calc(100% - 12ex);
+  transition: width 0s 0s;
 }
 
 nav#punchcard_scrollbar li a {
@@ -183,7 +192,6 @@ width: -moz-calc(100% + 1.5rem);
 }
 
 div#entries {
-  margin:  0 1.0rem 0 0.5rem;
 /*   width: 90%; */
   /*   max-height: 50%; */
 }

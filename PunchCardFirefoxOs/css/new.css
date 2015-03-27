@@ -1,13 +1,9 @@
 @import url(links.css);
 /* @import url(view.css); */
 
-body {
-  background: #fff;
-}
-
 #start, #end {
   font-family: monospace;
-  font-size: medium;
+/*   font-size: medium; */
   /*   width: 80%; */
 }
 
@@ -39,11 +35,11 @@ body {
 }
 
 textarea {
-  height: 10rem;
+  height: 2rem;
   min-width: 95%;
-  font-size: medium;
   resize: both;
 }
 
 textarea:focus {
+  font-size: large;
 }

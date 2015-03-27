@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<section id="about" style="display: none;" class="view">
+<section id="about" style="display: none;">
         <div>
                 <h1 data-l10n-id="app_title">Privileged empty app</h1>
                 <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
                 <section>
-                        <p><a href="/readme.html#/README.md">README.md</a></p>
-                        <p><a href="/readme.html#/README2.md">README2.md</a></p>
+                        <p><a id="readme_id" href="/README.md">README.md</a></p>
+                        <p><a id="readme2_id" href="/README2.md">README2.md</a></p>
+                        <p><a id="readme_edit_toggle" data-icon="compose" style="display: hidden"></a></p>
                 </section>
+                <div id="render_markdown"></div>
+                <pre contentEditable id="edit_markdown">
+                </pre>
                 <p id="message"></p>
         </div>
 </section>

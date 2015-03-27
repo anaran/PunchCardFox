@@ -1,24 +1,8 @@
-/* * {
-  margin: 0;
-  padding: 0.2rem;
-} */
-
-/* div.entry {
-overflow: hidden;
-  border: 1px solid;
-text-overflow: ellipsis ellipsis;
-} */
-
-/* span {
-  white-space: nowrap;
-}
- */
-
-/*span:focus {
-  display: block;
-  white-space: pre-wrap;
-} */
-
 input {
+  font-family: monospace;
+}
+
+input:focus {
   font-size: medium;
+  background-color: white;
 }

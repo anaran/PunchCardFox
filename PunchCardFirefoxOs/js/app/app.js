@@ -124,14 +124,18 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
           a.href = '#new_entry'/* + id*/;
           document.body.appendChild(a);
           a.click();
+          // Start editing a new entry, start and end times ticking.
+          newjs.init(undefined);
         }
         else {
           var res = newjs.save();
           console.log(res);
           res.then(function (result) {
-            newEntry.style.display = 'none';
-            event.target.style.opacity = '1.0';
-            document.location.reload('force');
+            if (result) {
+              newEntry.style.display = 'none';
+              event.target.style.opacity = '1.0';
+              document.location.reload('force');
+            }
           }).catch(function (err) {
             window.alert('saving entry failed, please review values of start, end, activity.');
           });
@@ -228,16 +232,18 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   var deleteEntry = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(doc) {
-      if (true) {
-        doc._deleted = true;
-        return db.put(doc).then(function(response) {
-          document.location.reload('force');
-        });
-      }
-      else {
-        return db.remove(doc).then(function(response) {
-          document.location.reload('force');
-        });
+      if (window.confirm('Delete entry? ' + doc.activity)) {
+        if (true) {
+          doc._deleted = true;
+          return db.put(doc).then(function(response) {
+            document.location.reload('force');
+          });
+        }
+        else {
+          return db.remove(doc).then(function(response) {
+            document.location.reload('force');
+          });
+        }
       }
     }).catch(function(err){
       //errors
