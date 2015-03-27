@@ -8,48 +8,42 @@ body {
 #start, #end {
   font-family: monospace;
   font-size: medium;
-/*   width: 80%; */
+  /*   width: 80%; */
 }
 
 .delta {
   font-family: monospace;
-/*   margin: 0;
+  /*   margin: 0;
   padding: 0; */
   text-align: end;
-/*    border: 0 solid; */
-/*   display: inline-block; */
+  /*    border: 0 solid; */
+  /*   display: inline-block; */
 }
 
 .sign {
   font-family: monospace;
-/*   margin: 0;
+  /*   margin: 0;
   padding: 0; */
   text-align: end;
-/*   border: 0 solid; */
+  /*   border: 0 solid; */
   display: inline-block;
 }
 
 .year, .month, .date, .week, .hour, .minute, .second {
   font-family: monospace;
-/*   margin: 0;
+  /*   margin: 0;
   padding: 0; */
   text-align: end;
-/*   border: 0 solid; */
-/*   display: inline-block; */
+  /*   border: 0 solid; */
+  /*   display: inline-block; */
 }
 
 textarea {
-height: 2em;
-  min-width: 90%;
-  resize: none;
-  text-overflow: ellipsis ellipsis;
+  height: 10rem;
+  min-width: 95%;
+  font-size: medium;
+  resize: both;
 }
 
 textarea:focus {
-/*   min-height: 40%;
-  min-height: 40%;
-  font-size: larger; */
-  min-width: 90%;
-  resize: both;
-  text-overflow: ellipsis ellipsis;
 }

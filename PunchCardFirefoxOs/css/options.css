@@ -1,36 +1,24 @@
 /* * {
   margin: 0;
   padding: 0.2rem;
-  font-size: medium;
 } */
 
-div.entry {
+/* div.entry {
 overflow: hidden;
   border: 1px solid;
 text-overflow: ellipsis ellipsis;
-}
+} */
 
-pre {
-  /*   border: 1px solid; */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis ellipsis;
-  /*   white-space: normal; */
-}
-
-pre:focus {
-  color:blue;
-/*   font-size: larger; */
-  overflow: visible;
-  white-space: pre-wrap;
-/*     white-space: pre; */
-}
-
-span {
+/* span {
   white-space: nowrap;
 }
+ */
 
 /*span:focus {
   display: block;
   white-space: pre-wrap;
 } */
+
+input {
+  font-size: medium;
+}

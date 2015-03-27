@@ -1,10 +1,4 @@
-requirejs.config({
-  waitSeconds: 7,
-  baseUrl: '/js'/*,
-  paths: {
-        info: '/js/info'
-  }*/});
-define(['require', 'info'], function(require, info) {
+define(['app/info'], function(infojs) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -18,7 +12,7 @@ define(['require', 'info'], function(require, info) {
   var DEBUG = false;
 
   // var addReadOnlyInfo = require('info');
-  var addReadOnlyInfo = info;
+  var addReadOnlyInfo = infojs;
   var translate = navigator.mozL10n.get;
 
   // We want to wait until the localisations library has loaded all the strings.
@@ -78,18 +72,5 @@ define(['require', 'info'], function(require, info) {
       //     document.body.appendChild(pre);
     }
   });
-
-  // ---
-
-  //   function start() {
-
-  //     var message = document.getElementById('message');
-
-  //     // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
-  //     // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
-  //     message.textContent = translate('message');
-
-  //   }
-  // });
+  return true;
 });
-requirejs(['about']);

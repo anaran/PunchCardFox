@@ -92,6 +92,18 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
       }
     }
   };
+  var copyActivityItem = document.querySelector('#copy_activity_menuitem');
+  if (copyActivityItem) {
+    copyActivityItem.addEventListener('click', copyActivity);
+  }
+  var copyActivity = function(event) {
+    // event.preventDefault();
+    // event.stopPropagation();
+  };
+  var pasteActivityItem = document.querySelector('#paste_activity_menuitem');
+  if (pasteActivityItem) {
+    pasteActivityItem.addEventListener('click', pasteActivity);
+  }
   var editItem = document.querySelector('#edit');
   if (editItem) {
     editItem.addEventListener('click', edit);
@@ -130,6 +142,33 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   var ediNewItem = document.querySelector('a.edit');
   if (ediNewItem) {
     ediNewItem.addEventListener('click', toggleEdit);
+  }
+  var toggleAbout = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var aboutElement = document.querySelector('#about');
+    // aboutElement.style.display = 'none';
+    require(['app/about'], function (aboutjs) {
+      if (aboutjs) {
+        if (aboutElement) {
+          if (aboutElement.style.display == 'none') {
+            aboutElement.style.display = 'block';
+            event.target.style.opacity = '0.3';
+            // Let user change options...
+          }
+          else {
+            // reload document location.
+            aboutElement.style.display = 'none';
+            event.target.style.opacity = '1.0';
+            document.location.reload('force');
+          }
+        }
+      }
+    });
+  };
+  var aboutItem = document.querySelector('a.about');
+  if (aboutItem) {
+    aboutItem.addEventListener('click', toggleAbout);
   }
 
   var toggleOptionDisplay = function(event) {
@@ -189,9 +228,17 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   var deleteEntry = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(doc) {
-      return db.remove(doc).then(function(response) {
-        document.location.reload('force');
-      });
+      if (true) {
+        doc._deleted = true;
+        return db.put(doc).then(function(response) {
+          document.location.reload('force');
+        });
+      }
+      else {
+        return db.remove(doc).then(function(response) {
+          document.location.reload('force');
+        });
+      }
     }).catch(function(err){
       //errors
     });
@@ -215,6 +262,21 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   // var db = new PouchDB('apa-test-2');
   var db = new PouchDB('punchcard3');
   var entries = document.getElementById('entries');
+  var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+  var scrollBar = document.querySelector('nav#punchcard_scrollbar');
+  // scrollView.addEventListener('scroll', function (event) {
+  //   scrollBar.style.right = '0';
+  // });
+  // scrollView.addEventListener('click', function (event) {
+  //   // if (event.target === document.body) {
+  //     if (scrollBar.style.right == '0px') {
+  //       scrollBar.style.right = '-5em';
+  //     }
+  //     else {
+  //       scrollBar.style.right = '0';
+  //     }
+  //   // }
+  // });
   // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
   var map = {
     map:
@@ -241,25 +303,177 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
         }
       });
       var n = options.limit.length ? Number(options.limit) : undefined;
+      // Only limit query if we will not match against includeRegExp or excludeRegExp.
+      var limit = (options.include.length || options.exclude.length) ? undefined : n;
       var dec = !!options.descending;
-      var opts = { reduce: false, include_docs: true, descending: dec, limit: n };
+      var opts = { reduce: false, include_docs: true, descending: dec, limit: limit };
       // startkey: "2015-02",
       // endkey: "2015-03",
+      var queryInfoElement = document.getElementById('query_search_info');
+      queryInfoElement.textContent = (limit ? 'query' : 'search') + ' in progress...';
+      require(['app/info'], function (infojs) {
+        // db.get('48E1CA33-EA50-935E-87BD-4E0A8E344FA2', {
+        //   include_docs: true,
+        //   revs: true,
+        //   revs_info: true
+        // }).then(function (otherDoc) {
+        //   infojs(otherDoc, entries);
+        //   otherDoc._deleted = false;
+        //   db.put(otherDoc).then(function (otherDoc) {
+        //     infojs(otherDoc, entries);
+        //   }).catch(function (err) {
+        //     infojs(err, entries);
+        //   });
+        // }).catch(function (err) {
+        //   infojs(err, entries);
+        // });
+        // db.allDocs({
+        //   include_docs: true,
+        //   key: '48E1CA33-EA50-935E-87BD-4E0A8E344FA2',
+        //   revs: true,
+        //   revs_info: true
+        // }).then(function (otherDoc) {
+        //   infojs(otherDoc, entries);
+        // }).catch(function (err) {
+        //   infojs(err, entries);
+        // });
+        // db.get('48E1CA33-EA50-935E-87BD-4E0A8E344FA2', {
+        //   // include_docs: true,
+        //   revs: true,
+        //   revs_info: true
+        // }).then(function (otherDoc) {
+        //   infojs(otherDoc, entries);
+        //   otherDoc._revs_info.forEach(function (rev) {
+        //     db.get(otherDoc._id, rev).then(function (otherDoc) {
+        //       infojs(otherDoc, entries);
+        //     }).catch(function (err) {
+        //       infojs(err, entries);
+        //     });
+        //   })
+        // }).catch(function (err) {
+        //   infojs(err, entries);
+        // });
+        if (false) {
+          db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 })./*on('change', function(info) {
+          infojs(info, entries);
+          db.get(info.doc._id, {
+            rev: info.doc._rev,
+            revs: true
+          }).then(function (otherDoc) {
+            infojs({get:otherDoc}, entries);
+            otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+              infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+              db.get(otherDoc._id, {
+                rev: otherDoc._revisions.start + '-' + rev,
+                revs: true,
+                open_revs: "all",
+                include_docs: true
+              }).then(function (otherDoc) {
+                infojs({ 'rev': otherDoc }, entries);
+              }).catch(function (err) {
+                infojs({rev_error: err}, entries);
+              });
+           });
+          // changes() was canceled
+        }).catch(function (err) {
+            infojs({get_error:err}, entries);
+          });
+        }).*/on('delete', function(info) {
+          // infojs({delete: info}, entries);
+          // db.allDocs({
+          //   include_docs: true,
+          //   keys: [info.id]
+          // }).then(function (otherDoc) {
+          //   infojs({otherDoc: otherDoc}, entries);
+          // }).catch(function (err) {
+          //   infojs({all_docs_error: err}, entries);
+          // });
+          db.get(info.doc._id, {
+            rev: info.doc._rev,
+            revs: true,
+            open_revs: "all"
+          }).then(function (otherDoc) {
+            // infojs({get:otherDoc}, entries);
+            otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+              // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+              db.get(otherDoc[0].ok._id, {
+                open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+              }).then(function (otherDoc) {
+                // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+                if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+                  // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+                }
+                else {
+                }
+                infojs({ 'rev': otherDoc }, entries);
+              }).catch(function (err) {
+                infojs({rev_error: err}, entries);
+              });
+            });
+          }).catch(function (err) {
+            infojs({get_error:err}, entries);
+          });
+          //   if (info.seq == 894) {
+          //     info.doc._deleted = false;
+          //     db.put(info.doc).then(function (otherDoc) {
+          //       infojs(otherDoc, entries);
+          //     }).catch(function (err) {
+          //       infojs(err, entries);
+          //     });
+          //   }
+          // changes() was canceled
+        }).on('error', function (err) {
+            console.log(err);
+            infojs({delete_error: err}, entries);
+          });
+
+        }
+        db.get(options.deleted_id, {
+          // rev: info.doc._rev,
+          revs: true,
+          open_revs: "all"
+        }).then(function (otherDoc) {
+          infojs({get:otherDoc}, entries);
+          otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+            // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+            db.get(otherDoc[0].ok._id, {
+              open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+            }).then(function (otherDoc) {
+              // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+              if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+                // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+              }
+              else {
+              }
+              infojs({ 'rev': otherDoc }, entries);
+            }).catch(function (err) {
+              infojs({rev_error: err}, entries);
+            });
+          });
+        }).catch(function (err) {
+          infojs({get_error:err}, entries);
+        });
+      });
       db.query('foolin/by_start', opts, function(err, doc) {
         if (err) {
           alert(err);
         } else {
           var rowCount = doc.rows.length;
           var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-          var rowsPerLink = (rowCount / (scrollLinks.length - 3));
+          var rowsPerLink = limit ? (rowCount / (scrollLinks.length - 3)) : (n / (scrollLinks.length - 3));
           DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
           DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
-          var includeRegExp = new RegExp(options.include, options.include_case ? '' : 'i');
-          var excludeRegExp = new RegExp(options.exclude, options.exclude_case ? '' : 'i');
-          doc.rows.forEach(function (row, index) {
-            if (!includeRegExp.test(row.doc.activity) ||
-                options.exclude && options.exclude.value.length && excludeRegExp.test(row.doc.activity)) {
-              return;
+          var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
+          var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
+          var matches = 0;
+          // NOTE: Iteration statement is needed to use break statement.
+          // doc.rows.forEach(function (row, index) {
+          for (var index = 0; index < rowCount; index++) {
+            var row = doc.rows[index];
+            if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
+                excludeRegExp && excludeRegExp.test(row.doc.activity)) {
+              // forEach return becomes continue in for loop.
+              continue;
             }
             var entry = document.createElement('div');
             // var span = document.createElement('span');
@@ -278,12 +492,6 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
             start.classList.add('start');
             end.classList.add('end');
             activity.classList.add('activity');
-            // activity.addEventListener('*', function (event) {
-            //   console.log(event.type + ' fired for activity');
-            // })
-            // activity.contentEditable = true;
-            // activity.addEventListener('input', null);
-            // activity.readOnly = true;
             var startDate = new Date(row.doc.start || row.doc.clockin_ms);
             var endDate = new Date(row.doc.end || row.doc.clockout_ms);
             start.textContent = startDate.toString().substring(0, 24);
@@ -315,16 +523,28 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
             // entry.appendChild(span);
             entry.appendChild(delta);
             entry.appendChild(activity);
-            if (scrollLinks.length && (index % rowsPerLink) < 1) {
+            var scrollIndex = limit ? index : matches;
+            if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
               entry.classList.add('linked');
-              var link = scrollLinks[Math.floor(index / rowsPerLink) + 2];
+              var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
               link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
               link.href = '#' + row.doc._id;
-              DEBUG && console.log("index, rowsPerLink, (index % rowsPerLink)");
-              DEBUG && console.log(index, rowsPerLink, (index % rowsPerLink));
+              DEBUG && console.log("scrollIndex, rowsPerLink, (index % rowsPerLink)");
+              DEBUG && console.log(scrollIndex, rowsPerLink, (index % rowsPerLink));
             }
             entries.appendChild(entry);
-          });
+            matches += 1;
+            if (n && (matches == n)) {
+              break;
+            }
+          }
+          if (limit) {
+            queryInfoElement.textContent = 'Query limited to ' + limit + ' entries found ' + rowCount;
+          } 
+          else {
+            queryInfoElement.textContent = 'Search limited to ' + n + ' matches of "' + includeRegExp +
+              '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') + ' found ' + matches;
+          }
           false && entries.addEventListener('click', function (event) {
             // window.alert(getElementPath(event.target));
             // window.alert(event.target.textContent);

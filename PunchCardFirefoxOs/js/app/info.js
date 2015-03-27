@@ -3,6 +3,7 @@ try {
   define(function(require) {
     return function (info, element) {
       var pre = document.createElement('pre');
+      pre.classList.add('info');
       pre.contentEditable = true;
       // Does not work, set attribute instead.
       // pre.readOnly = true;
