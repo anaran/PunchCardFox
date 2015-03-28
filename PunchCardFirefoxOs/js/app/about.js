@@ -49,24 +49,28 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     readmeLink.addEventListener('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
-      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).then(
-        function (resolve) {
-          window.alert(JSON.stringify(resolve, null, 2));
-        }).catch(
-        function (reject) {
-          window.alert('Document ' + event.target.href + ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
-        });
+      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).
+      // then(
+      //   function (resolve) {
+      //     window.alert(JSON.stringify(resolve, null, 2));
+      //   }).
+      catch(function (reject) {
+        window.alert('Document ' + event.target.href +
+                     ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+      });
     });
     readme2Link.addEventListener('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
-      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).then(
-        function (resolve) {
-          window.alert(JSON.stringify(resolve, null, 2));
-        }).catch(
-        function (reject) {
-          window.alert('Document ' + event.target.href + ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
-        });
+      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).
+      // then(
+      //   function (resolve) {
+      //     window.alert(JSON.stringify(resolve, null, 2));
+      //   }).
+      catch(function (reject) {
+        window.alert('Document ' + event.target.href +
+                     ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+      });
     });
   }
   return true;

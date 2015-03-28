@@ -63,9 +63,6 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
             edit.style.display = 'block';
             render.style.display = 'none';
             event.target.style.opacity = '0.3';
-            event.target.textContent = '';
-            event.target.href = '';
-            event.target.removeAttribute('download');
           }
           else {
             edit.style.display = 'none';

@@ -314,73 +314,8 @@ define(function(require) {
       var queryInfoElement = document.getElementById('query_search_info');
       queryInfoElement.textContent = (limit ? 'query' : 'search') + ' in progress...';
       require(['./info'], function (infojs) {
-        // db.get('48E1CA33-EA50-935E-87BD-4E0A8E344FA2', {
-        //   include_docs: true,
-        //   revs: true,
-        //   revs_info: true
-        // }).then(function (otherDoc) {
-        //   infojs(otherDoc, entries);
-        //   otherDoc._deleted = false;
-        //   db.put(otherDoc).then(function (otherDoc) {
-        //     infojs(otherDoc, entries);
-        //   }).catch(function (err) {
-        //     infojs(err, entries);
-        //   });
-        // }).catch(function (err) {
-        //   infojs(err, entries);
-        // });
-        // db.allDocs({
-        //   include_docs: true,
-        //   key: '48E1CA33-EA50-935E-87BD-4E0A8E344FA2',
-        //   revs: true,
-        //   revs_info: true
-        // }).then(function (otherDoc) {
-        //   infojs(otherDoc, entries);
-        // }).catch(function (err) {
-        //   infojs(err, entries);
-        // });
-        // db.get('48E1CA33-EA50-935E-87BD-4E0A8E344FA2', {
-        //   // include_docs: true,
-        //   revs: true,
-        //   revs_info: true
-        // }).then(function (otherDoc) {
-        //   infojs(otherDoc, entries);
-        //   otherDoc._revs_info.forEach(function (rev) {
-        //     db.get(otherDoc._id, rev).then(function (otherDoc) {
-        //       infojs(otherDoc, entries);
-        //     }).catch(function (err) {
-        //       infojs(err, entries);
-        //     });
-        //   })
-        // }).catch(function (err) {
-        //   infojs(err, entries);
-        // });
-        if (false) {
-          db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 })./*on('change', function(info) {
-          infojs(info, entries);
-          db.get(info.doc._id, {
-            rev: info.doc._rev,
-            revs: true
-          }).then(function (otherDoc) {
-            infojs({get:otherDoc}, entries);
-            otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-              infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-              db.get(otherDoc._id, {
-                rev: otherDoc._revisions.start + '-' + rev,
-                revs: true,
-                open_revs: "all",
-                include_docs: true
-              }).then(function (otherDoc) {
-                infojs({ 'rev': otherDoc }, entries);
-              }).catch(function (err) {
-                infojs({rev_error: err}, entries);
-              });
-           });
-          // changes() was canceled
-        }).catch(function (err) {
-            infojs({get_error:err}, entries);
-          });
-        }).*/on('delete', function(info) {
+        if (options.deleted_id) {
+          db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
           // infojs({delete: info}, entries);
           // db.allDocs({
           //   include_docs: true,
@@ -462,11 +397,12 @@ define(function(require) {
         } else {
           var rowCount = doc.rows.length;
           var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-          var rowsPerLink = limit ? (rowCount / (scrollLinks.length - 3)) : (n / (scrollLinks.length - 3));
+          var rowsPerLink = (options.include.length || options.exclude.length) ? (n / (scrollLinks.length - 3)) : (rowCount / (scrollLinks.length - 3));
+          if ((options.include.length || options.exclude.length) && !n) {
+            queryInfoElement.textContent += '\nno search limit, providing scroll links every 5 entries.';
+            rowsPerLink = 5;
+          }
           for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
-            // scrollLinks[linkIndex].removeAttribute('href');
-            // scrollLinks[linkIndex].textContent = '';
-            // scrollLinks[linkIndex].parentElement.removeChild(scrollLinks[linkIndex]);
             scrollLinks[linkIndex].style.visibility = 'hidden';
           }
           DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
@@ -548,10 +484,10 @@ define(function(require) {
             }
           }
           if (limit) {
-            queryInfoElement.textContent = 'Query limited to ' + limit + ' entries found ' + rowCount;
+            queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ' + rowCount;
           } 
           else {
-            queryInfoElement.textContent = 'Search limited to ' + n + ' matches of "' + includeRegExp +
+            queryInfoElement.textContent += '\nSearch limited to ' + n + ' matches of "' + includeRegExp +
               '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') + ' found ' + matches;
           }
         }
