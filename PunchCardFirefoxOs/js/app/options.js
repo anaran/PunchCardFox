@@ -39,7 +39,7 @@ define(function (require) {
       console.log(err, element);
       var value = element.type == 'checkbox' ? element.checked : element.value;
       if (element.id) {
-      return optionsDB.put({ _id: element.id, value: value });
+        return optionsDB.put({ _id: element.id, value: value });
       }
       else {
         console.log("no id for saving options doc", element);
@@ -164,35 +164,47 @@ define(function (require) {
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     var infoNode = document.getElementById('replication_info');
     remoteDB.info().then(function (info) {
-        addReadOnlyInfo(info, infoNode);
+      addReadOnlyInfo(info, infoNode);
     }).catch(function (err) {
-        addReadOnlyInfo(err, infoNode);
+      addReadOnlyInfo(err, infoNode);
     });
+    var myInfo = {};
     var replication = db.sync(remoteDB)
     .on('change', function (info) {
-      addReadOnlyInfo(info, infoNode);
+      myInfo[db._db_name] = info;
+      addReadOnlyInfo(myInfo, infoNode);
     }).on('complete', function (info) {
-      addReadOnlyInfo(info, infoNode);
+      myInfo[db._db_name] = info;
+      addReadOnlyInfo(myInfo, infoNode);
     }).on('uptodate', function (info) {
-      addReadOnlyInfo(info, infoNode);
+      myInfo[db._db_name] = info;
+      addReadOnlyInfo(myInfo, infoNode);
     }).on('error', function (err) {
-      addReadOnlyInfo(err, infoNode);
+      myInfo[db._db_name] = err;
+      addReadOnlyInfo(myInfo, infoNode);
       window.alert(err);
     });
     remoteOptionsDB.info().then(function (info) {
-        addReadOnlyInfo(info, infoNode);
+      addReadOnlyInfo(info, infoNode);
     }).catch(function (err) {
-        addReadOnlyInfo(err, infoNode);
+      addReadOnlyInfo(err, infoNode);
     });
+    // NOTE: Don't share variables in asynchronuous code!
+    // myInfo = {};
+    var myOptionsInfo = {};
     var optionsReplication = optionsDB.sync(remoteOptionsDB)
     .on('change', function (info) {
-      addReadOnlyInfo(info, infoNode);
+      myOptionsInfo[optionsDB._db_name] = info;
+      addReadOnlyInfo(myOptionsInfo, infoNode);
     }).on('complete', function (info) {
-      addReadOnlyInfo(info, infoNode);
+      myOptionsInfo[optionsDB._db_name] = info;
+      addReadOnlyInfo(myOptionsInfo, infoNode);
     }).on('uptodate', function (info) {
-      addReadOnlyInfo(info, infoNode);
+      myOptionsInfo[optionsDB._db_name] = info;
+      addReadOnlyInfo(myOptionsInfo, infoNode);
     }).on('error', function (err) {
-      addReadOnlyInfo(err, infoNode);
+      myOptionsInfo[optionsDB._db_name] = err;
+      addReadOnlyInfo(myOptionsInfo, infoNode);
       window.alert(err);
     });
   });

@@ -49,46 +49,25 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     readmeLink.addEventListener('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
-      readmejs.render(event.target.href, renderElement, editElement, toggleEdit);
+      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).then(
+        function (resolve) {
+          window.alert(JSON.stringify(resolve, null, 2));
+        }).catch(
+        function (reject) {
+          window.alert('Document ' + event.target.href + ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+        });
     });
     readme2Link.addEventListener('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
-      readmejs.render(event.target.href, renderElement, editElement, toggleEdit);
+      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).then(
+        function (resolve) {
+          window.alert(JSON.stringify(resolve, null, 2));
+        }).catch(
+        function (reject) {
+          window.alert('Document ' + event.target.href + ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+        });
     });
   }
-  false && db.allDocs({include_docs: true, descending: false}, function(err, doc) {
-    if (err) {
-      alert(err);
-    } else {
-      doc.rows.forEach(function (row) {
-        var entry = document.createElement('div');
-        entry.id = 'entry';
-        var start = document.createElement('div');
-        var end = document.createElement('div');
-        var activity = document.createElement('pre');
-        // activity.contentEditable = true;
-        // activity.addEventListener('input', null);
-        // activity.readOnly = true;
-        start.textContent = (new Date(row.doc.start)).toLocaleString();
-        end.textContent = (new Date(row.doc.end)).toLocaleString();
-        activity.textContent = row.doc.activity;
-        activity.contentEditable = true;
-        //         activity.addEventListener('focus', function (event) {
-        //           event.target.removeAttribute('rows');
-        //         });
-        //         activity.addEventListener('blur', function (event) {
-        //           event.target.setAttribute('rows', 1);
-        //         });
-        entry.appendChild(start);
-        entry.appendChild(end);
-        entry.appendChild(activity);
-        document.body.appendChild(entry);
-      });
-      //     var pre = document.createElement('pre');
-      //     pre.textContent = JSON.stringify(doc.rows, null, 2);
-      //     document.body.appendChild(pre);
-    }
-  });
   return true;
 });

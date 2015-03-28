@@ -1,5 +1,5 @@
 'use strict';
-define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/) {
+define(function(require) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -8,7 +8,7 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   var DEBUG = false;
-  // var gep = require('/libs/getElementPath');
+  // require('getElementPath');
   // window.alert(gep.getElementPath(event.target));
   var pad = function (text, length, padding) {
     padding = padding ? padding : '0';
@@ -74,23 +74,24 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   }
   var edit = function (event) {
     var newEntry = document.querySelector('#new_entry');
-    var newjs = require('./new');
-    if (newEntry && newjs) {
-      // newEntry.style.display = 'none';
-      if (newEntry.style.display == 'none') {
-        newEntry.style.display = 'block';
-        // TODO: Re-use of header icon for existing and new entries may be confusing.
+    require(['./new'], function (newjs) {
+      if (newEntry && newjs) {
+        // newEntry.style.display = 'none';
+        if (newEntry.style.display == 'none') {
+          newEntry.style.display = 'block';
+          // TODO: Re-use of header icon for existing and new entries may be confusing.
 
-        ediNewItem.style.opacity = '0.3';
-        var id = event.target.parentElement.dataset.id;
-        newjs.init(id);
-        var a = document.createElement('a');
-        // a.href = '/build/new.html#' + id;
-        a.href = '#new_entry'/* + id*/;
-        document.body.appendChild(a);
-        a.click();
+          ediNewItem.style.opacity = '0.3';
+          var id = event.target.parentElement.dataset.id;
+          newjs.init(id);
+          var a = document.createElement('a');
+          // a.href = '/build/new.html#' + id;
+          a.href = '#new_entry'/* + id*/;
+          document.body.appendChild(a);
+          a.click();
+        }
       }
-    }
+    });
   };
   var copyActivityItem = document.querySelector('#copy_activity_menuitem');
   if (copyActivityItem) {
@@ -111,37 +112,38 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   var toggleEdit = function(event) {
     event.preventDefault();
     event.stopPropagation();
-    var newjs = require('./new');
-    if (newjs) {
+    require(['./new'], function (newjs) {
       var newEntry = document.querySelector('#new_entry');
-      if (newEntry) {
-        if (newEntry.style.display == 'none') {
-          newEntry.style.display = 'block';
-          event.target.style.opacity = '0.3';
-          var id = event.target.parentElement.dataset.id;
-          var a = document.createElement('a');
-          // a.href = '/build/new.html#' + id;
-          a.href = '#new_entry'/* + id*/;
-          document.body.appendChild(a);
-          a.click();
-          // Start editing a new entry, start and end times ticking.
-          newjs.init(undefined);
-        }
-        else {
-          var res = newjs.save();
-          console.log(res);
-          res.then(function (result) {
-            if (result) {
-              newEntry.style.display = 'none';
-              event.target.style.opacity = '1.0';
-              document.location.reload('force');
-            }
-          }).catch(function (err) {
-            window.alert('saving entry failed, please review values of start, end, activity.');
-          });
+      if (newjs) {
+        if (newEntry) {
+          if (newEntry.style.display == 'none') {
+            newEntry.style.display = 'block';
+            event.target.style.opacity = '0.3';
+            var id = event.target.parentElement.dataset.id;
+            var a = document.createElement('a');
+            // a.href = '/build/new.html#' + id;
+            a.href = '#new_entry'/* + id*/;
+            document.body.appendChild(a);
+            a.click();
+            // Start editing a new entry, start and end times ticking.
+            newjs.init(undefined);
+          }
+          else {
+            var res = newjs.save();
+            console.log(res);
+            res.then(function (result) {
+              if (result) {
+                newEntry.style.display = 'none';
+                event.target.style.opacity = '1.0';
+                document.location.reload('force');
+              }
+            }).catch(function (err) {
+              window.alert('saving entry failed, please review values of start, end, activity.');
+            });
+          }
         }
       }
-    }
+    });
   };
   var ediNewItem = document.querySelector('a.edit');
   if (ediNewItem) {
@@ -152,7 +154,7 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
     event.stopPropagation();
     var aboutElement = document.querySelector('#about');
     // aboutElement.style.display = 'none';
-    require(['app/about'], function (aboutjs) {
+    require(['./about'], function (aboutjs) {
       if (aboutjs) {
         if (aboutElement) {
           if (aboutElement.style.display == 'none') {
@@ -180,22 +182,23 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
     event.stopPropagation();
     var optionsElement = document.querySelector('#options');
     // optionsElement.style.display = 'none';
-    var optionjs = require('app/options');
-    if (optionjs) {
-      if (optionsElement) {
-        if (optionsElement.style.display == 'none') {
-          optionsElement.style.display = 'block';
-          event.target.style.opacity = '0.3';
-          // Let user change options...
-        }
-        else {
-          // reload document location.
-          optionsElement.style.display = 'none';
-          event.target.style.opacity = '1.0';
-          document.location.reload('force');
+    require(['./options'], function (optionjs) {
+      if (optionjs) {
+        if (optionsElement) {
+          if (optionsElement.style.display == 'none') {
+            optionsElement.style.display = 'block';
+            event.target.style.opacity = '0.3';
+            // Let user change options...
+          }
+          else {
+            // reload document location.
+            optionsElement.style.display = 'none';
+            event.target.style.opacity = '1.0';
+            document.location.reload('force');
+          }
         }
       }
-    }
+    });
   };
   var editOptions = document.querySelector('a.settings');
   if (editOptions) {
@@ -258,13 +261,6 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
   // We want to wait until the localisations library has loaded all the strings.
   // So we'll tell it to let us know once it's ready.
   // navigator.mozL10n.once(start);
-  // var db = new PouchDB('punchcard');
-  // require is not available.
-  // bower package does not seem usable via script tag.
-  // using node_modules version.
-  // the npm package plugs itself into the global PouchdB object.
-  // PouchDB.plugin('mapreduce', NoEvalMapReduce);
-  // PouchDB.plugin(require('pouchdb.mapreduce.noeval'));
   // var db = new PouchDB('apa-test-2');
   var db = new PouchDB('punchcard3');
   var entries = document.getElementById('entries');
@@ -317,7 +313,7 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
       // endkey: "2015-03",
       var queryInfoElement = document.getElementById('query_search_info');
       queryInfoElement.textContent = (limit ? 'query' : 'search') + ' in progress...';
-      require(['app/info'], function (infojs) {
+      require(['./info'], function (infojs) {
         // db.get('48E1CA33-EA50-935E-87BD-4E0A8E344FA2', {
         //   include_docs: true,
         //   revs: true,
@@ -467,6 +463,12 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
           var rowCount = doc.rows.length;
           var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
           var rowsPerLink = limit ? (rowCount / (scrollLinks.length - 3)) : (n / (scrollLinks.length - 3));
+          for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
+            // scrollLinks[linkIndex].removeAttribute('href');
+            // scrollLinks[linkIndex].textContent = '';
+            // scrollLinks[linkIndex].parentElement.removeChild(scrollLinks[linkIndex]);
+            scrollLinks[linkIndex].style.visibility = 'hidden';
+          }
           DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
           DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
           var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
@@ -535,6 +537,7 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
               var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
               link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
               link.href = '#' + row.doc._id;
+            link.style.visibility = 'visible';
               DEBUG && console.log("scrollIndex, rowsPerLink, (index % rowsPerLink)");
               DEBUG && console.log(scrollIndex, rowsPerLink, (index % rowsPerLink));
             }
@@ -551,144 +554,21 @@ define(/*['require', 'new', 'options'], */function(require/*, newjs, optionsjs*/
             queryInfoElement.textContent = 'Search limited to ' + n + ' matches of "' + includeRegExp +
               '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') + ' found ' + matches;
           }
-          false && entries.addEventListener('click', function (event) {
-            // window.alert(getElementPath(event.target));
-            // window.alert(event.target.textContent);
-            event.preventDefault();
-            event.stopPropagation();
-            var select = document.querySelector('menu#' + event.target.className);
-            if (select) {
-              if (select.style.display == 'none') {
-                select.style.display = 'block';
-                select.style.left = event.layerX + 'px';
-                select.style.top = event.layerY + 'px';
-                select.style.backgroundColor = document.body.style.backgroundColor;
-              }
-              else {
-                select.style.display = 'none';
-              }
-            }
-            // switch (event.target.className) {
-            //   case 'start':
-            //     break;
-            //   case 'end':
-            //     break;
-            //   case 'activity':
-            //     break;
-            //   default:
-            //     window.alert('unhandled case ' + event.target.className);
-            // }
-          });
-          //                                         if (scrollLinks.length) {
-          //                                           scrollLinks.parentElement.parentElement.parentElement.style.top = "3rem;";
-          //                                         }
-          //     var pre = document.createElement('pre');
-          //     pre.textContent = JSON.stringify(doc.rows, null, 2);
-          //     document.body.appendChild(pre);
         }
       });
     }
   }).catch(function (err) {
     console.log(err);
   });
-  //   var optionsDB = new PouchDB('options');
-  //   var options = [
-  //     'protocol',
-  //     'user',
-  //     'pass',
-  //     'hostportpath'
-  //   ];
-  //   var values = {};
-  //   options.forEach(function (option) {
-  //     optionsDB.get(option, function (err, doc) {
-  //       if (err) {
-  //         // window.alert(JSON.stringify(err, null, 2));
-  //       }
-  //       if (doc.value) {
-  //         values[doc._id] = doc.value;
-  //         // window.alert(JSON.stringify(values, null, 2));
-  //       }
-  //     });
-  //   });
-  //   false && remote.addEventListener('click', function (event) {
-  //     // window.alert(JSON.stringify(values, null, 2));
-  //     var destination = values['protocol'] +
-  //         values['hostportpath'] + db._db_name;
-  //     var opts = {
-  //       auth:
-  //       {'username': values['user'],
-  //        'password': values['pass']
-  //       },
-  //       // timeout: 20000,
-  //       headers: {
-  //         // 'Origin': window.location.origin
-  //         // 'Accept': '*/*',
-  //         // 'Content-Type': '*/*'
-  //         // 'Accept': 'application/json'
-  //         // 'Content-Type': 'text/chunked'
-  //         // 'Accept': 'text/plain',
-  //         // 'Content-Type': 'text/plain'
-  //         //           // 'Cookie': 'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1',
-  //         //           // 'Access-Control-Request-Method': 'POST',
-  //         //           'Authorization': 'Basic ' +
-  //         //           window.btoa(document.getElementById('user').value + ':' +
-  //         //                       document.getElementById('pass').value)
-  //       }
-  // //     }
-  //     };
-  //     var remoteDB = new PouchDB(destination, opts, function (err, info) {
-  //       if (err) {
-  //         alert(JSON.stringify(err, null, 2));
-  //       } else {
-  //         // TypeError: cyclic object value
-  //         // alert(JSON.stringify(info, null, 2));
-  //         DEBUG && console.log(info);
-  //       }
-  //     });
-  //     remoteDB.info().then(function (info) {
-  //       DEBUG && console.log(info);
-  //     });
-  //     remoteDB.allDocs({include_docs: true, descending: false}, function(err, doc) {
-  //       if (err) {
-  //         alert(JSON.stringify(err, null, 2));
-  //       } else {
-  //         doc.rows.forEach(function (row) {
-  //           var entry = document.createElement('div');
-  //           entry.id = 'entry';
-  //           var start = document.createElement('div');
-  //           var end = document.createElement('div');
-  //           var activity = document.createElement('pre');
-  //           activity.contentEditable = true;
-  //           // activity.contentEditable = true;
-  //           // activity.addEventListener('input', null);
-  //           // activity.readOnly = true;
-  //           start.textContent = (new Date(row.doc.start)).toLocaleString();
-  //           end.textContent = (new Date(row.doc.end)).toLocaleString();
-  //           activity.textContent = row.doc.activity;
-  //           //         activity.addEventListener('focus', function (event) {
-  //           //           event.target.removeAttribute('rows');
-  //           //         });
-  //           //         activity.addEventListener('blur', function (event) {
-  //           //           event.target.setAttribute('rows', 1);
-  //           //         });
-  //           entry.appendChild(start);
-  //           entry.appendChild(end);
-  //           entry.appendChild(activity);
-  //           document.body.appendChild(entry);
-  //         });
-  //       }
-  //     });
-  //  });
-  // ---
 
-  function start() {
-
-    var message = document.getElementById('message');
-
-    // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
-    // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
-    message.textContent = translate('message');
-
-  }
+  // function start() {
+  // 
+  //   var message = document.getElementById('message');
+  // 
+  //   // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
+  //   // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
+  //   message.textContent = translate('message');
+  // 
+  // }
 
 });
