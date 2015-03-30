@@ -1,6 +1,6 @@
 'use strict';
 try {
-  define(function(require) {
+  define(['app/utils'], function(utilsjs) {
     // DOMContentLoaded is fired once the document has been loaded and parsed,
     // but without waiting for other external resources to load (css/images/etc)
     // That makes the app more responsive and perceived as faster.
@@ -140,7 +140,7 @@ try {
           // Therefor we only reset value for single click on touch device.
           // if ("touches" in event) {
           offset.style.backgroundColor = 'white';
-          offset.textContent = '-' + pad('0', padWidth, '0');
+          offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
           updateDateTimeGui();
           // }
@@ -156,7 +156,7 @@ try {
           LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
           LOG && console.log(event);
           offset.style.backgroundColor = 'white';
-          offset.textContent = '-' + pad('0', padWidth, '0');
+          offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
           updateDateTimeGui();
           // prevX = event.touches[event.touches.length - 1].clientX;
@@ -168,7 +168,7 @@ try {
         //   event.preventDefault();
         //   event.stopPropagation();
         //   LOG && console.log(event.type);
-        //   offset.textContent = '-' + pad('0', padWidth, '0');
+        //   offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
         //   // timeFromDeltaUpdater(getDateTime(), Math.round(-deltaSum));
         //   elementUpdater(getDateTime());
         //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
@@ -201,7 +201,7 @@ try {
               offset.style.backgroundColor = 'lightcyan';
               // deltaSum += deltaX;
               deltaSum += deltaX > 0 ? 0.1 : -0.1;
-              offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+              offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
             }
             if (Math.abs(deltaY) > Math.abs(deltaX)) {
               //     Fast mode
@@ -209,7 +209,7 @@ try {
               // deltaSum += deltaY * 5;
               deltaSum += deltaY > 0 ? 0.5 : -0.5;
               // TODO Please note toFixed() also produces -0 values.
-              offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+              offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
             }
           }
           LOG && console.log(deltaX, deltaY, offset.textContent);
@@ -235,7 +235,7 @@ try {
                 offset.style.backgroundColor = 'lightcyan';
                 deltaSum += deltaX / 8;
                 deltaSum += 0.1;
-                offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+                offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
               }
               if (Math.abs(deltaY) * 2 > Math.abs(deltaX)) {
                 //     Fast mode
@@ -243,7 +243,7 @@ try {
                 deltaSum += deltaY;
                 deltaSum += 0.1;
                 // TODO Please note toFixed() also produces -0 values.
-                offset.textContent = (deltaSum > 0 ? '+' : '-') + pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+                offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
               }
             }
             // var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
@@ -265,14 +265,6 @@ try {
       setupListener(options.minute);
       setupListener(options.second);
     };
-    var pad = function (text, length, padding) {
-      padding = padding ? padding : '0';
-      text += '';
-      while (text.length < length) {
-        text = padding + text;
-      }
-      return text;
-    };
     var updateDateTime = function _updateDateTime(input_element) {
       return function (time) {
         input_element.value = time.toString();
@@ -285,16 +277,9 @@ try {
 
     // var translate = navigator.mozL10n.get;
 
-    //   var db = new PouchDB('punchcard');
-    //   var remoteCouch = false;
-
     // We want to wait until the localisations library has loaded all the strings.
     // So we'll tell it to let us know once it's ready.
     // navigator.mozL10n.once(start);
-    // var saveButton = document.querySelector('input.save');
-    // // var saveLink = document.querySelector('a.save');
-    // // var activity = document.querySelector('pre#activity');
-    // var activity = document.querySelector('textarea#activity');
     var isValidEntry = function (entry) {
       if (!!entry.activity &&
           !!entry.activity.length &&
@@ -316,12 +301,20 @@ try {
         var id = activity.dataset.id.toString();
         activity.removeAttribute('data-id');
         return db.get(id).then(function(otherDoc) {
-          // otherDoc.activity = activity.textContent;
-          otherDoc.activity = activity.value;
-          otherDoc.start = getDateTime(start).toJSON();
-          otherDoc.end = getDateTime(end).toJSON();
+          var activityText = activity.value;
+          var startText = getDateTime(start).toJSON();
+          var endText = getDateTime(end).toJSON();
+          var changedStart = !(otherDoc.start == startText);
+          var changedEnd = !(otherDoc.end == endText);
+          var changedActivity = !(otherDoc.activity == activityText);
+          otherDoc.activity = activityText;
+          otherDoc.start = startText;
+          otherDoc.end = endText;
           if (isValidEntry(otherDoc)) {
             return db.put(otherDoc).then(function(response) {
+              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', startText);
+              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endText);
+              changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
               return true;
             }).catch(function(err) {
               //errors

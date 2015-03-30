@@ -1,6 +1,6 @@
 'use strict';
 // try {
-define(function (require) {
+define(['app/info'], function (infojs) {
   // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
@@ -13,7 +13,7 @@ define(function (require) {
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   var DEBUG = false;
 
-  var addReadOnlyInfo = require('app/info');
+  var addReadOnlyInfo = infojs;
   var XHR_TIMEOUT_MS = 30000;
   var cookie;
   // var translate = navigator.mozL10n.get;
@@ -59,7 +59,12 @@ define(function (require) {
       }).catch(function(err) {
         //errors
         window.alert(err.message + '\n' + err.stack);
-        return optionsDB.put({ _id: event.target.id, value: value });
+        if (event.target.id) {
+          return optionsDB.put({ _id: event.target.id, value: value });
+        }
+        else {
+          console.log("no id for saving options doc", element);
+        }
       });
     });
   });

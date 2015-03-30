@@ -1,5 +1,5 @@
-'use strict';
-define(function(require) {
+;'use strict';
+define(['require', 'app/utils'], function(require, utilsjs) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -10,32 +10,13 @@ define(function(require) {
   var DEBUG = false;
   // require('getElementPath');
   // window.alert(gep.getElementPath(event.target));
-  var pad = function (text, length, padding) {
-    padding = padding ? padding : '0';
-    text += '';
-    while (text.length < length) {
-      text = padding + text;
-    }
-    return text;
-  };
-  function reportDateTimeDiff(d1, d2) {
-    var dt = d2.getTime() - d1.getTime();
-    var milliSecondsPerDay = 24 * 3600000;
-    var dtd = (dt / milliSecondsPerDay).toFixed();
-    var dtDayFraction = dt % milliSecondsPerDay;
-    var dth = (dtDayFraction / 3600000).toFixed();
-    var dtHourFraction = dtDayFraction % 3600000;
-    var dtm = (dtHourFraction / 60000).toFixed();
-    var dtMinuteFraction = dtHourFraction % 60000;
-    var dts = (dtMinuteFraction / 1000).toFixed();
-    return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
-  }
   var startNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
-      otherDoc.start = (new Date).toJSON();
+      var now = new Date;
+      otherDoc.start = now.toJSON();
       return db.put(otherDoc).then(function(response) {
-        document.location.reload('force');
+        utilsjs.updateEntriesElement(id, 'pre.start', now.toString().substring(0, 24));
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -55,9 +36,10 @@ define(function(require) {
   var endNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
-      otherDoc.end = (new Date).toJSON();
+      var now = new Date;
+      otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
-        document.location.reload('force');
+        utilsjs.updateEntriesElement(id, 'pre.end', now.toString().substring(4, 24));
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -93,21 +75,81 @@ define(function(require) {
       }
     });
   };
+  var editItem = document.querySelector('#edit');
+  if (editItem) {
+    editItem.addEventListener('click', edit);
+  }
+  var editNewCopy = function (event) {
+    var newEntry = document.querySelector('#new_entry');
+    require(['./new'], function (newjs) {
+      if (newEntry && newjs) {
+        // newEntry.style.display = 'none';
+        if (newEntry.style.display == 'none') {
+          newEntry.style.display = 'block';
+          // TODO: Re-use of header icon for existing and new entries may be confusing.
+
+          ediNewItem.style.opacity = '0.3';
+          var id = event.target.parentElement.dataset.id;
+          db.get(id).then(function(otherDoc) {
+            var entry = {
+              // _id: db.post(),
+              activity: otherDoc.activity,
+              start: otherDoc.start,
+              end: otherDoc.end
+            };
+            db.post(entry).then(function(response) {
+              // This is a way to put new entry above others.
+              // TODO: Find a cleaner design. entries has acccumulated various foreign elements
+              // for the convenience of being nicely scrollable via scrollbar.
+              // NOTE: Don't forget to add newlyobtained id!
+              entry._id = response.id;
+              var newEntry = utilsjs.addNewEntry(entry, document.getElementById('query_search_info'));
+              newEntry.querySelector('pre.activity').classList.add('changed');
+              newEntry.querySelector('pre.start').classList.add('changed');
+              newEntry.querySelector('pre.end').classList.add('changed');
+              newjs.init(response.id);
+              var a = document.createElement('a');
+              // a.href = '/build/new.html#' + id;
+              a.href = '#new_entry'/* + id*/;
+              document.body.appendChild(a);
+              a.click();
+            }).catch(function(err) {
+              //errors
+              window.alert(err);
+            });
+          }).catch(function(err) {
+            //errors
+            window.alert(err);
+          });
+        }
+      }
+    });
+  };
+  var editNewCopyItem = document.querySelector('#edit_new_copy');
+  if (editNewCopyItem) {
+    editNewCopyItem.addEventListener('click', editNewCopy);
+  }
+  var copyActivity = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var id = event.target.parentElement.dataset.id;
+    // NOTE: Works, but too silly to be considered.
+    // var activityItem = document.getElementById(id).querySelector('pre.activity');
+    // var s = getSelection();
+    // s.removeAllRanges();
+    // var r = document.createRange();
+    // r.selectNodeContents(activityItem);
+    // s.addRange(r);
+    // var sel= s.toString();
+    // window.alert(sel);
+  };
   var copyActivityItem = document.querySelector('#copy_activity_menuitem');
   if (copyActivityItem) {
     copyActivityItem.addEventListener('click', copyActivity);
   }
-  var copyActivity = function(event) {
-    // event.preventDefault();
-    // event.stopPropagation();
-  };
   var pasteActivityItem = document.querySelector('#paste_activity_menuitem');
   if (pasteActivityItem) {
     pasteActivityItem.addEventListener('click', pasteActivity);
-  }
-  var editItem = document.querySelector('#edit');
-  if (editItem) {
-    editItem.addEventListener('click', edit);
   }
   var toggleEdit = function(event) {
     event.preventDefault();
@@ -135,7 +177,7 @@ define(function(require) {
               if (result) {
                 newEntry.style.display = 'none';
                 event.target.style.opacity = '1.0';
-                document.location.reload('force');
+                // document.location.reload('force');
               }
             }).catch(function (err) {
               window.alert('saving entry failed, please review values of start, end, activity.');
@@ -166,6 +208,25 @@ define(function(require) {
             // reload document location.
             aboutElement.style.display = 'none';
             event.target.style.opacity = '1.0';
+
+            // TODO: how to best save options without having to actively blur last edit?
+            // var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
+            // optionsDB.get(event.target.id).then(function(otherDoc) {
+            //   otherDoc.value = value;
+            //   return optionsDB.put(otherDoc).then(function(response) {
+            //     // document.location.reload('force');
+            //     // saveLink.click();
+            //   }).catch(function(err) {
+            //     //errors
+            //     window.alert(err);
+            //   });
+            // }).catch(function(err) {
+            //   //errors
+            //   window.alert(err.message + '\n' + err.stack);
+            //   return optionsDB.put({ _id: event.target.id, value: value });
+            // });
+
+
             document.location.reload('force');
           }
         }
@@ -200,9 +261,12 @@ define(function(require) {
       }
     });
   };
-  var editOptions = document.querySelector('a.settings');
-  if (editOptions) {
-    editOptions.addEventListener('click', toggleOptionDisplay);
+  var optionsItem = document.querySelector('a.settings');
+  if (optionsItem) {
+    optionsItem.addEventListener('click', toggleOptionDisplay);
+    optionsItem.addEventListener('contextmenu', function (event) {
+      window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');
+    });
   }
 
 
@@ -217,7 +281,12 @@ define(function(require) {
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
-        document.location.reload('force');
+              entry._id = response.id;
+              var newEntry = utilsjs.addNewEntry(entry, document.getElementById('query_search_info'));
+              newEntry.querySelector('pre.activity').classList.add('changed');
+              newEntry.querySelector('pre.start').classList.add('changed');
+              newEntry.querySelector('pre.end').classList.add('changed');
+        // document.location.reload('force');
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -316,50 +385,50 @@ define(function(require) {
       require(['./info'], function (infojs) {
         if (options.deleted_id) {
           db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
-          // infojs({delete: info}, entries);
-          // db.allDocs({
-          //   include_docs: true,
-          //   keys: [info.id]
-          // }).then(function (otherDoc) {
-          //   infojs({otherDoc: otherDoc}, entries);
-          // }).catch(function (err) {
-          //   infojs({all_docs_error: err}, entries);
-          // });
-          db.get(info.doc._id, {
-            rev: info.doc._rev,
-            revs: true,
-            open_revs: "all"
-          }).then(function (otherDoc) {
-            // infojs({get:otherDoc}, entries);
-            otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-              // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-              db.get(otherDoc[0].ok._id, {
-                open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-              }).then(function (otherDoc) {
-                // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-                if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-                  // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-                }
-                else {
-                }
-                infojs({ 'rev': otherDoc }, entries);
-              }).catch(function (err) {
-                infojs({rev_error: err}, entries);
+            // infojs({delete: info}, entries);
+            // db.allDocs({
+            //   include_docs: true,
+            //   keys: [info.id]
+            // }).then(function (otherDoc) {
+            //   infojs({otherDoc: otherDoc}, entries);
+            // }).catch(function (err) {
+            //   infojs({all_docs_error: err}, entries);
+            // });
+            db.get(info.doc._id, {
+              rev: info.doc._rev,
+              revs: true,
+              open_revs: "all"
+            }).then(function (otherDoc) {
+              // infojs({get:otherDoc}, entries);
+              otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+                // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+                db.get(otherDoc[0].ok._id, {
+                  open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+                }).then(function (otherDoc) {
+                  // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+                  if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+                    // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+                  }
+                  else {
+                  }
+                  infojs({ 'rev': otherDoc }, entries);
+                }).catch(function (err) {
+                  infojs({rev_error: err}, entries);
+                });
               });
+            }).catch(function (err) {
+              infojs({get_error:err}, entries);
             });
-          }).catch(function (err) {
-            infojs({get_error:err}, entries);
-          });
-          //   if (info.seq == 894) {
-          //     info.doc._deleted = false;
-          //     db.put(info.doc).then(function (otherDoc) {
-          //       infojs(otherDoc, entries);
-          //     }).catch(function (err) {
-          //       infojs(err, entries);
-          //     });
-          //   }
-          // changes() was canceled
-        }).on('error', function (err) {
+            //   if (info.seq == 894) {
+            //     info.doc._deleted = false;
+            //     db.put(info.doc).then(function (otherDoc) {
+            //       infojs(otherDoc, entries);
+            //     }).catch(function (err) {
+            //       infojs(err, entries);
+            //     });
+            //   }
+            // changes() was canceled
+          }).on('error', function (err) {
             console.log(err);
             infojs({delete_error: err}, entries);
           });
@@ -419,65 +488,17 @@ define(function(require) {
               // forEach return becomes continue in for loop.
               continue;
             }
-            var entry = document.createElement('div');
-            // var span = document.createElement('span');
-            entry.id = row.doc._id;
-            entry.className = 'entry';
-            var start = document.createElement('pre');
-            var end = document.createElement('pre');
-            var delta = document.createElement('pre');
-            var activity = document.createElement('pre');
-            start.contentEditable = true;
-            end.contentEditable = true;
-            activity.contentEditable = true;
-            // start.setAttribute('readonly', true);
-            // end.setAttribute('readonly', true);
-            // activity.setAttribute('readonly', true);
-            start.classList.add('start');
-            end.classList.add('end');
-            activity.classList.add('activity');
-            var startDate = new Date(row.doc.start || row.doc.clockin_ms);
-            var endDate = new Date(row.doc.end || row.doc.clockout_ms);
-            start.textContent = startDate.toString().substring(0, 24);
-            end.textContent = endDate.toString().substring(4, 24);
-            delta.textContent = reportDateTimeDiff(startDate, endDate);
-            activity.textContent = row.doc.activity;
-            start.setAttribute('contextmenu', 'start_menu');
-            start.addEventListener('contextmenu', function (event) {
-              this.contextMenu.dataset.id = event.target.parentElement.id;
-            });
-            end.setAttribute('contextmenu', 'end_menu');
-            end.addEventListener('contextmenu', function (event) {
-              this.contextMenu.dataset.id = event.target.parentElement.id;
-            });
-            activity.setAttribute('contextmenu', 'activity_menu');
-            activity.addEventListener('contextmenu', function (event) {
-              this.contextMenu.dataset.id = event.target.parentElement.id;
-            });
-            //         activity.addEventListener('focus', function (event) {
-            //           event.target.removeAttribute('rows');
-            //         });
-            //         activity.addEventListener('blur', function (event) {
-            //           event.target.setAttribute('rows', 1);
-            //         });
-            // entry.appendChild(start);
-            // entry.appendChild(end);
-            entry.appendChild(start);
-            entry.appendChild(end);
-            // entry.appendChild(span);
-            entry.appendChild(delta);
-            entry.appendChild(activity);
+            var entry = utilsjs.addNewEntry(row.doc, entries);
             var scrollIndex = limit ? index : matches;
             if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
               entry.classList.add('linked');
               var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
               link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
               link.href = '#' + row.doc._id;
-            link.style.visibility = 'visible';
+              link.style.visibility = 'visible';
               DEBUG && console.log("scrollIndex, rowsPerLink, (index % rowsPerLink)");
               DEBUG && console.log(scrollIndex, rowsPerLink, (index % rowsPerLink));
             }
-            entries.appendChild(entry);
             matches += 1;
             if (n && (matches == n)) {
               break;
