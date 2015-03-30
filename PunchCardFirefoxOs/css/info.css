@@ -1,0 +1,6 @@
+/* for info.js */
+
+pre.info:focus {
+  overflow: visible;
+  white-space: pre-wrap;
+}
