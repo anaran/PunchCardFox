@@ -17,6 +17,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       otherDoc.start = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.start', now.toString().substring(0, 24));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, otherDoc.end));
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -40,6 +41,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.end', now.toString().substring(4, 24));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(otherDoc.start, now));
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -281,11 +283,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
-              entry._id = response.id;
-              var newEntry = utilsjs.addNewEntry(entry, document.getElementById('query_search_info'));
-              newEntry.querySelector('pre.activity').classList.add('changed');
-              newEntry.querySelector('pre.start').classList.add('changed');
-              newEntry.querySelector('pre.end').classList.add('changed');
+        entry._id = response.id;
+        var newEntry = utilsjs.addNewEntry(entry, document.getElementById('query_search_info'));
+        newEntry.querySelector('pre.activity').classList.add('changed');
+        newEntry.querySelector('pre.start').classList.add('changed');
+        newEntry.querySelector('pre.end').classList.add('changed');
         // document.location.reload('force');
         // saveLink.click();
       }).catch(function(err) {

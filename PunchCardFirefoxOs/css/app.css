@@ -7,15 +7,16 @@
 */
 
 body {
-/*   font-size: x-large; */
+  /*   font-size: x-large; */
 }
 
 h1 {
   /*   margin: 0 0 1rem 0; */
 }
 
-/* p {
-font-size: inherit;
+/* Not honored by nightly desktop firefox or nightly firefox os
+menuitem {
+font-size: x-large;
 } */
 
 div {
@@ -23,7 +24,7 @@ div {
   /*   border: 1px solid; */
   margin: 0 0 0;
   padding: 0 0 0;
-  /*   display: inline; */
+/*     display: inline-block; */
 }
 
 div.entry {
@@ -68,11 +69,17 @@ pre.end {
   text-overflow: ellipsis clip;
 }
 
-pre.start:focus {
+pre.duration {
+  display: inline-block;
+  direction: ltr;
+  text-overflow: clip ellipsis;
+}
+
+pre.start:hover {
   direction: rtl;
 }
 
-pre.start:focus + pre.end {
+pre.start:hover + pre.end {
   direction: rtl;
   text-overflow: ellipsis clip;
 }
@@ -91,13 +98,19 @@ white-space: pre-wrap;
 / *   white-space: pre; * /
 }*/
 
-pre.activity:focus {
+pre.activity:hover {
   /*   color:blue; */
   /*   font-size: larger; */
   overflow: visible;
   display: block;
   white-space: pre-wrap;
   /*     white-space: pre; */
+}
+
+.changed {
+  /*   background: lightgreen; */
+/*   font-weight: bold; */
+  background-color: aliceblue;
 }
 
 /* JUMPER */
@@ -114,33 +127,33 @@ nav#punchcard_scrollbar {
   position: absolute;
   top: 3rem;
   right: -9ex;
-/*   transition: right 3s 3s; */
+  /*   transition: right 3s 3s; */
   /*   z-index: 2; */
-    z-index: 20;
+  z-index: 20;
 }
 
 nav#punchcard_scrollbar:hover {
   right: 0;
-/*   transition: right 0s 0s; */
+  /*   transition: right 0s 0s; */
 }
 
 /* gaia-header:active + section + nav#punchcard_scrollbar {
-  right: 0;
-  transition: right 0s 0s;
+right: 0;
+transition: right 0s 0s;
 } */
 
 section#view-punchcard-list {
   width: calc(100% - 3ex);
-/*   transition: width 3s 3s; */
+  /*   transition: width 3s 3s; */
 }
 
 /* gaia-header:active + section#view-punchcard-list {
-  width: calc(100% - 12ex);
-  transition: width 0s 0s;
+width: calc(100% - 12ex);
+transition: width 0s 0s;
 } */
 
 nav#punchcard_scrollbar li a {
-/*   direction: ltr; */
+  /*   direction: ltr; */
   text-align: left;
   display: inline;
   font-family: monospace;
@@ -156,7 +169,7 @@ nav#punchcard_scrollbar:hover li a {
 }
 
 nav#punchcard_scrollbar li a:hover {
-/*   direction: ltr; */
+  /*   direction: ltr; */
   text-align: left;
   display: inline;
   font-family: monospace;
@@ -212,7 +225,7 @@ width: -moz-calc(100% + 1.5rem);
 }
 
 div#entries {
-/*   width: 90%; */
+  /*   width: 90%; */
   /*   max-height: 50%; */
 }
 

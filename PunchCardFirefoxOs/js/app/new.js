@@ -301,9 +301,11 @@ try {
         var id = activity.dataset.id.toString();
         activity.removeAttribute('data-id');
         return db.get(id).then(function(otherDoc) {
+          var startDate = getDateTime(start);
+          var endDate = getDateTime(end);
           var activityText = activity.value;
-          var startText = getDateTime(start).toJSON();
-          var endText = getDateTime(end).toJSON();
+          var startText = startDate.toJSON();
+          var endText = endDate.toJSON();
           var changedStart = !(otherDoc.start == startText);
           var changedEnd = !(otherDoc.end == endText);
           var changedActivity = !(otherDoc.activity == activityText);
@@ -314,6 +316,7 @@ try {
             return db.put(otherDoc).then(function(response) {
               changedStart && utilsjs.updateEntriesElement(id, 'pre.start', startText);
               changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endText);
+              (changedStart || changedEnd) && utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(startDate, endDate));
               changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
               return true;
             }).catch(function(err) {
