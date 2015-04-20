@@ -3,7 +3,7 @@
 
 #start, #end {
   font-family: monospace;
-/*   font-size: medium; */
+  font-size: medium;
   /*   width: 80%; */
 }
 
@@ -11,6 +11,7 @@
   font-family: monospace;
   /*   margin: 0;
   padding: 0; */
+  font-size: medium;
   text-align: end;
   /*    border: 0 solid; */
   /*   display: inline-block; */
@@ -34,12 +35,9 @@
   /*   display: inline-block; */
 }
 
+/* Don't specify size so resize will work. */
 textarea {
-  height: 2rem;
-  min-width: 95%;
-  resize: both;
-}
-
-textarea:focus {
   font-size: large;
+  resize: vertical;
+  width: 95%;
 }

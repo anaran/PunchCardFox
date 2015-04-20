@@ -6,10 +6,6 @@
 /* @import url(links.css);
 */
 
-body {
-  /*   font-size: x-large; */
-}
-
 h1 {
   /*   margin: 0 0 1rem 0; */
 }
@@ -110,62 +106,43 @@ pre.activity:hover {
 .changed {
   /*   background: lightgreen; */
 /*   font-weight: bold; */
-  background-color: aliceblue;
+/*   background-color: aliceblue; */
+  background-color: greenyellow;
 }
 
 /* JUMPER */
 
-/* nav#punchcard_scrollbar li {
-width: 3em;
+nav#punchcard_scrollbar li {
+  text-align: right;
 }
 
 nav#punchcard_scrollbar:active li {
-width: 100%;
-} */
+right: 0;
+}
 
 nav#punchcard_scrollbar {
   position: absolute;
   top: 3rem;
-  right: -9ex;
+  right: -8ex;
   /*   transition: right 3s 3s; */
   /*   z-index: 2; */
-  z-index: 20;
 }
 
 nav#punchcard_scrollbar:hover {
   right: 0;
-  /*   transition: right 0s 0s; */
 }
-
-/* gaia-header:active + section + nav#punchcard_scrollbar {
-right: 0;
-transition: right 0s 0s;
-} */
 
 section#view-punchcard-list {
   width: calc(100% - 3ex);
-  /*   transition: width 3s 3s; */
 }
 
-/* gaia-header:active + section#view-punchcard-list {
-width: calc(100% - 12ex);
-transition: width 0s 0s;
-} */
-
 nav#punchcard_scrollbar li a {
-  /*   direction: ltr; */
-  text-align: left;
   display: inline;
   font-family: monospace;
   font-size: small;
   color: black;
-}
-
-nav#punchcard_scrollbar:hover li a {
-  border-radius: 6px;
-  border: 3px solid black;
-  padding: 3px;
   background-color: white;
+  opacity: 1;
 }
 
 nav#punchcard_scrollbar li a:hover {
@@ -175,14 +152,14 @@ nav#punchcard_scrollbar li a:hover {
   font-family: monospace;
   font-size: x-large;
   border-radius: 6px;
+  right: 0;
   border: 2px solid black;
   padding: 3px;
-  background-color: white;
 }
 
-nav#punchcard_scrollbar li a:active {
+/* nav#punchcard_scrollbar li a:active {
   color: blue;
-}
+} */
 
 /* nav[data-type="scrollbar"] {
 z-index: 6;
