@@ -314,8 +314,8 @@ try {
           otherDoc.end = endText;
           if (isValidEntry(otherDoc)) {
             return db.put(otherDoc).then(function(response) {
-              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', startText);
-              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endText);
+              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', startDate.toString().substring(0, 24));
+              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endDate.toString().substring(4, 24));
               (changedStart || changedEnd) && utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(startDate, endDate));
               changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
               return true;
@@ -344,7 +344,13 @@ try {
         };
         if (isValidEntry(entry)) {
           return db.post(entry).then(function(response) {
-            // document.querySelector('a.save').click();
+            var entries = document.getElementById('entries');
+            entry._id = response.id;
+            // Insert before the first entry
+            var newEntry = utilsjs.addNewEntry(entry, entries, entries.querySelector('div.entry'));
+            newEntry.querySelector('pre.activity').classList.add('changed');
+            newEntry.querySelector('pre.start').classList.add('changed');
+            newEntry.querySelector('pre.end').classList.add('changed');
             return true;
           }).catch(function(err) {
             //errors
@@ -354,6 +360,8 @@ try {
         }
         else {
           window.alert('saving entry failed, please review values of start, end, activity.');
+          var newEntry = document.querySelector('#new_entry');
+          newEntry.scrollIntoView();
           return false;
         }
       }

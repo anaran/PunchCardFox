@@ -41,7 +41,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.end', now.toString().substring(4, 24));
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(otherDoc.start, now));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(otherDoc.start), now));
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -105,7 +105,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               // for the convenience of being nicely scrollable via scrollbar.
               // NOTE: Don't forget to add newlyobtained id!
               entry._id = response.id;
-              var newEntry = utilsjs.addNewEntry(entry, document.getElementById('query_search_info'));
+              var newEntry = utilsjs.addNewEntry(entry, entries, document.getElementById(id));
               newEntry.querySelector('pre.activity').classList.add('changed');
               newEntry.querySelector('pre.start').classList.add('changed');
               newEntry.querySelector('pre.end').classList.add('changed');
@@ -171,6 +171,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             a.click();
             // Start editing a new entry, start and end times ticking.
             newjs.init(undefined);
+            newEntry.scrollIntoView();
           }
           else {
             var res = newjs.save();
@@ -204,7 +205,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           if (aboutElement.style.display == 'none') {
             aboutElement.style.display = 'block';
             event.target.style.opacity = '0.3';
-            // Let user change options...
+            // Let user peruse about information...
+            aboutElement.scrollIntoView();
           }
           else {
             // reload document location.
@@ -252,6 +254,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             optionsElement.style.display = 'block';
             event.target.style.opacity = '0.3';
             // Let user change options...
+            optionsElement.scrollIntoView();
           }
           else {
             // reload document location.
@@ -284,7 +287,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
         entry._id = response.id;
-        var newEntry = utilsjs.addNewEntry(entry, document.getElementById('query_search_info'));
+        var newEntry = utilsjs.addNewEntry(entry, entries, document.getElementById(id));
         newEntry.querySelector('pre.activity').classList.add('changed');
         newEntry.querySelector('pre.start').classList.add('changed');
         newEntry.querySelector('pre.end').classList.add('changed');
@@ -375,17 +378,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           options[option.doc._id] = option.doc.value;
         }
       });
-      var n = options.limit.length ? Number(options.limit) : undefined;
-      // Only limit query if we will not match against includeRegExp or excludeRegExp.
-      var limit = (options.include.length || options.exclude.length) ? undefined : n;
-      var dec = !!options.descending;
-      var opts = { reduce: false, include_docs: true, descending: dec, limit: limit };
-      // startkey: "2015-02",
-      // endkey: "2015-03",
-      var queryInfoElement = document.getElementById('query_search_info');
-      queryInfoElement.textContent = (limit ? 'query' : 'search') + ' in progress...';
       require(['./info'], function (infojs) {
-        if (options.deleted_id) {
+        if (options.deleted_id.length) {
           db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
             // infojs({delete: info}, entries);
             // db.allDocs({
@@ -435,41 +429,50 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             infojs({delete_error: err}, entries);
           });
 
-        }
-        db.get(options.deleted_id, {
-          // rev: info.doc._rev,
-          revs: true,
-          open_revs: "all"
-        }).then(function (otherDoc) {
-          infojs({get:otherDoc}, entries);
-          otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-            // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-            db.get(otherDoc[0].ok._id, {
-              open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-            }).then(function (otherDoc) {
-              // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-              if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-                // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-              }
-              else {
-              }
-              infojs({ 'rev': otherDoc }, entries);
-            }).catch(function (err) {
-              infojs({rev_error: err}, entries);
+          db.get(options.deleted_id, {
+            // rev: info.doc._rev,
+            revs: true,
+            open_revs: "all"
+          }).then(function (otherDoc) {
+            infojs({get:otherDoc}, entries);
+            otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+              // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+              db.get(otherDoc[0].ok._id, {
+                open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+              }).then(function (otherDoc) {
+                // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+                if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+                  // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+                }
+                else {
+                }
+                infojs({ 'rev': otherDoc }, entries);
+              }).catch(function (err) {
+                infojs({rev_error: err}, entries);
+              });
             });
+          }).catch(function (err) {
+            infojs({get_error:err}, entries);
           });
-        }).catch(function (err) {
-          infojs({get_error:err}, entries);
-        });
+        }
       });
+      var limit = options.limit.length ? Number(options.limit) : undefined;
+      var matchLimit = options.match_limit.length ? Number(options.match_limit) : undefined;
+      var dec = !!options.descending;
+      var opts = { reduce: false, include_docs: true, descending: dec, limit: limit };
+      // startkey: "2015-02",
+      // endkey: "2015-03",
+      var queryInfoElement = document.getElementById('query_search_info');
+      var isSearch = (options.include.length || options.exclude.length);
+      queryInfoElement.textContent = (isSearch ? 'search' : 'query') + ' in progress...';
+      var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
       db.query('foolin/by_start', opts, function(err, doc) {
         if (err) {
           alert(err);
         } else {
           var rowCount = doc.rows.length;
-          var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-          var rowsPerLink = (options.include.length || options.exclude.length) ? (n / (scrollLinks.length - 3)) : (rowCount / (scrollLinks.length - 3));
-          if ((options.include.length || options.exclude.length) && !n) {
+          var rowsPerLink = isSearch ? (matchLimit / (scrollLinks.length - 3)) : (rowCount / (scrollLinks.length - 3));
+          if (isSearch && !matchLimit) {
             queryInfoElement.textContent += '\nno search limit, providing scroll links every 5 entries.';
             rowsPerLink = 5;
           }
@@ -487,11 +490,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             var row = doc.rows[index];
             if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
                 excludeRegExp && excludeRegExp.test(row.doc.activity)) {
-              // forEach return becomes continue in for loop.
+              // forEach function return becomes continue in for loop.
               continue;
             }
             var entry = utilsjs.addNewEntry(row.doc, entries);
-            var scrollIndex = limit ? index : matches;
+            var scrollIndex = !isSearch ? index : matches;
             if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
               entry.classList.add('linked');
               var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
@@ -501,17 +504,22 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               DEBUG && console.log("scrollIndex, rowsPerLink, (index % rowsPerLink)");
               DEBUG && console.log(scrollIndex, rowsPerLink, (index % rowsPerLink));
             }
-            matches += 1;
-            if (n && (matches == n)) {
-              break;
+            if (isSearch) {
+              if (matchLimit && (matches == matchLimit)) {
+                break;
+              }
+              else {
+                matches += 1;
+              }
             }
           }
-          if (limit) {
-            queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ' + rowCount;
+          if (isSearch) {
+            queryInfoElement.textContent += '\nSearch limited to ' + matchLimit + ' matches of "' + includeRegExp +
+              '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') +
+              (limit ? ', limited to ' + limit + ' entries, found ' : ' found ') + matches;
           } 
           else {
-            queryInfoElement.textContent += '\nSearch limited to ' + n + ' matches of "' + includeRegExp +
-              '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') + ' found ' + matches;
+            queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ' + rowCount;
           }
         }
       });

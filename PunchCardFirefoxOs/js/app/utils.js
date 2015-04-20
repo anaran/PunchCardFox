@@ -38,7 +38,7 @@ define(function (require) {
     }
     return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
   };
-  var addNewEntry = function (doc, entries) {
+  var addNewEntry = function (doc, entries, before) {
     var entry = document.createElement('div');
     // var span = document.createElement('span');
     entry.id = doc._id;
@@ -88,7 +88,13 @@ define(function (require) {
     // entry.appendChild(span);
     entry.appendChild(duration);
     entry.appendChild(activity);
-    entries.appendChild(entry);
+    if (before) {
+      // Insert before the first entry we find, if any.
+      entries.insertBefore(entry, before);
+    }
+    else {
+      entries.appendChild(entry);
+    }
     return entry;
   };
   return {
