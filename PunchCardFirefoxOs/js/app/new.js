@@ -314,8 +314,8 @@ try {
           otherDoc.end = endText;
           if (isValidEntry(otherDoc)) {
             return db.put(otherDoc).then(function(response) {
-              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', startDate.toString().substring(0, 24));
-              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endDate.toString().substring(4, 24));
+              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(startDate));
+              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(endDate));
               (changedStart || changedEnd) && utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(startDate, endDate));
               changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
               return true;

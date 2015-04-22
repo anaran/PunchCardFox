@@ -1,6 +1,16 @@
 'use strict';
 define(function (require) {
-  var updateEntriesElement = function(id, selector, value) {
+  var formatStartDate = function (date) {
+    // return date.toString().substring(0, 24);
+    return date.toLocaleString();
+  };
+  var formatEndDate = function (date) {
+    // return date.toString().substring(4, 24);
+    // NOTE Make clear we use same format as for start date,
+    // instead of duplicating implementation here.
+    return formatStartDate(date);
+  };
+  var updateEntriesElement = function (id, selector, value) {
     var updateItem = document.getElementById(id).querySelector(selector);
     updateItem.textContent = value;
     updateItem.classList.add('changed');
@@ -17,7 +27,7 @@ define(function (require) {
     }
     return text;
   };
-  var reportDateTimeDiff = function(d1, d2) {
+  var reportDateTimeDiff = function (d1, d2) {
     var dt = d2.getTime() - d1.getTime(),
         milliSecondsPerDay = 24 * 3600000,
         dtDayFraction = dt % milliSecondsPerDay,
@@ -59,8 +69,8 @@ define(function (require) {
     activity.classList.add('activity');
     var startDate = new Date(doc.start || doc.clockin_ms);
     var endDate = new Date(doc.end || doc.clockout_ms);
-    start.textContent = startDate.toString().substring(0, 24);
-    end.textContent = endDate.toString().substring(4, 24);
+    start.textContent = formatStartDate(startDate);
+    end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
     start.setAttribute('contextmenu', 'start_menu');

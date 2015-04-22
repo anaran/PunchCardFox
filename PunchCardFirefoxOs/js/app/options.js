@@ -1,6 +1,6 @@
 'use strict';
 // try {
-define(['app/info'], function (infojs) {
+define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
@@ -296,8 +296,8 @@ define(['app/info'], function (infojs) {
           // activity.readOnly = true;
           // start.textContent = (new Date(row.doc.start)).toLocaleString();
           // end.textContent = (new Date(row.doc.end)).toLocaleString();
-          start.textContent = (new Date(row.doc.start)).toString().substring(0, 24);
-          // end.textContent = (new Date(row.doc.end)).toString().substring(0, 24);
+          start.textContent = utilsjs.formatStartDate(new Date(row.doc.start));
+          // end.textContent = utilsjs.formatEndDate(new Date(row.doc.end));
           activity.textContent = row.doc.activity;
           start.contentEditable = true;
           activity.contentEditable = true;

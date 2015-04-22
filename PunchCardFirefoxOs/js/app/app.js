@@ -16,7 +16,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       var now = new Date;
       otherDoc.start = now.toJSON();
       return db.put(otherDoc).then(function(response) {
-        utilsjs.updateEntriesElement(id, 'pre.start', now.toString().substring(0, 24));
+        utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(now));
         utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, otherDoc.end));
         // saveLink.click();
       }).catch(function(err) {
@@ -40,7 +40,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       var now = new Date;
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
-        utilsjs.updateEntriesElement(id, 'pre.end', now.toString().substring(4, 24));
+        utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
         utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(otherDoc.start), now));
         // saveLink.click();
       }).catch(function(err) {
