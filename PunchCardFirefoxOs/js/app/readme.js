@@ -141,7 +141,7 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
             resolve(toggleElement.style.opacity);
             // render.scrollIntoView();
           }
-        }
+        };
       }
       catch (e) {
         alert(e.message + '\n' + e.stack);
