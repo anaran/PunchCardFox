@@ -7,6 +7,14 @@ Mostly using web-components via bower, except for:
 https://raw.githubusercontent.com/mozilla-b2g/gaia/v2.0/shared/style/scrolling.css
 which was modified from absolute to fixed position.
 
+### Web Components in Window Desktop Firefox
+
+Works fine in nightly with
+
+dom.webcomponents.enabled;true
+
+in about:config
+
 ## Content Security Policy
 
 Did not work:
