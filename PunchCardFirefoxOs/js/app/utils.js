@@ -108,6 +108,8 @@ define(function (require) {
     return entry;
   };
   return {
+    formatEndDate: formatEndDate,
+    formatStartDate: formatStartDate,
     updateEntriesElement: updateEntriesElement,
     pad: pad,
     reportDateTimeDiff: reportDateTimeDiff,
