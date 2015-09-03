@@ -10,6 +10,25 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var DEBUG = false;
   // require('getElementPath');
   // window.alert(gep.getElementPath(event.target));
+  // var db = new PouchDB('apa-test-2');
+  var db = new PouchDB('punchcard3');
+  var entries = document.getElementById('entries');
+  var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+  var scrollBar = document.querySelector('nav#punchcard_scrollbar');
+  // scrollView.addEventListener('scroll', function (event) {
+  //   scrollBar.style.right = '0';
+  // });
+  // scrollView.addEventListener('click', function (event) {
+  //   // if (event.target === document.body) {
+  //     if (scrollBar.style.right == '0px') {
+  //       scrollBar.style.right = '-5em';
+  //     }
+  //     else {
+  //       scrollBar.style.right = '0';
+  //     }
+  //   // }
+  // });
+  // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
   var startNow = function (event) {
     var id = event.target.parentElement.dataset.id;
     db.get(id).then(function(otherDoc) {
@@ -335,25 +354,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // We want to wait until the localisations library has loaded all the strings.
   // So we'll tell it to let us know once it's ready.
   // navigator.mozL10n.once(start);
-  // var db = new PouchDB('apa-test-2');
-  var db = new PouchDB('punchcard3');
-  var entries = document.getElementById('entries');
-  var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-  var scrollBar = document.querySelector('nav#punchcard_scrollbar');
-  // scrollView.addEventListener('scroll', function (event) {
-  //   scrollBar.style.right = '0';
-  // });
-  // scrollView.addEventListener('click', function (event) {
-  //   // if (event.target === document.body) {
-  //     if (scrollBar.style.right == '0px') {
-  //       scrollBar.style.right = '-5em';
-  //     }
-  //     else {
-  //       scrollBar.style.right = '0';
-  //     }
-  //   // }
-  // });
-  // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
   var map = {
     map:
     function(doc) {
@@ -466,6 +466,17 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       var isSearch = (options.include.length || options.exclude.length);
       queryInfoElement.textContent = (isSearch ? 'search' : 'query') + ' in progress...';
       var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
+      var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
+      var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
+      if (isSearch) {
+        queryInfoElement.textContent += '\nSearch limited to ' + matchLimit + ' matches of "' + includeRegExp +
+          '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') +
+          (limit ? ', limited to ' + limit + ' entries, found ' : ' found ');
+      } 
+      else {
+        queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ';
+      }
+      // window.requestAnimationFrame(function (timestamp) {
       db.query('foolin/by_start', opts, function(err, doc) {
         if (err) {
           alert(err);
@@ -481,8 +492,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           }
           DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
           DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
-          var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
-          var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
           var matches = 0;
           // NOTE: Iteration statement is needed to use break statement.
           // doc.rows.forEach(function (row, index) {
@@ -514,15 +523,14 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             }
           }
           if (isSearch) {
-            queryInfoElement.textContent += '\nSearch limited to ' + matchLimit + ' matches of "' + includeRegExp +
-              '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') +
-              (limit ? ', limited to ' + limit + ' entries, found ' : ' found ') + matches;
+            queryInfoElement.textContent += matches;
           } 
           else {
-            queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ' + rowCount;
+            queryInfoElement.textContent += rowCount;
           }
         }
       });
+      // });
     }
   }).catch(function (err) {
     console.log(err);

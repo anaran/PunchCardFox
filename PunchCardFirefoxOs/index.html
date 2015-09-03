@@ -29,113 +29,114 @@ execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
 
+                <!--                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.js"></script> -->
                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js"></script>
+                <!--                 Comment next 2 lines after debugging. Didn't work anyway -->
+                <!--                 <script type="text/javascript" src="/bower_components/pouchdb/lib/deps/ajax/request-browser.js"></script>
+<script type="text/javascript" src="/bower_components/pouchdb/lib/deps/ajax/ajax-core.js"></script> -->
                 <script type="text/javascript" src="/bower_components/pouchdb.mapreduce.noeval/dist/pouchdb.mapreduce.noeval.js"></script>
-                <!--                 <script type="text/javascript" src="/node_modules/pouchdb.mapreduce.noeval/pouchdb.mapreduce.noeval.js"></script> -->
-                <!--         <script type="text/javascript" src="/js/libs/pouchdb-3.2.0.min.js" defer></script>
--->
                 <script src="/bower_components/gaia-header/lib/font-fit.js"></script>
                 <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
-                <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css"></link>
-        <script src="/bower_components/gaia-component/gaia-component.js"></script>
-        <script src="/bower_components/gaia-header/gaia-header.js"></script>
-        <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
-        <link href="/scrolling.css" rel="stylesheet" type="text/css">
-        <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
-        <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
+                <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css">
+                <script src="/bower_components/gaia-component/gaia-component.js"></script>
+                <script src="/bower_components/gaia-header/gaia-header.js"></script>
+                <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
+                <link href="/scrolling.css" rel="stylesheet" type="text/css">
+                <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
+                <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
 
-        <!--
+                <!--
 The following two lines are for loading the localisations library
 and the localisation data-so people can use the app in their
 own language (as long as you provide translations).
 -->
-        <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
-        <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
+                <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
+                <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
         </head>
-<body role="application">
-        <link rel="import" href="common-header.html">
-        <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-                <!--                 NOTE: Firefox OS support only one level of menu. -->
-                <menu type="context" id="start_menu">
-                        <!--                         <menu label="Start Menu"> -->
-                        <menuitem id="start_now" label="start now"></menuitem>
-                        <!--                                 <a id="start_now" href="/index.html">start now</a> -->
-                        <menuitem id="start_undefined" label="start is undefined"></menuitem>
-                        <menuitem id="start_at_end" label="start at end"></menuitem>
-                </menu>
-                <!--                 </menu> -->
-                <menu type="context" id="end_menu">
-                        <!--                         <menu label="End Menu"> -->
-                        <menuitem id="end_now" label="end now"></menuitem>
-                        <menuitem id="end_undefined" label="end is undefined"></menuitem>
-                        <menuitem id="end_at_start" label="end at start"></menuitem>
-                        <!--                         </menu> -->
-                </menu>
-                <!--                 <menu type="context" id="end_menu">
+        <body role="application">
+                <link rel="import" href="common-header.html">
+                <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
+                        <!--                 NOTE: Firefox OS support only one level of menu. -->
+                        <menu type="context" id="start_menu">
+                                <!--                         <menu label="Start Menu"> -->
+                                <menuitem id="start_now" label="start now"></menuitem>
+                                <!--                                 <a id="start_now" href="/index.html">start now</a> -->
+                                <menuitem id="start_undefined" label="start is undefined"></menuitem>
+                                <menuitem id="start_at_end" label="start at end"></menuitem>
+                        </menu>
+                        <!--                 </menu> -->
+                        <menu type="context" id="end_menu">
+                                <!--                         <menu label="End Menu"> -->
+                                <menuitem id="end_now" label="end now"></menuitem>
+                                <menuitem id="end_undefined" label="end is undefined"></menuitem>
+                                <menuitem id="end_at_start" label="end at start"></menuitem>
+                                <!--                         </menu> -->
+                        </menu>
+                        <!--                 <menu type="context" id="end_menu">
 <li><a>end now</a></li>
 <li><a href="/index.html#b">end is undefined</a></li>
 <li><a>end at start</a></li>
 </menu> -->
-                <menu type="context" id="activity_menu">
-                        <!--                         <menu label="Activity Menu">
-                        <menuitem id="copy_activity_menuitem" label="copy activity"></menuitem>
+                        <menu type="context" id="activity_menu">
+                                <!--                         <menu label="Activity Menu">
+<menuitem id="copy_activity_menuitem" label="copy activity"></menuitem>
 -->
-                        <menuitem id="edit" label="edit"></menuitem>
-                        <menuitem id="edit_new_copy" label="edit new copy"></menuitem>
-                        <menuitem id="repeat_now" label="repeat now"></menuitem>
-                        <menuitem id="insert_parallel_activity" label="insert parallel activity"></menuitem>
-                        <menuitem id="delete" label="delete"></menuitem>
-                        <!--                                 <li><a>edit</a></li>
+                                <menuitem id="edit" label="edit"></menuitem>
+                                <menuitem id="edit_new_copy" label="edit new copy"></menuitem>
+                                <menuitem id="repeat_now" label="repeat now"></menuitem>
+                                <menuitem id="insert_parallel_activity" label="insert parallel activity"></menuitem>
+                                <menuitem id="delete" label="delete"></menuitem>
+                                <!--                                 <li><a>edit</a></li>
 <li><a>insert parallel activity</a></li>
 <li><a href="/options.html#c">show only this activity</a></li>
 <li><a>show all activities</a></li> -->
-                        <!--                         </menu> -->
-                </menu>
-                <!--                 <article class="view-body"> -->
-                <div id="entries">
-                        <link rel="import" href="new_entry.html">
-                        <link rel="import" href="options.html">
-                        <link rel="import" href="about.html">
-                        <div id="query_search_info">
-                        </div>
-                        <!--
+                                <!--                         </menu> -->
+                        </menu>
+                        <!--                 <article class="view-body"> -->
+                        <div id="entries">
+                                <link rel="import" href="new_entry.html">
+                                <link rel="import" href="options.html">
+                                <link rel="import" href="about.html">
+                                <div id="query_search_info">
+                                </div>
+                                <!--
 -->
-                        </section>
-                <nav data-type="scrollbar" id="punchcard_scrollbar">
-                        <ol>
-                                <li><a href="#"><span class="pack-icon-search">Search</span></a></li>
-                                <li><a href="#"><span class="pack-icon-favorites">Favorites</span></a></li>
-                                <!--                                         <li><a href="#">search</li>
+                                </section>
+                        <nav data-type="scrollbar" id="punchcard_scrollbar">
+                                <ol>
+                                        <li><a href="#" data-icon="search"><span>Search</span></a></li>
+                                        <li><a href="#" data-icon="star-empty"><span>Favorites</span></a></li>
+                                        <!--                                         <li><a href="#">search</li>
 <li><a href="#">favorites</li> -->
-                                <li><a href="#">A</a></li>
-                                <li><a href="#">B</a></li>
-                                <li><a href="#">C</a></li>
-                                <li><a href="#">D</a></li>
-                                <li><a href="#">E</a></li>
-                                <li><a href="#">F</a></li>
-                                <li><a href="#">G</a></li>
-                                <li><a href="#">H</a></li>
-                                <li><a href="#">I</a></li>
-                                <li><a href="#">J</a></li>
-                                <li><a href="#">K</a></li>
-                                <li><a href="#">L</a></li>
-                                <li><a href="#">M</a></li>
-                                <li><a href="#">N</a></li>
-                                <li><a href="#">O</a></li>
-                                <li><a href="#">P</a></li>
-                                <li><a href="#">Q</a></li>
-                                <li><a href="#">R</a></li>
-                                <li><a href="#">S</a></li>
-                                <li><a href="#">T</a></li>
-                                <li><a href="#">U</a></li>
-                                <li><a href="#">V</a></li>
-                                <li><a href="#">W</a></li>
-                                <li><a href="#">X</a></li>
-                                <li><a href="#">Y</a></li>
-                                <li><a href="#">Z</a></li>
-                                <li><a href="#entries">Top of the list</a></li>
-                        </ol>
-                </nav>
-                <script type="text/javascript" data-main="/js/index.js" src="bower_components/alameda/alameda.js" defer></script>
-                </body>
-        </html>
+                                        <li><a href="#">A</a></li>
+                                        <li><a href="#">B</a></li>
+                                        <li><a href="#">C</a></li>
+                                        <li><a href="#">D</a></li>
+                                        <li><a href="#">E</a></li>
+                                        <li><a href="#">F</a></li>
+                                        <li><a href="#">G</a></li>
+                                        <li><a href="#">H</a></li>
+                                        <li><a href="#">I</a></li>
+                                        <li><a href="#">J</a></li>
+                                        <li><a href="#">K</a></li>
+                                        <li><a href="#">L</a></li>
+                                        <li><a href="#">M</a></li>
+                                        <li><a href="#">N</a></li>
+                                        <li><a href="#">O</a></li>
+                                        <li><a href="#">P</a></li>
+                                        <li><a href="#">Q</a></li>
+                                        <li><a href="#">R</a></li>
+                                        <li><a href="#">S</a></li>
+                                        <li><a href="#">T</a></li>
+                                        <li><a href="#">U</a></li>
+                                        <li><a href="#">V</a></li>
+                                        <li><a href="#">W</a></li>
+                                        <li><a href="#">X</a></li>
+                                        <li><a href="#">Y</a></li>
+                                        <li><a href="#">Z</a></li>
+                                        <li><a href="#entries">Top of the list</a></li>
+                                </ol>
+                        </nav>
+                        <script type="text/javascript" data-main="/js/index.js" src="bower_components/alameda/alameda.js" defer></script>
+                        </body>
+                </html>

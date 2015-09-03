@@ -16,6 +16,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   var addReadOnlyInfo = infojs;
   var XHR_TIMEOUT_MS = 30000;
   var cookie;
+  var setCookie;
   // var translate = navigator.mozL10n.get;
   // var addReadOnlyInfo = require(['js/info.js']);
   // var addReadOnlyInfo = require('../../js/info.js');
@@ -141,29 +142,22 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     //                     headers: {
     //                       'Content-Type': 'application/json'
     //                     }};
-    var opts = {
-      method: 'POST',
-      auth:
-      {'username': document.getElementById('user').value,
-       'password': document.getElementById('pass').value
-      },
-      // ajax: {
-      // 'Cookie': cookie/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
-      // },
-      headers: {
-        // 'AuthSession': cookie.split('=')[1]/*'JSESSIONID=1wtfchn9kjjn7xywspx4jz2z1'*/
-        //'Accept': 'application/json',
-        //'Content-Type': 'application/json',
-        // 'Accept': 'text/chunked',
-        // 'Content-Type': 'text/chunked'
-        // 'Accept': 'text/plain',
-        // 'Content-Type': 'text/plain'
-        //'Access-Control-Request-Method': 'POST'
-        //           'Authorization': 'Basic ' +
-        //           window.btoa(document.getElementById('user').value + ':' +
-        //                       document.getElementById('pass').value)
+    var myXHR = function () {
+      var request;
+      if (/* false && */window.location.protocol == "app:") {
+        request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
       }
-      //}
+      else {
+        request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
+        // request = new XMLHttpRequest();
+      }
+      return request;
+    }
+    var opts = {
+      ajax: {
+        xhr: myXHR,
+        headers: { 'Cookie': cookie }
+      }
     };
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
@@ -174,7 +168,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       addReadOnlyInfo(err, infoNode);
     });
     var myInfo = {};
-    var replication = db.sync(remoteDB)
+    var replication = PouchDB.sync(db, remoteDB)
     .on('change', function (info) {
       myInfo[db._db_name] = info;
       addReadOnlyInfo(myInfo, infoNode);
@@ -351,15 +345,18 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     }
     // console.log(event.type, event);
   });
-  // login.addEventListener('click', function(e) {
-  //   e.preventDefault();
-  //   
-  //   // FIXME: async!
-  //   if (sessionLogin(sessionUrl, document.getElementById('user').value, password)) {
-  //   }
-  // });
+  login.addEventListener('click', function(e) {
+    // e.preventDefault();
+    // FIXME: async!
+    var sessionUrl = document.getElementById('protocol').value +
+        document.getElementById('hostportpath').value + '_session';
+    if (sessionLogin(sessionUrl, document.getElementById('user').value, document.getElementById('pass').value)) {
+    }
+  });
   logout.addEventListener('click', function(e) {
-    e.preventDefault();
+    var sessionUrl = document.getElementById('protocol').value +
+        document.getElementById('hostportpath').value + '_session';
+    // e.preventDefault();
     if (sessionLogout(sessionUrl)) {
       cookie = '';
     }
@@ -400,7 +397,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
       // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
       // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-      request = new XMLHttpRequest({ mozSystem: false, withCredentials: true });
+      request = new XMLHttpRequest({ mozSystem: false, mozAnon: true });
       // request.overrideMimeType("application/json");
       request.open('GET', url, !!'async');
       request.setRequestHeader('Cookie', cookie);
@@ -432,51 +429,116 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   };
 
   var sessionLogin = function (url, username, password) {
-    var request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+    // Returns AuthSession header in Firefox OS App with systemXHR permission
+    var request;
+    if (/* false && */window.location.protocol == "app:") {
+      request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
+    }
+    else {
+      request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
+      // request = new XMLHttpRequest();
+    }
     // TODO: sends username:password@ as part of the URL, exposing password in firefox net log!
     // NOTE: fauxton uses Authorization Basic
     // request.open('POST', url, !!'async'/*, username, password*/);
     request.open('POST', url, !!'async'/*, username, password*/);
+    // if (/* false && */window.location.protocol == "app:") {
+    // }
+    // else {
+    // }
+    // request.withCredentials = true;
+    request.setRequestHeader('Authorization', 'Basic ' + btoa(username + ':' + password));
     // request.open('POST', url, !!'async', username, password);
     // request.open('POST', url, !!'async', '_', '_');
-    request.setRequestHeader('Authorization', 'Basic ' + btoa(username + ':' + password));
+    // Required both in Firefox OS and Web App
+    // request.setRequestHeader('X-PINGOTHER', 'pingpong');
+    if (/* false && */window.location.protocol == "app:") {
+    }
+    else {
+      request.withCredentials = true;
+    }
+    // request.setRequestHeader('Access-Control-Expose-Headers', 'Cookie, Set-Cookie');
+    // request.setRequestHeader('Access-Control-Request-Headers', 'authorization,content-type,Set-Cookie');
     request.timeout = XHR_TIMEOUT_MS;
     request.ontimeout = onRequestError;
     request.onerror = onRequestError;
+    // request.setRequestHeader('Content-Type', 'text/plain');
     request.setRequestHeader('Content-Type', 'application/json');
     // request.setRequestHeader('Accept', 'application/json, text/javascript, */*; q=0.01');
-    request.send(JSON.stringify({'name': username, 'password': password}));
-    // request.send();
-    request.onreadystatechange = function() {
-      if (this.readyState == 4) {
+    // request.setRequestHeader('Accept', 'application/json');
+    //request.setRequestHeader('Access-Control-Allow-Credentials', 'true');
+    // Seems to be equivalent to state request.DONE
+    // request.onload = function() {
+    //     var infoNode = document.getElementById('replication_info');
+    //     addReadOnlyInfo('request.onloadend ... ', infoNode);
+    //     addReadOnlyInfo('this.readyState = ' + this.readyState, infoNode);
+    //     addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
+    //     addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
+    //     addReadOnlyInfo('request.response = ' + request.response, infoNode);
+    // };
+    // request.onreadystatechange = function() {
+    // request.onprogress = function() {
+    request.onload = function() {
+      if (/* true || */this.readyState == request.DONE) {
+        var infoNode = document.getElementById('replication_info');
+        addReadOnlyInfo('this.readyState = ' + this.readyState, infoNode);
+        addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
+        addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
+        addReadOnlyInfo('request.response = ' + request.response, infoNode);
+        addReadOnlyInfo('request.response.cookies = ' + request.response.cookies, infoNode);
         // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-        // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-        cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
-        if (cookie && cookie.length) {
-          addReadOnlyInfo(cookie, document.body);
+        addReadOnlyInfo('this.getResponseHeader("Cookie") = ' + this.getResponseHeader('Cookie'), infoNode);
+        addReadOnlyInfo('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'), infoNode);
+        setCookie = this.getResponseHeader('Set-Cookie');
+        if (setCookie) {
+          cookie = 
+            setCookie.split(';')[0];
+          addReadOnlyInfo(cookie, infoNode);
           // load.removeAttribute('disabled');
         }
         // alert('request.responseText = ' + request.responseText);
         // alert('request.response = ' + request.response);
       }
     }
+    request.send(JSON.stringify({'name': username, 'password': password/*, 'next': '/'*/}));
+    // request.send();
     // FIXME: async!
     // return cookie;
   };
 
   var sessionLogout = function (url) {
-    var request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+    var request;
+    if (/* false && */window.location.protocol == "app:") {
+      request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
+    }
+    else {
+      request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
+      // request = new XMLHttpRequest();
+    }
     request.open('DELETE', url, !!'async');
-    request.setRequestHeader('Cookie', cookie);
+    if (/* false && */window.location.protocol == "app:") {
+      request.setRequestHeader('Cookie', cookie);
+      cookie = "";
+    }
+    else {
+      request.withCredentials = true;
+    }
+    // request.setRequestHeader('Authorization', 'Basic ' + btoa(document.getElementById('user').value + ':' + document.getElementById('pass').value));
+    // Verified to be necessary in Firefox OS to delete cookie.
     request.timeout = XHR_TIMEOUT_MS;
     request.ontimeout = onRequestError;
     request.onerror = onRequestError;
-    request.send();
-    request.onreadystatechange = function() {
-      if (this.readyState == 4) {
+    // request.onreadystatechange = function() {
+    // request.onprogress = function() {
+    request.onload = function() {
+      if (/* true || */this.readyState == 4) {
+        var infoNode = document.getElementById('replication_info');
+        addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
+        addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
+        addReadOnlyInfo('request.response = ' + request.response, infoNode);
         // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
         // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-        var data = JSON.parse(request.response);
+        var data = request.response && JSON.parse(request.response);
         if (data && data.ok) {
           // load.setAttribute('disabled', true);
         }
@@ -484,6 +546,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
         // return data.ok;
       }
     }
+    request.send();
     // FIXME: async!
     // return false;
   };
@@ -509,8 +572,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     }
     jsonText.textContent = response;
     reportError(jsonText);
-    return;
     results.textContent = '';
+    return;
 
     var documents = response.documents;
 
@@ -562,7 +625,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
 
 
   var showError = function (text) {
-    addReadOnlyInfo(text, document.body);
+    var infoNode = document.getElementById('replication_info');
+    addReadOnlyInfo(text, infoNode);
     // errorMsg.textContent = text;
     // errorMsg.hidden = false;
     // results.hidden = true;

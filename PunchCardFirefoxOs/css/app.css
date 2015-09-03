@@ -20,7 +20,7 @@ div {
   /*   border: 1px solid; */
   margin: 0 0 0;
   padding: 0 0 0;
-/*     display: inline-block; */
+  /*     display: inline-block; */
 }
 
 div.entry {
@@ -45,39 +45,55 @@ span {
 pre {
   margin: 0 0 0;
   padding: 0 0 0;
-  /*   border: 1px solid; */
-  white-space: nowrap;
+  border: 0;
+  /*     border: 1px solid; */
+  display: inline-block;
+  /*   overflow: hidden; */
   overflow: hidden;
-  text-overflow: ellipsis ellipsis;
+  white-space: nowrap;
+}
+
+pre:hover {
+  color: white;
+  background-color: black;
 }
 
 pre.start {
-  display: inline-block;
-  width: 55%;
-  direction: ltr;
-  text-overflow: clip ellipsis;
+  width: 50%;
+  /*   direction: ltr;
+  text-overflow: clip ellipsis; */
 }
 
 pre.end {
-  display: inline-block;
-  width: 45%;
-  direction: ltr;
-  text-overflow: ellipsis clip;
+  width: 50%;
+  /*   direction: ltr;
+  text-overflow: ellipsis clip; */
 }
 
 pre.duration {
-  display: inline-block;
-  direction: ltr;
-  text-overflow: clip ellipsis;
+  width: 50%;
+  /*   text-overflow: clip ellipsis; */
+}
+
+pre.revisions {
+  width: 50%;
+  /*   text-overflow: clip ellipsis; */
 }
 
 pre.start:hover {
-  direction: rtl;
+  white-space: pre-wrap;
 }
 
-pre.start:hover + pre.end {
-  direction: rtl;
-  text-overflow: ellipsis clip;
+pre.end:hover {
+  white-space: pre-wrap;
+}
+
+pre.duration:hover {
+  white-space: pre-wrap;
+}
+
+pre.revisions:hover {
+  white-space: pre-wrap;
 }
 
 /*pre:focus {
@@ -94,6 +110,14 @@ white-space: pre-wrap;
 / *   white-space: pre; * /
 }*/
 
+pre.activity {
+  /*   color:blue; */
+  /*   font-size: larger; */
+  display: block;
+  text-overflow: ellipsis ellipsis;
+  /*     white-space: pre; */
+}
+
 pre.activity:hover {
   /*   color:blue; */
   /*   font-size: larger; */
@@ -105,8 +129,8 @@ pre.activity:hover {
 
 .changed {
   /*   background: lightgreen; */
-/*   font-weight: bold; */
-/*   background-color: aliceblue; */
+  /*   font-weight: bold; */
+  /*   background-color: aliceblue; */
   background-color: greenyellow;
 }
 
@@ -117,7 +141,7 @@ nav#punchcard_scrollbar li {
 }
 
 nav#punchcard_scrollbar:active li {
-right: 0;
+  right: 0;
 }
 
 nav#punchcard_scrollbar {
@@ -158,7 +182,7 @@ nav#punchcard_scrollbar li a:hover {
 }
 
 /* nav#punchcard_scrollbar li a:active {
-  color: blue;
+color: blue;
 } */
 
 /* nav[data-type="scrollbar"] {
@@ -202,7 +226,7 @@ width: -moz-calc(100% + 1.5rem);
 }
 
 div#entries {
-  /*   width: 90%; */
+/*     width: 90%; */
   /*   max-height: 50%; */
 }
 

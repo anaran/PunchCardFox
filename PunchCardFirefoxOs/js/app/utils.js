@@ -48,6 +48,8 @@ define(function (require) {
     }
     return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
   };
+  // FIXME: this module must not have a hardcoded pouchdb reference!
+  var db = new PouchDB('punchcard3');
   var addNewEntry = function (doc, entries, before) {
     var entry = document.createElement('div');
     // var span = document.createElement('span');
@@ -56,6 +58,7 @@ define(function (require) {
     var start = document.createElement('pre');
     var end = document.createElement('pre');
     var duration = document.createElement('pre');
+    var revisions = document.createElement('pre');
     var activity = document.createElement('pre');
     // start.contentEditable = true;
     // end.contentEditable = true;
@@ -66,6 +69,7 @@ define(function (require) {
     start.classList.add('start');
     end.classList.add('end');
     duration.classList.add('duration');
+    revisions.classList.add('end');
     activity.classList.add('activity');
     var startDate = new Date(doc.start || doc.clockin_ms);
     var endDate = new Date(doc.end || doc.clockout_ms);
@@ -97,6 +101,34 @@ define(function (require) {
     entry.appendChild(end);
     // entry.appendChild(span);
     entry.appendChild(duration);
+
+    db.get(doc._id, {
+      rev: doc._rev,
+      revs: true,
+      open_revs: "all"
+    }).then(function (otherDoc) {
+      revisions.textContent = otherDoc[0].ok._revisions.ids.length + ' revs';
+      // otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+      //   // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+      //   db.get(otherDoc[0].ok._id, {
+      //     open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+      //   }).then(function (otherDoc) {
+      //     // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+      //     if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+      //       // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+      //     }
+      //     else {
+      //     }
+      //     infojs({ 'rev': otherDoc }, entries);
+      //   }).catch(function (err) {
+      //     infojs({rev_error: err}, entries);
+      //   });
+      // });
+    }).catch(function (err) {
+      infojs({get_error:err}, entries);
+    });
+    entry.appendChild(revisions);
+
     entry.appendChild(activity);
     if (before) {
       // Insert before the first entry we find, if any.
