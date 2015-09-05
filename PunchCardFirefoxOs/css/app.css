@@ -138,22 +138,28 @@ pre.activity:hover {
 
 nav#punchcard_scrollbar li {
   text-align: right;
+  overflow: hidden;
 }
 
-nav#punchcard_scrollbar:active li {
-  right: 0;
+nav#punchcard_scrollbar:hover li {
+  overflow: visible;
 }
 
 nav#punchcard_scrollbar {
   position: absolute;
+  overflow: hidden;
   top: 3rem;
-  right: -8ex;
+  width: 3ex;
+  right: 0;
+/*   right: -8ex; */
   /*   transition: right 3s 3s; */
   /*   z-index: 2; */
 }
 
 nav#punchcard_scrollbar:hover {
   right: 0;
+  width: 20ex;
+  overflow: visible;
 }
 
 section#view-punchcard-list {

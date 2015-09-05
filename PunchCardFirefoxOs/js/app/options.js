@@ -144,7 +144,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     //                     }};
     var myXHR = function () {
       var request;
-      if (/* false && */window.location.protocol == "app:") {
+      if (false && /* false && */window.location.protocol == "app:") {
         request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
       }
       else {
@@ -156,7 +156,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var opts = {
       ajax: {
         xhr: myXHR,
-        headers: { 'Cookie': cookie }
+        // headers: { 'Cookie': cookie },
+        timeout: 30000
       }
     };
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
@@ -431,7 +432,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   var sessionLogin = function (url, username, password) {
     // Returns AuthSession header in Firefox OS App with systemXHR permission
     var request;
-    if (/* false && */window.location.protocol == "app:") {
+    if (false && /* false && */window.location.protocol == "app:") {
       request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
     }
     else {
@@ -448,11 +449,12 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // }
     // request.withCredentials = true;
     request.setRequestHeader('Authorization', 'Basic ' + btoa(username + ':' + password));
+    // request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     // request.open('POST', url, !!'async', username, password);
     // request.open('POST', url, !!'async', '_', '_');
     // Required both in Firefox OS and Web App
     // request.setRequestHeader('X-PINGOTHER', 'pingpong');
-    if (/* false && */window.location.protocol == "app:") {
+    if (false && /* false && */window.location.protocol == "app:") {
     }
     else {
       request.withCredentials = true;
@@ -479,9 +481,13 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // request.onreadystatechange = function() {
     // request.onprogress = function() {
     request.onload = function() {
-      if (/* true || */this.readyState == request.DONE) {
+      // if (this.status == 401 || this.status == 0) {
+      //   this.abort();
+      // }
+      if (/*true || */this.readyState == request.DONE) {
         var infoNode = document.getElementById('replication_info');
         addReadOnlyInfo('this.readyState = ' + this.readyState, infoNode);
+        addReadOnlyInfo('this.status = ' + this.status, infoNode);
         addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
         addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
         addReadOnlyInfo('request.response = ' + request.response, infoNode);
@@ -508,7 +514,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
 
   var sessionLogout = function (url) {
     var request;
-    if (/* false && */window.location.protocol == "app:") {
+    if (false && /* false && */window.location.protocol == "app:") {
       request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
     }
     else {
@@ -516,7 +522,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       // request = new XMLHttpRequest();
     }
     request.open('DELETE', url, !!'async');
-    if (/* false && */window.location.protocol == "app:") {
+    if (false && /* false && */window.location.protocol == "app:") {
       request.setRequestHeader('Cookie', cookie);
       cookie = "";
     }

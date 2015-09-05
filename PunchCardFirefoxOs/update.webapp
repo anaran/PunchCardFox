@@ -2,7 +2,7 @@
   "version": "0.1.0",
   "name": "pea",
   "description": "A template with the bare minimum structure",
-  "launch_path": "/build/index.html",
+  "package_path": "http://localhost:8000/pea.zip",
   "icons": {
     "16": "/img/icons/icon16x16.png",
     "48": "/img/icons/icon48x48.png",
@@ -13,9 +13,6 @@
     "name": "Your name",
     "url": "http://example.com"
   },
-  "installs_allowed_from": [
-    "*"
-  ],
   "locales": {
     "es": {
       "name": "Aplicación vacía privilegiada",

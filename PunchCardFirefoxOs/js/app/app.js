@@ -14,6 +14,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var db = new PouchDB('punchcard3');
   var entries = document.getElementById('entries');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+  scrollView.addEventListener('contextmenu', function (event) {
+    // event.preventDefault();
+    event.stopPropagation();
+    console.log(event.type, event);
+  });
   var scrollBar = document.querySelector('nav#punchcard_scrollbar');
   // scrollView.addEventListener('scroll', function (event) {
   //   scrollBar.style.right = '0';
