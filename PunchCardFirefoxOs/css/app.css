@@ -30,6 +30,9 @@ div.entry {
   border: 0.1em solid;
   /*   margin: 0 0 1rem; */
 }
+div.entry:hover * {
+  white-space: pre-wrap;
+}
 
 div.linked {
   /*   font-size: small; */
@@ -50,6 +53,7 @@ pre {
   display: inline-block;
   /*   overflow: hidden; */
   overflow: hidden;
+  text-overflow: ellipsis ellipsis;
   white-space: nowrap;
 }
 
@@ -80,11 +84,13 @@ pre.revisions {
   /*   text-overflow: clip ellipsis; */
 }
 
-pre.start:hover {
+/* pre.start:hover {
+  font-size: x-large;
   white-space: pre-wrap;
 }
 
 pre.end:hover {
+  font-size: x-large;
   white-space: pre-wrap;
 }
 
@@ -94,7 +100,7 @@ pre.duration:hover {
 
 pre.revisions:hover {
   white-space: pre-wrap;
-}
+} */
 
 /*pre:focus {
 color: red;
@@ -114,7 +120,6 @@ pre.activity {
   /*   color:blue; */
   /*   font-size: larger; */
   display: block;
-  text-overflow: ellipsis ellipsis;
   /*     white-space: pre; */
 }
 

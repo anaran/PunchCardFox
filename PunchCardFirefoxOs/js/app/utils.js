@@ -69,7 +69,7 @@ define(function (require) {
     start.classList.add('start');
     end.classList.add('end');
     duration.classList.add('duration');
-    revisions.classList.add('end');
+    revisions.classList.add('revisions');
     activity.classList.add('activity');
     var startDate = new Date(doc.start || doc.clockin_ms);
     var endDate = new Date(doc.end || doc.clockout_ms);

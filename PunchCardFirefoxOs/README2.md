@@ -41,6 +41,12 @@ I was able to run a trivial query on view `'foolin/by_start'` (replicated from a
 
 - ◻ [markdown-editor](http://jbt.github.io/markdown-editor) looks good too, uses marked, CM, highlight.js, js-deflate.
 
+## Testing GFM TDO Support
+
+- [ ] open item
+
+- [x] closed item
+
 ## App Documentation
 
 I try
@@ -60,6 +66,19 @@ Missing `systemXHR` permission leads to:
   }
 },
 ```
+
+I have decided to not use systemXHR at all.
+
+his app currently (2015-09-06) works as
+
+- hosted app (cannot be privileged unless reviewed and hosted in firefox marketplace),
+- firefox os app,
+- desktop open web app on linux and windows installable by self-hosted install.html (see [Building Open Web App Package](#building-open-web-app-package)).
+
+systemXHR also exposes the `Set-Cookie` response header to the client and requires it to send the `Cookie` header in subsequent requests.
+
+Without this the authorization cookie is handled transparently to the client in all types of this web app.
+
 
 ## Couchdb Cookie Authentication
 
@@ -81,6 +100,8 @@ Run
 
 to build zip file to be installed by install.html
 
+### Install Open Web App Package
+
 Only following files need to be served by web server to allow installation by visiting install.html
 
  * install.html
@@ -88,3 +109,14 @@ Only following files need to be served by web server to allow installation by vi
  * update.webapp
 
 
+### Uninstall Open Web App Package
+
+Does not seem to work via API in Windows:
+
+[1202248 – TypeError: navigator.mozApps.mgmt is undefined](https://bugzil.la/1202248)
+
+Best way there is to find the app via its shortcut properties.
+
+It is likely located in `%APPDATA%`.
+
+Run its `uninstall\\webapp-uninstaller.exe`
