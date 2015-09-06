@@ -18,11 +18,14 @@ in about:config
 ## Content Security Policy
 
 Did not work:
+
     "csp": "default-src *; script-src *; object-src 'none'; style-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    
 to overcome CSP error in pouchdb when querying couchdb view.
+
 According to daleharvey#pouchdb views cannot work in fxos privileged apps.
 
-I was able to run a trivial `by_clockout` query from a couchdb replicated view using
+I was able to run a trivial query on view `'foolin/by_start'` (replicated from a couchdb) using
 [pouchdb.mapreduce.noeval](https://github.com/evidenceprime/pouchdb.mapreduce.noeval#pouchdbmapreducenoeval)
 ## TODO
 
@@ -69,3 +72,19 @@ While I liked the build-less setup I am now using [spock](https://www.npmjs.com/
 This allows modularization while I investigate how to do this dynamically without a build step.
 
 Initial attempts using requirejs-tmpl, apps/email element.js and template.js (suggested by jrburke, failing due to my gaia-components setup) have all failed so far.
+
+### Building Open Web App Package
+
+Run
+
+```zip -r pea.zip manifest.webapp img js bower_components/ scrolling.css build css data README*```
+
+to build zip file to be installed by install.html
+
+Only following files need to be served by web server to allow installation by visiting install.html
+
+ * install.html
+ * pea.zip
+ * update.webapp
+
+
