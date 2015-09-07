@@ -55,53 +55,53 @@ own language (as long as you provide translations).
         </head>
         <body role="application">
                 <link rel="import" href="common-header.html">
+                <!--                 NOTE: Firefox OS support only one level of menu. -->
                 <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-                        <!--                 NOTE: Firefox OS support only one level of menu. -->
-                        <menu type="list" id="start_menu">
+                        <link rel="import" href="new_entry.html">
+                        <link rel="import" href="options.html">
+                        <link rel="import" href="about.html">
+                        <div id="query_search_info">
+                        </div>
+                        <!--                 <article class="view-body"> -->
+                        <div id="entries">
+                                <!--
+-->
+                                </section>
+                        <div id="start_menu" class="menu">
                                 <!--                         <menu label="Start Menu"> -->
-                                <menuitem id="start_now" label="start now"></menuitem>
+                                <a id="start_now" href="start_now">start now</a>
                                 <!--                                 <a id="start_now" href="/index.html">start now</a> -->
-                                <menuitem id="start_undefined" label="start is undefined"></menuitem>
-                                <menuitem id="start_at_end" label="start at end"></menuitem>
-                        </menu>
+                                <a id="start_undefined" href="start_undefined">start is undefined</a>
+                                <a id="start_at_end" href="start_at_end">start at end</a>
+                        </div>
                         <!--                 </menu> -->
-                        <menu type="context" id="end_menu">
+                        <div id="end_menu" class="menu">
                                 <!--                         <menu label="End Menu"> -->
-                                <menuitem id="end_now" label="end now"></menuitem>
-                                <menuitem id="end_undefined" label="end is undefined"></menuitem>
-                                <menuitem id="end_at_start" label="end at start"></menuitem>
+                                <a id="end_now" href="end_now">end now</a>
+                                <a id="end_undefined" href="end_undefined">end is undefined</a>
+                                <a id="end_at_start" href="end_at_start">end at start</a>
                                 <!--                         </menu> -->
-                        </menu>
-                        <!--                 <menu type="context" id="end_menu">
+                        </div>
+                        <!--                 <div id="end_menu" class="menu">
 <li><a>end now</a></li>
 <li><a href="/index.html#b">end is undefined</a></li>
 <li><a>end at start</a></li>
 </menu> -->
-                        <menu type="context" id="activity_menu">
+                        <div id="activity_menu" class="menu">
                                 <!--                         <menu label="Activity Menu">
-<menuitem id="copy_activity_menuitem" label="copy activity"></menuitem>
+<a id="copy_activity_menuitem" href="copy_activity_menuitem">copy activity</a>
 -->
-                                <menuitem id="edit" label="edit"></menuitem>
-                                <menuitem id="edit_new_copy" label="edit new copy"></menuitem>
-                                <menuitem id="repeat_now" label="repeat now"></menuitem>
-                                <menuitem id="insert_parallel_activity" label="insert parallel activity"></menuitem>
-                                <menuitem id="delete" label="delete"></menuitem>
+                                <a id="edit" href="edit">edit</a>
+                                <a id="edit_new_copy" href="edit_new_copy">edit new copy</a>
+                                <a id="repeat_now" href="repeat_now">repeat now</a>
+                                <a id="insert_parallel_activity" href="insert_parallel_activity">insert parallel activity</a>
+                                <a id="delete" href="delete">delete</a>
                                 <!--                                 <li><a>edit</a></li>
 <li><a>insert parallel activity</a></li>
 <li><a href="/options.html#c">show only this activity</a></li>
 <li><a>show all activities</a></li> -->
                                 <!--                         </menu> -->
-                        </menu>
-                        <!--                 <article class="view-body"> -->
-                        <div id="entries">
-                                <link rel="import" href="new_entry.html">
-                                <link rel="import" href="options.html">
-                                <link rel="import" href="about.html">
-                                <div id="query_search_info">
-                                </div>
-                                <!--
--->
-                                </section>
+                        </div>
                         <nav data-type="scrollbar" id="punchcard_scrollbar">
                                 <ol>
                                         <li><a href="#" data-icon="search"><span>Search</span></a></li>

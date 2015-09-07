@@ -14,9 +14,34 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var db = new PouchDB('punchcard3');
   var entries = document.getElementById('entries');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-  scrollView.addEventListener('contextmenu', function (event) {
-    // event.preventDefault();
+  scrollView.addEventListener('click', function (event) {
+    event.preventDefault();
     event.stopPropagation();
+    var startMenu = document.getElementById('start_menu');
+    var endMenu = document.getElementById('end_menu');
+    var activityMenu = document.getElementById('activity_menu');
+    [
+      startMenu,
+      endMenu,
+      activityMenu
+    ].forEach(function (menu) {
+      menu.style.display = 'none';
+    });
+      var bcr = event.target.getBoundingClientRect();
+    if (event.target.classList.contains("start")) {
+      startMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
+      startMenu.dataset.id = event.target.parentElement.id;
+    }
+    if (event.target.classList.contains("end")) {
+      endMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
+      endMenu.dataset.id = event.target.parentElement.id;
+    }
+    if (event.target.classList.contains("revisions")) {
+    }
+    if (event.target.classList.contains("activity")) {
+      activityMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
+      activityMenu.dataset.id = event.target.parentElement.id;
+    }
     console.log(event.type, event);
   });
   var scrollBar = document.querySelector('nav#punchcard_scrollbar');
@@ -35,7 +60,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // });
   // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
   var startNow = function (event) {
+    event.preventDefault();
     var id = event.target.parentElement.dataset.id;
+    event.target.parentElement.style.display = 'none';
     db.get(id).then(function(otherDoc) {
       var now = new Date;
       otherDoc.start = now.toJSON();
@@ -59,7 +86,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     startNowItem.addEventListener('click', startNow);
   }
   var endNow = function (event) {
+    event.preventDefault();
     var id = event.target.parentElement.dataset.id;
+    event.target.parentElement.style.display = 'none';
     db.get(id).then(function(otherDoc) {
       var now = new Date;
       otherDoc.end = now.toJSON();
@@ -81,6 +110,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     endNowItem.addEventListener('click', endNow);
   }
   var edit = function (event) {
+    event.preventDefault();
     var newEntry = document.querySelector('#new_entry');
     require(['./new'], function (newjs) {
       if (newEntry && newjs) {
@@ -91,6 +121,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
 
           ediNewItem.style.opacity = '0.3';
           var id = event.target.parentElement.dataset.id;
+          event.target.parentElement.style.display = 'none';
           newjs.init(id);
           var a = document.createElement('a');
           // a.href = '/build/new.html#' + id;
@@ -106,6 +137,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     editItem.addEventListener('click', edit);
   }
   var editNewCopy = function (event) {
+    event.preventDefault();
     var newEntry = document.querySelector('#new_entry');
     require(['./new'], function (newjs) {
       if (newEntry && newjs) {
@@ -116,6 +148,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
 
           ediNewItem.style.opacity = '0.3';
           var id = event.target.parentElement.dataset.id;
+          event.target.parentElement.style.display = 'none';
           db.get(id).then(function(otherDoc) {
             var entry = {
               // _id: db.post(),
@@ -159,6 +192,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     event.preventDefault();
     event.stopPropagation();
     var id = event.target.parentElement.dataset.id;
+    event.target.parentElement.style.display = 'none';
     // NOTE: Works, but too silly to be considered.
     // var activityItem = document.getElementById(id).querySelector('pre.activity');
     // var s = getSelection();
@@ -300,7 +334,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
 
 
   var repeatNow = function (event) {
+    event.preventDefault();
     var id = event.target.parentElement.dataset.id;
+    event.target.parentElement.style.display = 'none';
     db.get(id).then(function(otherDoc) {
       var entry = {
         // _id: db.post(),
@@ -331,7 +367,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     repeatNowItem.addEventListener('click', repeatNow);
   }
   var deleteEntry = function (event) {
+    event.preventDefault();
     var id = event.target.parentElement.dataset.id;
+    event.target.parentElement.style.display = 'none';
     db.get(id).then(function(doc) {
       if (window.confirm('Delete entry? ' + doc.activity)) {
         if (true) {

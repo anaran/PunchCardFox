@@ -77,18 +77,18 @@ define(function (require) {
     end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
-    start.setAttribute('contextmenu', 'start_menu');
-    start.addEventListener('contextmenu', function (event) {
-      this.contextMenu.dataset.id = event.target.parentElement.id;
-    });
-    end.setAttribute('contextmenu', 'end_menu');
-    end.addEventListener('contextmenu', function (event) {
-      this.contextMenu.dataset.id = event.target.parentElement.id;
-    });
-    activity.setAttribute('contextmenu', 'activity_menu');
-    activity.addEventListener('contextmenu', function (event) {
-      this.contextMenu.dataset.id = event.target.parentElement.id;
-    });
+    // start.setAttribute('contextmenu', 'start_menu');
+    // start.addEventListener('contextmenu', function (event) {
+    //   this.contextMenu.dataset.id = event.target.parentElement.id;
+    // });
+    // end.setAttribute('contextmenu', 'end_menu');
+    // end.addEventListener('contextmenu', function (event) {
+    //   this.contextMenu.dataset.id = event.target.parentElement.id;
+    // });
+    // activity.setAttribute('contextmenu', 'activity_menu');
+    // activity.addEventListener('contextmenu', function (event) {
+    //   this.contextMenu.dataset.id = event.target.parentElement.id;
+    // });
     //         activity.addEventListener('focus', function (event) {
     //           event.target.removeAttribute('rows');
     //         });
