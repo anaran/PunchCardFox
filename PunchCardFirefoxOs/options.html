@@ -1,13 +1,13 @@
 <section id="options" style="display: none;">
         <section>
-                <input type="search" id="include" data-l10n-id="include" placeholder="must match"/>
-                <input type="checkbox" id="include_case" data-l10n-id="include_case"/>
-                <input type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
-                <input type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
-                <input type="number" id="match_limit" data-l10n-id="match_limit"/>
-                <input type="number" id="limit" data-l10n-id="limit"/>
-                <input type="checkbox" id="descending" data-l10n-id="descending"/>
-                <input type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id"/>
+                <input class="persistent" type="search" id="include" data-l10n-id="include" placeholder="must match"/>
+                <input class="persistent" type="checkbox" id="include_case" data-l10n-id="include_case"/>
+                <input class="persistent" type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match"/>
+                <input class="persistent" type="checkbox" id="exclude_case" data-l10n-id="exclude_case"/>
+                <input class="persistent" type="number" id="match_limit" data-l10n-id="match_limit"/>
+                <input class="persistent" type="number" id="limit" data-l10n-id="limit"/>
+                <input class="persistent" type="checkbox" id="descending" data-l10n-id="descending"/>
+                <input class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id"/>
         </section>
         <section>
                 <button id="import" data-l10n-id="import">Import</button>
@@ -22,10 +22,10 @@
                 </p>
         </section>
         <section>
-                <input type="text" id="protocol" data-l10n-id="protocol" value="https://"/>
-                <input type="password" id="user" data-l10n-id="user" placeholder="user"/>
+                <input class="persistent" type="text" id="protocol" data-l10n-id="protocol" value="https://"/>
+                <input class="persistent" type="password" id="user" data-l10n-id="user" placeholder="user"/>
                 <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"/>
-                <input type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path"/>
+                <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path"/>
                 <button id="start_replication" data-l10n-id="start">Start Live Replication</button>
                 <p id="replication_info">
                 </p>

@@ -103,7 +103,7 @@ pre.revisions:hover {
   white-space: pre-wrap;
 } */
 
-/*pre:focus {
+/*pre:hover {
 color: red;
 overflow: visible;
 white-space: pre-wrap;

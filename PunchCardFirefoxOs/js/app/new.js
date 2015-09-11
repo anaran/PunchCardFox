@@ -275,11 +275,6 @@ try {
       return time;
     };
 
-    // var translate = navigator.mozL10n.get;
-
-    // We want to wait until the localisations library has loaded all the strings.
-    // So we'll tell it to let us know once it's ready.
-    // navigator.mozL10n.once(start);
     var isValidEntry = function (entry) {
       if (!!entry.activity &&
           !!entry.activity.length &&

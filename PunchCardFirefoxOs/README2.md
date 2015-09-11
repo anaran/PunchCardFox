@@ -115,8 +115,8 @@ Does not seem to work via API in Windows:
 
 [1202248 – TypeError: navigator.mozApps.mgmt is undefined](https://bugzil.la/1202248)
 
-Best way there is to find the app via its shortcut properties.
+Find the installation directory in its dektop shortcut properties.
 
 It is likely located in `%APPDATA%`.
 
-Run its `uninstall\\webapp-uninstaller.exe`
+Run its `uninstall\webapp-uninstaller.exe`.

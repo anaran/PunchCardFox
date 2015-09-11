@@ -13,36 +13,54 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // var db = new PouchDB('apa-test-2');
   var db = new PouchDB('punchcard3');
   var entries = document.getElementById('entries');
+  var otherView = document.querySelector('section#view-after-punchcard-list');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   scrollView.addEventListener('click', function (event) {
-    event.preventDefault();
-    event.stopPropagation();
+    // event.preventDefault();
+    // event.stopPropagation();
     var startMenu = document.getElementById('start_menu');
     var endMenu = document.getElementById('end_menu');
     var activityMenu = document.getElementById('activity_menu');
-    [
-      startMenu,
-      endMenu,
-      activityMenu
-    ].forEach(function (menu) {
-      menu.style.display = 'none';
-    });
-      var bcr = event.target.getBoundingClientRect();
+    // [
+    //   startMenu,
+    //   endMenu,
+    //   activityMenu
+    // ].forEach(function (menu) {
+    //   menu.style.display = 'none';
+    // });
+    var bcr = event.target.getBoundingClientRect();
     if (event.target.classList.contains("start")) {
-      startMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
-      startMenu.dataset.id = event.target.parentElement.id;
+      if (startMenu.style.display == 'none') {
+        startMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
+        startMenu.dataset.id = event.target.parentElement.id;
+      }
+      else {
+        startMenu.style = 'display: none;';
+        delete startMenu.dataset.id;
+      }
     }
     if (event.target.classList.contains("end")) {
-      endMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
-      endMenu.dataset.id = event.target.parentElement.id;
+      if (endMenu.style.display == 'none') {
+        endMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
+        endMenu.dataset.id = event.target.parentElement.id;
+      }
+      else {
+        endMenu.style = 'display: none;';
+        delete endMenu.dataset.id;
+      }
     }
     if (event.target.classList.contains("revisions")) {
     }
     if (event.target.classList.contains("activity")) {
-      activityMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
-      activityMenu.dataset.id = event.target.parentElement.id;
+      if (activityMenu.style.display == 'none') {
+        activityMenu.style = 'display: block; top: ' + bcr.bottom + 'px; left: ' + bcr.left + 'px';
+        activityMenu.dataset.id = event.target.parentElement.id;
+      }
+      else {
+        activityMenu.style = 'display: none;';
+        delete activityMenu.dataset.id;
+      }
     }
-    console.log(event.type, event);
   });
   var scrollBar = document.querySelector('nav#punchcard_scrollbar');
   // scrollView.addEventListener('scroll', function (event) {
@@ -61,8 +79,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
   var startNow = function (event) {
     event.preventDefault();
-    var id = event.target.parentElement.dataset.id;
-    event.target.parentElement.style.display = 'none';
+    var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var now = new Date;
       otherDoc.start = now.toJSON();
@@ -87,8 +104,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   }
   var endNow = function (event) {
     event.preventDefault();
-    var id = event.target.parentElement.dataset.id;
-    event.target.parentElement.style.display = 'none';
+    var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var now = new Date;
       otherDoc.end = now.toJSON();
@@ -120,8 +136,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           // TODO: Re-use of header icon for existing and new entries may be confusing.
 
           ediNewItem.style.opacity = '0.3';
-          var id = event.target.parentElement.dataset.id;
-          event.target.parentElement.style.display = 'none';
+          var id = getDataSetIdHideMenu(event);
           newjs.init(id);
           var a = document.createElement('a');
           // a.href = '/build/new.html#' + id;
@@ -147,8 +162,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           // TODO: Re-use of header icon for existing and new entries may be confusing.
 
           ediNewItem.style.opacity = '0.3';
-          var id = event.target.parentElement.dataset.id;
-          event.target.parentElement.style.display = 'none';
+          var id = getDataSetIdHideMenu(event);
           db.get(id).then(function(otherDoc) {
             var entry = {
               // _id: db.post(),
@@ -191,8 +205,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var copyActivity = function(event) {
     event.preventDefault();
     event.stopPropagation();
-    var id = event.target.parentElement.dataset.id;
-    event.target.parentElement.style.display = 'none';
+    var id = getDataSetIdHideMenu(event);
     // NOTE: Works, but too silly to be considered.
     // var activityItem = document.getElementById(id).querySelector('pre.activity');
     // var s = getSelection();
@@ -219,9 +232,10 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       if (newjs) {
         if (newEntry) {
           if (newEntry.style.display == 'none') {
+            otherView.style.display = 'block';
             newEntry.style.display = 'block';
             event.target.style.opacity = '0.3';
-            var id = event.target.parentElement.dataset.id;
+            var id = event.target.parentElement.parentElement.dataset.id;
             var a = document.createElement('a');
             // a.href = '/build/new.html#' + id;
             a.href = '#new_entry'/* + id*/;
@@ -234,8 +248,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           else {
             var res = newjs.save();
             console.log(res);
-            res.then(function (result) {
+            res && res.then(function (result) {
               if (result) {
+                otherView.style.display = 'none';
                 newEntry.style.display = 'none';
                 event.target.style.opacity = '1.0';
                 // document.location.reload('force');
@@ -261,6 +276,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       if (aboutjs) {
         if (aboutElement) {
           if (aboutElement.style.display == 'none') {
+            otherView.style.display = 'block';
             aboutElement.style.display = 'block';
             event.target.style.opacity = '0.3';
             // Let user peruse about information...
@@ -268,6 +284,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           }
           else {
             // reload document location.
+            otherView.style.display = 'none';
             aboutElement.style.display = 'none';
             event.target.style.opacity = '1.0';
 
@@ -309,6 +326,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       if (optionjs) {
         if (optionsElement) {
           if (optionsElement.style.display == 'none') {
+            otherView.style.display = 'block';
             optionsElement.style.display = 'block';
             event.target.style.opacity = '0.3';
             // Let user change options...
@@ -316,9 +334,12 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           }
           else {
             // reload document location.
+            otherView.style.display = 'none';
             optionsElement.style.display = 'none';
             event.target.style.opacity = '1.0';
-            document.location.reload('force');
+            // document.location.reload('force');
+            console.log('doing document.location.reload();');
+            document.location.reload();
           }
         }
       }
@@ -327,16 +348,20 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var optionsItem = document.querySelector('a.settings');
   if (optionsItem) {
     optionsItem.addEventListener('click', toggleOptionDisplay);
-    optionsItem.addEventListener('contextmenu', function (event) {
-      window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');
-    });
+    // NOTE: Let's bring up a menu on click, if necessary, as is already done for #start_menu, etc.
+    // optionsItem.addEventListener('contextmenu', function (event) {
+    //   window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');
+    // });
   }
 
+  var getDataSetIdHideMenu = function(event) {
+    event.target.parentElement.parentElement.style.display = 'none';
+    return event.target.parentElement.parentElement.dataset.id;
+  }
 
   var repeatNow = function (event) {
     event.preventDefault();
-    var id = event.target.parentElement.dataset.id;
-    event.target.parentElement.style.display = 'none';
+    var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var entry = {
         // _id: db.post(),
@@ -368,8 +393,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   }
   var deleteEntry = function (event) {
     event.preventDefault();
-    var id = event.target.parentElement.dataset.id;
-    event.target.parentElement.style.display = 'none';
+    var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(doc) {
       if (window.confirm('Delete entry? ' + doc.activity)) {
         if (true) {
@@ -392,11 +416,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   if (deleteEntryItem) {
     deleteEntryItem.addEventListener('click', deleteEntry);
   }
-  var translate = navigator.mozL10n.get;
-
-  // We want to wait until the localisations library has loaded all the strings.
-  // So we'll tell it to let us know once it's ready.
-  // navigator.mozL10n.once(start);
   var map = {
     map:
     function(doc) {
@@ -414,6 +433,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     include_docs: true/*, 
   attachments: true*/
   }).then(function (result) {
+    console.log('reading all options for db for query configuration', result);
     // window.alert(JSON.stringify(result, null, 2));
     if ('rows' in result) {
       result.rows.forEach(function (option) {
@@ -502,7 +522,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       var limit = options.limit.length ? Number(options.limit) : undefined;
       var matchLimit = options.match_limit.length ? Number(options.match_limit) : undefined;
       var dec = !!options.descending;
-      var opts = { reduce: false, include_docs: true, descending: dec, limit: limit };
+      var opts = { include_docs: true, descending: dec, limit: limit };
       // startkey: "2015-02",
       // endkey: "2015-03",
       var queryInfoElement = document.getElementById('query_search_info');
@@ -511,67 +531,75 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
       var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
       var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
+      var query;
       if (isSearch) {
         queryInfoElement.textContent += '\nSearch limited to ' + matchLimit + ' matches of "' + includeRegExp +
           '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') +
           (limit ? ', limited to ' + limit + ' entries, found ' : ' found ');
+        console.time('query allDocs');
+        query = db.allDocs(opts);
+        console.timeEnd('query allDocs');
       } 
       else {
         queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ';
+        opts.reduce = false;
+        console.time('query by_start');
+        query = db.query('foolin/by_start', opts);
+        console.timeEnd('query by_start');
       }
       // window.requestAnimationFrame(function (timestamp) {
-      db.query('foolin/by_start', opts, function(err, doc) {
-        if (err) {
-          alert(err);
-        } else {
-          var rowCount = doc.rows.length;
-          var rowsPerLink = isSearch ? (matchLimit / (scrollLinks.length - 3)) : (rowCount / (scrollLinks.length - 3));
-          if (isSearch && !matchLimit) {
-            queryInfoElement.textContent += '\nno search limit, providing scroll links every 5 entries.';
-            rowsPerLink = 5;
+      query.then(function(doc) {
+        console.time('query');
+        var rowCount = doc.rows.length;
+        var rowsPerLink = isSearch ? (matchLimit / (scrollLinks.length - 3)) : (rowCount / (scrollLinks.length - 3));
+        if (isSearch && !matchLimit) {
+          queryInfoElement.textContent += '\nno search limit, providing scroll links every 5 entries.';
+          rowsPerLink = 5;
+        }
+        for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
+          scrollLinks[linkIndex].style.visibility = 'hidden';
+        }
+        DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
+        DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
+        var matches = 0;
+        // NOTE: Iteration statement is needed to use break statement.
+        // doc.rows.forEach(function (row, index) {
+        for (var index = 0; index < rowCount; index++) {
+          var row = doc.rows[index];
+          if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
+              excludeRegExp && excludeRegExp.test(row.doc.activity)) {
+            // forEach function return becomes continue in for loop.
+            continue;
           }
-          for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
-            scrollLinks[linkIndex].style.visibility = 'hidden';
-          }
-          DEBUG && console.log("rowCount, rowsPerLink, scrollLinks.length");
-          DEBUG && console.log(rowCount, rowsPerLink, scrollLinks.length);
-          var matches = 0;
-          // NOTE: Iteration statement is needed to use break statement.
-          // doc.rows.forEach(function (row, index) {
-          for (var index = 0; index < rowCount; index++) {
-            var row = doc.rows[index];
-            if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
-                excludeRegExp && excludeRegExp.test(row.doc.activity)) {
-              // forEach function return becomes continue in for loop.
-              continue;
-            }
-            var entry = utilsjs.addNewEntry(row.doc, entries);
-            var scrollIndex = !isSearch ? index : matches;
-            if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
-              entry.classList.add('linked');
-              var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
-              link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
-              link.href = '#' + row.doc._id;
-              link.style.visibility = 'visible';
-              DEBUG && console.log("scrollIndex, rowsPerLink, (index % rowsPerLink)");
-              DEBUG && console.log(scrollIndex, rowsPerLink, (index % rowsPerLink));
-            }
-            if (isSearch) {
-              if (matchLimit && (matches == matchLimit)) {
-                break;
-              }
-              else {
-                matches += 1;
-              }
-            }
+          var entry = utilsjs.addNewEntry(row.doc, entries);
+          var scrollIndex = !isSearch ? index : matches;
+          if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
+            entry.classList.add('linked');
+            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
+            link.textContent = (new Date(row.doc.start || row.doc.clockin_ms)).toDateString();
+            link.href = '#' + row.doc._id;
+            link.style.visibility = 'visible';
+            DEBUG && console.log("scrollIndex, rowsPerLink, (index % rowsPerLink)");
+            DEBUG && console.log(scrollIndex, rowsPerLink, (index % rowsPerLink));
           }
           if (isSearch) {
-            queryInfoElement.textContent += matches;
-          } 
-          else {
-            queryInfoElement.textContent += rowCount;
+            if (matchLimit && (matches == matchLimit)) {
+              break;
+            }
+            else {
+              matches += 1;
+            }
           }
         }
+        if (isSearch) {
+          queryInfoElement.textContent += matches;
+        } 
+        else {
+          queryInfoElement.textContent += rowCount;
+        }
+        console.timeEnd('query');
+      }).catch(function(err) {
+        alert(err);
       });
       // });
     }

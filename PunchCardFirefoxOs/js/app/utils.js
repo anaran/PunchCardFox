@@ -1,8 +1,33 @@
 'use strict';
 define(function (require) {
+  // >> (new Date()).toLocaleString(navigator.languages, {
+  //      month: 'short',
+  //      hour: 'numeric',
+  //      minute: 'numeric',
+  //      second: 'numeric',
+  //      day: 'numeric',
+  //      weekday: 'short',
+  //      year: '2-digit',
+  //      timeZoneName: 'short'
+  //    })
+  // <- "Mi., 9. Sep. 15, 01:07:04 MESZ"
+  // >> navigator.languages
+  // <- Array [ "de", "en-US" ]
+  var idtf = new Intl.DateTimeFormat(navigator.languages, {
+    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'narrow',
+    hour: 'numeric', minute: 'numeric', second: 'numeric'
+  });
   var formatStartDate = function (date) {
+    // return date.toLocaleString();
     // return date.toString().substring(0, 24);
-    return date.toLocaleString();
+    return idtf.format(date);
+    // return Intl.DateTimeFormat(date, navigator.languages, {
+    //   year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
+    //   hour: 'numeric', minute: 'numeric', second: 'numeric'
+    // });
+    // NOTE: These following have bad performance even in Windows Desktop Firefox!
+    // return date.toLocaleString(navigator.language);
+    // return date.toLocaleString(navigator.languages);
   };
   var formatEndDate = function (date) {
     // return date.toString().substring(4, 24);

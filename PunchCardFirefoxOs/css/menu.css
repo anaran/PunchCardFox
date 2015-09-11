@@ -1,14 +1,23 @@
-div.menu {
+ul.menu {
   background-color: white;
   border: 1px solid;
   display: none;
   position: fixed;
+  margin: 0;
+  padding: 0;
 }
 
-div.menu a {
+ul.menu li {
+  display: block;
+  padding: 0.4em;
+}
+
+ul.menu a {
 /*   background-color: black; */
 /*   color: white; */
+/*   background-color: white; */
+/*   border: 1px solid; */
   font-size: large;
-  margin: 0.2em;
-  display: block;
+/*   margin: 0.2em; */
+  display: inline;
 }

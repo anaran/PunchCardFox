@@ -1,7 +1,10 @@
 @import url(view.css);
 
 #edit_markdown {
-  margin:  0.2rem;
+  margin: 0.3rem;
+  border: 1px solid;
+  padding: 0.2rem;
+  display: none;
 /*   position: absolute; */
 /*   top: 0; */
 /*   overflow: scroll; */
@@ -12,7 +15,10 @@
 }
 
 #render_markdown {
-  margin: 0.5rem;
+  margin: 0.3rem;
+  border: 1px solid;
+  padding: 0.2rem;
+  display: none;
 /*   position: absolute; */
 /*   opacity: 1.0; */
 /*   overflow: scroll; */

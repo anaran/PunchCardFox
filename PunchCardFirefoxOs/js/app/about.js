@@ -13,11 +13,6 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
 
   // var addReadOnlyInfo = require('info');
   var addReadOnlyInfo = infojs;
-  var translate = navigator.mozL10n.get;
-
-  // We want to wait until the localisations library has loaded all the strings.
-  // So we'll tell it to let us know once it's ready.
-  // navigator.mozL10n.once(start);
   var db = new PouchDB('punchcard3');
   var infoNode = document.getElementById('message');
   db.info().then(function (info) {
@@ -49,7 +44,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     readmeLink.addEventListener('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
-      readmejs.init(event.target.href, renderElement, editElement, toggleEdit).
+      readmejs.init(event.target.href + '#' + Date.now(), renderElement, editElement, toggleEdit).
       // then(
       //   function (resolve) {
       //     window.alert(JSON.stringify(resolve, null, 2));

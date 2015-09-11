@@ -8,9 +8,6 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
   var XHR_TIMEOUT_MS = 0;
   var init = function (url, renderElement, editElement, toggleElement) {
     return new Promise(function(resolve, reject) {
-      var translate = navigator.mozL10n.get;
-      // console.log(marked);
-
       // See
       // https://github.com/chjj/marked/issues/545#issuecomment-74505539
       var toc = [];
@@ -32,7 +29,7 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
           + '</h'
           + level
           + '>\n'
-          + '<a href="#table-of-contents">Table of Contents<a>\n';
+          + '<a href="#table-of-contents">Table of Contents</a>\n';
         };
         return renderer;
       })();
@@ -56,7 +53,7 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
         edit.style.display = 'none';
         // window.scrollTo(0, 0);
         var render = renderElement;
-        var toggleEdit = function(event) {
+        var toggleEdit = function _toggleEdit(event) {
           event.preventDefault();
           event.stopPropagation();
           if (edit.style.display == 'none') {
@@ -87,7 +84,7 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
         // Also, so far we only need a single listener here.
         toggleElement.onclick = toggleEdit;
         // toggleElement.addEventListener('click', toggleEdit);
-        var request = new XMLHttpRequest({ mozSystem: true });
+        var request = new XMLHttpRequest({ mozSystem: false });
         request.open('get', url, !!'async');
         request.timeout = XHR_TIMEOUT_MS;
         request.addEventListener('error', onRequestError);

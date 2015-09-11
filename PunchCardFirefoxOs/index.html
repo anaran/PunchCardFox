@@ -29,18 +29,14 @@ execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
 
-                <!--                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.js"></script> -->
+                <!--                                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.js"></script> -->
                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js"></script>
-                <!--                 Comment next 2 lines after debugging. Didn't work anyway -->
-                <!--                 <script type="text/javascript" src="/bower_components/pouchdb/lib/deps/ajax/request-browser.js"></script>
-<script type="text/javascript" src="/bower_components/pouchdb/lib/deps/ajax/ajax-core.js"></script> -->
-                <script type="text/javascript" src="/bower_components/pouchdb.mapreduce.noeval/dist/pouchdb.mapreduce.noeval.js"></script>
-                <script src="/bower_components/gaia-header/lib/font-fit.js"></script>
+                <script src="/bower_components/font-fit/font-fit.js"></script>
                 <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
                 <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css">
                 <script src="/bower_components/gaia-component/gaia-component.js"></script>
                 <script src="/bower_components/gaia-header/gaia-header.js"></script>
-                <script src="/bower_components/gaia-header/gaia-sub-header.js"></script>
+                <script src="/bower_components/gaia-sub-header/gaia-sub-header.js"></script>
                 <link href="/scrolling.css" rel="stylesheet" type="text/css">
                 <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
                 <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
@@ -55,53 +51,46 @@ own language (as long as you provide translations).
         </head>
         <body role="application">
                 <link rel="import" href="common-header.html">
-                <!--                 NOTE: Firefox OS support only one level of menu. -->
                 <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-                        <link rel="import" href="new_entry.html">
-                        <link rel="import" href="options.html">
-                        <link rel="import" href="about.html">
-                        <div id="query_search_info">
-                        </div>
                         <!--                 <article class="view-body"> -->
-                        <div id="entries">
-                                <!--
--->
+                        <div id="query_search_info"></div>
+                        <div id="entries"></div>
                                 </section>
-                        <div id="start_menu" class="menu">
+                        <ul id="start_menu" class="menu">
                                 <!--                         <menu label="Start Menu"> -->
-                                <a id="start_now" href="start_now">start now</a>
+                                <li><a id="start_now" href="start_now">start now</a></li>
                                 <!--                                 <a id="start_now" href="/index.html">start now</a> -->
-                                <a id="start_undefined" href="start_undefined">start is undefined</a>
-                                <a id="start_at_end" href="start_at_end">start at end</a>
-                        </div>
+                                <li><a id="start_undefined" href="start_undefined">start is undefined</a></li>
+                                <li><a id="start_at_end" href="start_at_end">start at end</a></li>
+                        </ul>
                         <!--                 </menu> -->
-                        <div id="end_menu" class="menu">
+                        <ul id="end_menu" class="menu">
                                 <!--                         <menu label="End Menu"> -->
-                                <a id="end_now" href="end_now">end now</a>
-                                <a id="end_undefined" href="end_undefined">end is undefined</a>
-                                <a id="end_at_start" href="end_at_start">end at start</a>
+                                <li><a id="end_now" href="end_now">end now</a></li>
+                                <li><a id="end_undefined" href="end_undefined">end is undefined</a></li>
+                                <li><a id="end_at_start" href="end_at_start">end at start</a></li>
                                 <!--                         </menu> -->
-                        </div>
+                        </ul>
                         <!--                 <div id="end_menu" class="menu">
 <li><a>end now</a></li>
 <li><a href="/index.html#b">end is undefined</a></li>
 <li><a>end at start</a></li>
 </menu> -->
-                        <div id="activity_menu" class="menu">
+                        <ul id="activity_menu" class="menu">
                                 <!--                         <menu label="Activity Menu">
 <a id="copy_activity_menuitem" href="copy_activity_menuitem">copy activity</a>
 -->
-                                <a id="edit" href="edit">edit</a>
-                                <a id="edit_new_copy" href="edit_new_copy">edit new copy</a>
-                                <a id="repeat_now" href="repeat_now">repeat now</a>
-                                <a id="insert_parallel_activity" href="insert_parallel_activity">insert parallel activity</a>
-                                <a id="delete" href="delete">delete</a>
+                                <li><a id="edit" href="edit">edit</a></li>
+                                <li><a id="edit_new_copy" href="edit_new_copy">edit new copy</a></li>
+                                <li><a id="repeat_now" href="repeat_now">repeat now</a></li>
+                                <li><a id="insert_parallel_activity" href="insert_parallel_activity">insert parallel activity</a></li>
+                                <li><a id="delete" href="delete">delete</a></li>
                                 <!--                                 <li><a>edit</a></li>
 <li><a>insert parallel activity</a></li>
 <li><a href="/options.html#c">show only this activity</a></li>
 <li><a>show all activities</a></li> -->
                                 <!--                         </menu> -->
-                        </div>
+                        </ul>
                         <nav data-type="scrollbar" id="punchcard_scrollbar">
                                 <ol>
                                         <li><a href="#" data-icon="search"><span>Search</span></a></li>
@@ -137,6 +126,11 @@ own language (as long as you provide translations).
                                         <li><a href="#entries">Top of the list</a></li>
                                 </ol>
                         </nav>
+                <section id='view-after-punchcard-list' role="region" data-state="active" class="view view-noscroll">
+                        <link rel="import" href="new_entry.html">
+                        <link rel="import" href="options.html">
+                        <link rel="import" href="about.html">
+                        </section>
                         <script type="text/javascript" data-main="/js/index.js" src="bower_components/alameda/alameda.js" defer></script>
                         </body>
                 </html>

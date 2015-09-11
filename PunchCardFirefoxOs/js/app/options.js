@@ -17,17 +17,11 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   var XHR_TIMEOUT_MS = 30000;
   var cookie;
   var setCookie;
-  // var translate = navigator.mozL10n.get;
-  // var addReadOnlyInfo = require(['js/info.js']);
-  // var addReadOnlyInfo = require('../../js/info.js');
-
-  // We want to wait until the localisations library has loaded all the strings.
-  // So we'll tell it to let us know once it's ready.
-  // navigator.mozL10n.once(start);
   var db = new PouchDB('punchcard3');
-  var optionsDB = new PouchDB('options');
-  var inputNodeList = document.querySelectorAll('input');
-  Array.prototype.forEach.call(inputNodeList, function (element) {
+  // No need to keep a lot of history for user options.
+  var optionsDB = new PouchDB('options', { auto_compaction: true });
+  var persistentNodeList = document.querySelectorAll('.persistent');
+  Array.prototype.forEach.call(persistentNodeList, function (element) {
     optionsDB.get(element.id).then(function(otherDoc) {
       if (element.type == 'checkbox') {
         element.checked = otherDoc.value;
@@ -46,11 +40,15 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
         console.log("no id for saving options doc", element);
       }
     });
-    element.addEventListener('blur', function (event) {
-      var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
-      optionsDB.get(event.target.id).then(function(otherDoc) {
+    // Note: Unlike blur this only fires when value has actually changed.
+    element.addEventListener('change', function (event) {
+      var element = event.target;
+      console.log(element.id, 'changed');
+      var value = element.type == 'checkbox' ? element.checked : element.value;
+      optionsDB.get(element.id).then(function(otherDoc) {
         otherDoc.value = value;
         return optionsDB.put(otherDoc).then(function(response) {
+          console.log('saved changed option', response);
           // document.location.reload('force');
           // saveLink.click();
         }).catch(function(err) {
@@ -58,15 +56,27 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           window.alert(err);
         });
       }).catch(function(err) {
-        //errors
-        window.alert(err.message + '\n' + err.stack);
-        if (event.target.id) {
-          return optionsDB.put({ _id: event.target.id, value: value });
+        console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        if (element.id) {
+          return optionsDB.put({ _id: element.id, value: value });
         }
         else {
           console.log("no id for saving options doc", element);
         }
       });
+    });
+  });
+  optionsDB.allDocs({
+    include_docs: false
+  }).then(function (result) {
+    result.rows && result.rows.forEach(function (row) {
+      if (!Array.prototype.map.call(persistentNodeList, function (element) { return element.id }).includes(row.key)) {
+        optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
+          console.log('deleted no longer used', row.key, row.value.rev);
+        }).catch(function(err) {
+          console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        });
+      }
     });
   });
   // var options = [
@@ -163,32 +173,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     var infoNode = document.getElementById('replication_info');
-    remoteDB.info().then(function (info) {
-      addReadOnlyInfo(info, infoNode);
-    }).catch(function (err) {
-      addReadOnlyInfo(err, infoNode);
-    });
-    var myInfo = {};
-    var replication = PouchDB.sync(db, remoteDB)
-    .on('change', function (info) {
-      myInfo[db._db_name] = info;
-      addReadOnlyInfo(myInfo, infoNode);
-    }).on('complete', function (info) {
-      myInfo[db._db_name] = info;
-      addReadOnlyInfo(myInfo, infoNode);
-    }).on('uptodate', function (info) {
-      myInfo[db._db_name] = info;
-      addReadOnlyInfo(myInfo, infoNode);
-    }).on('error', function (err) {
-      myInfo[db._db_name] = err;
-      addReadOnlyInfo(myInfo, infoNode);
-      window.alert(err);
-    });
-    remoteOptionsDB.info().then(function (info) {
-      addReadOnlyInfo(info, infoNode);
-    }).catch(function (err) {
-      addReadOnlyInfo(err, infoNode);
-    });
     // NOTE: Don't share variables in asynchronuous code!
     // myInfo = {};
     var myOptionsInfo = {};
@@ -199,12 +183,38 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     }).on('complete', function (info) {
       myOptionsInfo[optionsDB._db_name] = info;
       addReadOnlyInfo(myOptionsInfo, infoNode);
+      remoteOptionsDB.info().then(function (info) {
+        addReadOnlyInfo(info, infoNode);
+      }).catch(function (err) {
+        addReadOnlyInfo(err, infoNode);
+      });
     }).on('uptodate', function (info) {
       myOptionsInfo[optionsDB._db_name] = info;
       addReadOnlyInfo(myOptionsInfo, infoNode);
     }).on('error', function (err) {
       myOptionsInfo[optionsDB._db_name] = err;
-      addReadOnlyInfo(myOptionsInfo, infoNode);
+      // addReadOnlyInfo(myOptionsInfo, infoNode);
+      window.alert(err);
+    });
+    var myInfo = {};
+    var replication = PouchDB.sync(db, remoteDB)
+    .on('change', function (info) {
+      myInfo[db._db_name] = info;
+      addReadOnlyInfo(myInfo, infoNode);
+    }).on('complete', function (info) {
+      myInfo[db._db_name] = info;
+      addReadOnlyInfo(myInfo, infoNode);
+      remoteDB.info().then(function (info) {
+        addReadOnlyInfo(info, infoNode);
+      }).catch(function (err) {
+        addReadOnlyInfo(err, infoNode);
+      });
+    }).on('uptodate', function (info) {
+      myInfo[db._db_name] = info;
+      addReadOnlyInfo(myInfo, infoNode);
+    }).on('error', function (err) {
+      myInfo[db._db_name] = err;
+      addReadOnlyInfo(myInfo, infoNode);
       window.alert(err);
     });
   });
@@ -338,9 +348,9 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //
   // Then we search without leaving this page, just as we wanted.
   document.getElementById('pass').addEventListener('keypress', function (event) {
-    var sessionUrl = document.getElementById('protocol').value +
-        document.getElementById('hostportpath').value + '_session';
     if (event.keyCode == 13) {
+      var sessionUrl = document.getElementById('protocol').value +
+          document.getElementById('hostportpath').value + '_session';
       if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
       }
     }
@@ -362,10 +372,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       cookie = '';
     }
   });
-
-  // We want to wait until the localisations library has loaded all the strings.
-  // So we'll tell it to let us know once it's ready.
-  // navigator.mozL10n.once(search);
 
   var search = function () {
 
@@ -565,70 +571,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // alert(errorMessage);
     showError(errorMessage);
   };
-
-
-  var onRequestLoad = function () {
-
-    //     var response = request.responseText;
-    var arraybuffer = request.response;
-    if(response === null) {
-      // showError(translate('searching_error'));
-      showError('searching_error');
-      return;
-    }
-    jsonText.textContent = response;
-    reportError(jsonText);
-    results.textContent = '';
-    return;
-
-    var documents = response.documents;
-
-    if(documents.length === 0) {
-
-      var p = document.createElement('p');
-      // p.textContent = translate('search_no_results');
-      p.textContent = 'search_no_results';
-      results.appendChild(p);
-
-    } else {
-
-      documents.forEach(function(doc) {
-
-        // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
-        // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
-        var docLink = document.createElement('a');
-        docLink.textContent = doc.title;
-        docLink.href = doc.url;
-
-        // We want the links to open in a pop up window with a 'close'
-        // button, so that the user can consult the result and then close it and
-        // be brought back to our app.
-        // If we did nothing, these external links would take over the entirety
-        // our app and there would be no way for a user to go back to the app.
-        // But Firefox OS allows us to open ONE new window per app; these new
-        // windows will have a close button, so the user can close the overlay
-        // when they're happy with what they've read.
-        // Therefore we will capture click events on links, stop them from
-        // doing their usual thing using preventDefault(),
-        // and then open the link but in a new window.
-        docLink.addEventListener('click', function(evt) {
-          evt.preventDefault();
-          window.open(evt.target.href, 'overlay');
-        });
-
-        var h2 = document.createElement('h2');
-        h2.appendChild(docLink);
-        results.appendChild(h2);
-
-      });
-
-    }
-
-    // And once we have all the content in place, we can show it.
-    results.hidden = false;
-
-  };
-
 
   var showError = function (text) {
     var infoNode = document.getElementById('replication_info');

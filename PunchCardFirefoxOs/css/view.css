@@ -2,9 +2,15 @@
 .view {
   position: fixed;
   overflow: scroll;
-  top: 3rem;
+  top: 5rem;
 /*   margin: 0.2rem; */
 /*   width: 100%; */
   height: calc(100% - 3rem);
   transform: translate(0, 0);
+}
+
+section#view-after-punchcard-list {
+  background-color: white;
+  display: none;
+  width: calc(100% - 3ex);
 }
