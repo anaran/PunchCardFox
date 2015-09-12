@@ -53,10 +53,10 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           // saveLink.click();
         }).catch(function(err) {
           //errors
-          window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
       }).catch(function(err) {
-        console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         if (element.id) {
           return optionsDB.put({ _id: element.id, value: value });
         }
@@ -120,7 +120,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       exportButton.nextElementSibling.appendChild(div);
       // document.body.appendChild(div);
     }).catch(function (err) {
-      window.alert(err);
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   });
   var start = document.getElementById('start_replication');
@@ -194,7 +194,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     }).on('error', function (err) {
       myOptionsInfo[optionsDB._db_name] = err;
       // addReadOnlyInfo(myOptionsInfo, infoNode);
-      window.alert(err);
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
     var myInfo = {};
     var replication = PouchDB.sync(db, remoteDB)
@@ -215,7 +215,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     }).on('error', function (err) {
       myInfo[db._db_name] = err;
       addReadOnlyInfo(myInfo, infoNode);
-      window.alert(err);
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   });
 
@@ -254,7 +254,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
     db.allDocs({ limit: 4500, include_docs: true, descending: true }, function(err, doc) {
       if (err) {
-        window.alert(err);
+                console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       } else {
         var search = document.getElementById('search');
         search && include.parentElement.removeChild(search);
@@ -284,12 +284,12 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
               start: (new Date).toJSON(),
               end: (new Date).toJSON()
             };
-            DEBUG && window.alert(JSON.stringify(entry, null, 2));
+            DEBUG && console.log(JSON.stringify(entry, null, 2));
             db.post(entry).then(function(response) {
               document.querySelector('a.save').click();
             }).catch(function(err) {
               //errors
-              window.alert(err);
+                      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
           });
           var edit = document.createElement('a');

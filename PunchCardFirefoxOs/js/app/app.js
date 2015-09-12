@@ -102,11 +102,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-      window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
     // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
     // document.location.reload('force');
@@ -127,11 +127,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        window.alert(err);
+          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-      window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   };
   var endNowItem = document.querySelector('#end_now');
@@ -201,11 +201,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               a.click();
             }).catch(function(err) {
               //errors
-              window.alert(err);
+                console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
           }).catch(function(err) {
             //errors
-            window.alert(err);
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
         }
       }
@@ -394,11 +394,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        window.alert(err);
+          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-      window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   };
   var repeatNowItem = document.querySelector('#repeat_now');
@@ -626,7 +626,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           resultIndex += 1;
           updateScrollLinks();
         }).catch(function(err) {
-          alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
         // });
       }
@@ -648,7 +648,13 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     DEBUG && console.log(entries.childElementCount, rowsPerLink, scrollLinks.length);
     for (var scrollIndex = 0; scrollIndex < entries.childElementCount; scrollIndex++) {
       if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
-        entries.childNodes[scrollIndex].classList.add('linked');
+        var classList = entries.childNodes[scrollIndex].classList;
+        if (classList) {
+          classList.add('linked');
+        }
+        else {
+          entries.childNodes[scrollIndex].class = 'linked';
+        }
         // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
         (function () {
           var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];

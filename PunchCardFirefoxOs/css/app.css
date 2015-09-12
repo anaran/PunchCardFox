@@ -69,24 +69,24 @@ pre:hover {
 }
 
 pre.start {
-  width: 50%;
+  width: 49%;
   /*   direction: ltr;
   text-overflow: clip ellipsis; */
 }
 
 pre.end {
-  width: 50%;
+  width: 49%;
   /*   direction: ltr;
   text-overflow: ellipsis clip; */
 }
 
 pre.duration {
-  width: 50%;
+  width: 49%;
   /*   text-overflow: clip ellipsis; */
 }
 
 pre.revisions {
-  width: 50%;
+  width: 49%;
   /*   text-overflow: clip ellipsis; */
 }
 

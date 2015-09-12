@@ -76,26 +76,18 @@ define(function (require) {
   // FIXME: this module must not have a hardcoded pouchdb reference!
   var db = new PouchDB('punchcard3');
   var addNewEntry = function (doc, entries, before) {
-    var entry = document.createElement('div');
+    var content = document.getElementById('entry_template').content;
+    var entry = document.importNode(content, "deep").firstElementChild;
     // var span = document.createElement('span');
     entry.id = doc._id;
-    entry.className = 'entry';
-    var start = document.createElement('pre');
-    var end = document.createElement('pre');
-    var duration = document.createElement('pre');
-    var revisions = document.createElement('pre');
-    var activity = document.createElement('pre');
+    var start = entry.children[0];
+    var end = entry.children[1];
+    var duration = entry.children[2];
+    var revisions = entry.children[3];
+    var activity = entry.children[4];
     // start.contentEditable = true;
     // end.contentEditable = true;
     // activity.contentEditable = true;
-    // start.setAttribute('readonly', true);
-    // end.setAttribute('readonly', true);
-    // activity.setAttribute('readonly', true);
-    start.classList.add('start');
-    end.classList.add('end');
-    duration.classList.add('duration');
-    revisions.classList.add('revisions');
-    activity.classList.add('activity');
     var startDate = new Date(doc.start || doc.clockin_ms);
     var endDate = new Date(doc.end || doc.clockout_ms);
     start.textContent = formatStartDate(startDate);
@@ -122,10 +114,6 @@ define(function (require) {
     //         });
     // entry.appendChild(start);
     // entry.appendChild(end);
-    entry.appendChild(start);
-    entry.appendChild(end);
-    // entry.appendChild(span);
-    entry.appendChild(duration);
 
     db.get(doc._id, {
       rev: doc._rev,
@@ -152,9 +140,6 @@ define(function (require) {
     }).catch(function (err) {
       infojs({get_error:err}, entries);
     });
-    entry.appendChild(revisions);
-
-    entry.appendChild(activity);
     if (before) {
       // Insert before the first entry we find, if any.
       entries.insertBefore(entry, before);
