@@ -21,8 +21,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var endMenu = document.getElementById('end_menu');
   var activityMenu = document.getElementById('activity_menu');
   var request = navigator.mozApps.getSelf();
-  request.onsuccess = function() { alert(request.result); };
-  request.onerror = function() { alert(request.error.name); };
+  request.onsuccess = function() { alert(JSON.stringify(request.result, Object.getOwnPropertyNames(request.result), 2)); };
+  request.onerror = function() { JSON.stringify(request.result, Object.getOwnPropertyNames(request.error.name), 2); };
   scrollView.addEventListener('scroll', function (event) {
     [
       startMenu,
