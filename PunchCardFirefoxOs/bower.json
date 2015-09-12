@@ -1,0 +1,25 @@
+{
+  "name": "PunchCardFirefoxOs",
+  "version": "0.1.0",
+  "authors": [
+    "Adrian Aichner <adrian.aichner@gmail.com>"
+  ],
+  "description": "bower dependencies for my app",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "alameda": "~0.2.0",
+    "gaia-fonts": "gaia-components/gaia-fonts#~0.2.1",
+    "gaia-header": "gaia-components/gaia-header#~0.8.4",
+    "gaia-sub-header": "gaia-components/gaia-sub-header#~0.4.1",
+    "marked": "~0.3.5",
+    "pouchdb.mapreduce.noeval": "~0.2.0",
+    "pouchdb": "~4.0.1"
+  }
+}

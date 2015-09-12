@@ -31,6 +31,11 @@ div.entry {
   border: 0.1em solid;
   /*   margin: 0 0 1rem; */
 }
+
+div.entry.deleted {
+  background-color: red;
+}
+
 div.entry:hover * {
   white-space: pre-wrap;
 }
@@ -145,28 +150,25 @@ pre.activity:hover {
 nav#punchcard_scrollbar li {
   text-align: right;
   overflow: hidden;
+  width: 3ex;
 }
 
 nav#punchcard_scrollbar:hover li {
   overflow: visible;
+  width: 12rem;
 }
 
 nav#punchcard_scrollbar {
   position: absolute;
   overflow: hidden;
   top: 3rem;
-  width: 3ex;
   right: 0;
-/*   right: -8ex; */
-  /*   transition: right 3s 3s; */
-  /*   z-index: 2; */
 }
 
-nav#punchcard_scrollbar:hover {
+/* nav#punchcard_scrollbar:hover {
   right: 0;
-  width: 20ex;
   overflow: visible;
-}
+} */
 
 section#view-punchcard-list {
   width: calc(100% - 3ex);
@@ -183,14 +185,12 @@ nav#punchcard_scrollbar li a {
 
 nav#punchcard_scrollbar li a:hover {
   /*   direction: ltr; */
-  text-align: left;
-  display: inline;
-  font-family: monospace;
-  font-size: x-large;
+/*   text-align: left; */
+  font-size: large;
   border-radius: 6px;
-  right: 0;
   border: 2px solid black;
   padding: 3px;
+  right: 0;
 }
 
 /* nav#punchcard_scrollbar li a:active {
