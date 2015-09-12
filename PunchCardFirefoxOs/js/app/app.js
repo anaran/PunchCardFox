@@ -8,7 +8,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   var DEBUG = false;
-  var TIME = true;
+  var TIME = false;
   var resultIndex = 1;
   // require('getElementPath');
   // window.alert(gep.getElementPath(event.target));
@@ -21,8 +21,14 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var endMenu = document.getElementById('end_menu');
   var activityMenu = document.getElementById('activity_menu');
   var request = navigator.mozApps.getSelf();
-  request.onsuccess = function() { alert(JSON.stringify(request.result, Object.getOwnPropertyNames(request.result), 2)); };
-  request.onerror = function() { JSON.stringify(request.result, Object.getOwnPropertyNames(request.error.name), 2); };
+  request.onsuccess = function() {
+    DEBUG && console.log(JSON.stringify(request.result,
+                                        Object.getOwnPropertyNames(request.result), 2));
+  };
+  request.onerror = function() {
+    DEBUG && console.log(request.result,
+                         Object.getOwnPropertyNames(request.error.name), 2);
+  };
   scrollView.addEventListener('scroll', function (event) {
     [
       startMenu,
