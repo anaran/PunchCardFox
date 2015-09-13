@@ -79,6 +79,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     if (event.target.classList.contains("activity")) {
       if (activityMenu.style.display == 'none') {
         positionMenu(activityMenu);
+        activityMenu.dataset.id = event.target.parentElement.id;
       }
       else {
         activityMenu.style = 'display: none;';
@@ -200,7 +201,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               // for the convenience of being nicely scrollable via scrollbar.
               // NOTE: Don't forget to add newlyobtained id!
               entry._id = response.id;
-              var newEntry = utilsjs.addNewEntry(entry, entries, document.getElementById(id));
+              var beforeThisElement = document.getElementById(id);
+              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+              newEntry.scrollIntoView();
               newEntry.querySelector('pre.activity').classList.add('changed');
               newEntry.querySelector('pre.start').classList.add('changed');
               newEntry.querySelector('pre.end').classList.add('changed');
@@ -397,7 +400,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
         entry._id = response.id;
-        var newEntry = utilsjs.addNewEntry(entry, entries, document.getElementById(id));
+        var beforeThisElement = document.getElementById(id);
+        var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+        newEntry.scrollIntoView();
         newEntry.querySelector('pre.activity').classList.add('changed');
         newEntry.querySelector('pre.start').classList.add('changed');
         newEntry.querySelector('pre.end').classList.add('changed');
@@ -426,6 +431,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         if (true) {
           doc._deleted = true;
           return db.put(doc).then(function(response) {
+            var deletedElement = document.getElementById(id);
+            deletedElement.classList.add('deleted');
             // document.location.reload('force');
           });
         }
