@@ -42,9 +42,21 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     // event.preventDefault();
     // event.stopPropagation();
     var bcr = event.target.getBoundingClientRect();
+    var positionMenu = function(menu) {
+      var xProp = 'left', yProp = 'top', xOffset = event.clientX, yOffset = event.clientY;
+      if (event.clientX > window.innerWidth * 0.8) {
+        xProp = 'right';
+        xOffset = window.innerWidth - xOffset;
+      }
+      if (event.clientY > window.innerHeight * 0.8) {
+        yProp = 'bottom';
+        yOffset = window.innerHeight - yOffset;
+      }
+      menu.style = 'display: block; ' + xProp + ': ' + xOffset + 'px; ' + yProp + ': ' + yOffset + 'px';
+    }
     if (event.target.classList.contains("start")) {
       if (startMenu.style.display == 'none') {
-        startMenu.style = 'display: block; top: ' + event.clientY + 'px; left: ' + event.clientX + 'px';
+        positionMenu(startMenu);
         startMenu.dataset.id = event.target.parentElement.id;
       }
       else {
@@ -54,7 +66,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     }
     if (event.target.classList.contains("end")) {
       if (endMenu.style.display == 'none') {
-        endMenu.style = 'display: block; top: ' + event.clientY + 'px; left: ' + event.clientX + 'px';
+        positionMenu(endMenu);
         endMenu.dataset.id = event.target.parentElement.id;
       }
       else {
@@ -66,8 +78,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     }
     if (event.target.classList.contains("activity")) {
       if (activityMenu.style.display == 'none') {
-        activityMenu.style = 'display: block; top: ' + event.clientY + 'px; left: ' + event.clientX + 'px';
-        activityMenu.dataset.id = event.target.parentElement.id;
+        positionMenu(activityMenu);
       }
       else {
         activityMenu.style = 'display: none;';
@@ -106,7 +117,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       });
     }).catch(function(err) {
       //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
     // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
     // document.location.reload('force');
@@ -127,11 +138,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   };
   var endNowItem = document.querySelector('#end_now');
@@ -201,11 +212,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               a.click();
             }).catch(function(err) {
               //errors
-                console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
           }).catch(function(err) {
             //errors
-              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
         }
       }
@@ -394,11 +405,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   };
   var repeatNowItem = document.querySelector('#repeat_now');
@@ -651,32 +662,32 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         var classList = entries.childNodes[scrollIndex].classList;
         if (classList) {
           classList.add('linked');
+          // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
+          (function () {
+            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
+            var last = (link == scrollLinks[scrollLinks.length - 2]);
+            var result = entries.childNodes[scrollIndex].dataset.result;
+            if (entries.childNodes[scrollIndex].classList.contains('deleted')) {
+              link.textContent = 'deleted' + ' R' + result;
+              link.href = '#' + entries.childNodes[scrollIndex].id;
+              link.style.visibility = 'visible';
+            }
+            else {
+              db.get(entries.childNodes[scrollIndex].id).then(function(doc) {
+                link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + ' R' + result;
+                link.href = '#' + doc._id;
+                link.style.visibility = 'visible';
+                DEBUG && console.log({ last: last });
+                if (last) {
+                  TIME && console.timeEnd('updateScrollLinks');
+                }
+              });
+            }
+          })();
         }
         else {
           entries.childNodes[scrollIndex].class = 'linked';
         }
-        // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
-        (function () {
-          var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
-          var last = (link == scrollLinks[scrollLinks.length - 2]);
-          var result = entries.childNodes[scrollIndex].dataset.result;
-          if (entries.childNodes[scrollIndex].classList.contains('deleted')) {
-            link.textContent = 'deleted' + ' R' + result;
-            link.href = '#' + entries.childNodes[scrollIndex].id;
-            link.style.visibility = 'visible';
-          }
-          else {
-            db.get(entries.childNodes[scrollIndex].id).then(function(doc) {
-              link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + ' R' + result;
-              link.href = '#' + doc._id;
-              link.style.visibility = 'visible';
-              DEBUG && console.log({ last: last });
-              if (last) {
-                TIME && console.timeEnd('updateScrollLinks');
-              }
-            });
-          }
-        })();
       }
     }
   };
