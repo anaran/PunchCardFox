@@ -14,8 +14,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // window.alert(gep.getElementPath(event.target));
   // var db = new PouchDB('apa-test-2');
   var db = new PouchDB('punchcard3');
-  var entries = document.getElementById('entries');
-  var otherView = document.querySelector('section#view-after-punchcard-list');
+  // var entries = document.getElementById('entries');
+  // var otherView = document.querySelector('section#view-after-punchcard-list');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   var startMenu = document.getElementById('start_menu');
   var endMenu = document.getElementById('end_menu');
@@ -455,7 +455,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     // db.query(map, {reduce: false, /*startkey: "2010-06-24T15:44:08", endkey: "2010-06-25T15:44:08", */limit: 33, include_docs: true, descending: false}, function(err, doc) {
     // var obj = db.mapreduce(db);
     // db.query(map, {/*stale: 'ok', */reduce: false,
-    var queryInfoElement = document.createElement('div');
     var options = {};
     var optionsDB = new PouchDB('options');
     optionsDB.allDocs({
@@ -470,12 +469,26 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             options[option.doc._id] = option.doc.value;
           }
         });
+        var content = document.getElementById('entries_template').content;
+        var entries = document.importNode(content, "deep").firstElementChild;
+        scrollView.appendChild(entries);
+        var queryInfoElement = entries.firstElementChild.firstElementChild;
+        var update = entries.querySelector('a.update');
+        var close = entries.querySelector('a.close');
+        update.addEventListener('click', function(event) {
+          event.preventDefault();
+          alert('rerun query is not implemented yet. \u221E');
+        });
+        close.addEventListener('click', function(event) {
+          event.preventDefault();
+          scrollView.removeChild(entries);
+          updateScrollLinks();
+        });
         require(['./info'], function (infojs) {
           var captureGroups = options.deleted_id.match(/^\/?(.+?)(?:\/([gim]*))?$/);
           if (options.deleted_id.length && captureGroups) {
             var regexp = new RegExp(captureGroups[1], captureGroups[2]);
             queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
-            entries.appendChild(queryInfoElement);
             db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
               // infojs({delete: info}, entries);
               // db.allDocs({
@@ -492,7 +505,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
                 open_revs: "all"
               }).then(function (otherDoc) {
                 if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
-                  infojs({get: otherDoc}, entries);
+                  // infojs({get: otherDoc}, entries);
                   var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
                   entry.dataset.result = resultIndex;
                   entry.classList.add('deleted');
@@ -528,8 +541,10 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             }).on('error', function (err) {
               DEBUG && console.log(err);
               infojs({delete_error: err}, entries);
+            }).on('complete', function(info) {
+              resultIndex += 1;
+              updateScrollLinks();
             });
-
             // db.get(options.deleted_id, {
             //   // rev: info.doc._rev,
             //   revs: true,
@@ -555,7 +570,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             // }).catch(function (err) {
             //   infojs({get_error:err}, entries);
             // });
-            resultIndex += 1;
           }
         });
         var limit = options.limit.length ? Number(options.limit) : undefined;
@@ -591,7 +605,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           query = db.query('foolin/by_start', opts);
           TIME && console.timeEnd('query by_start');
         }
-        entries.appendChild(queryInfoElement);
         // window.requestAnimationFrame(function (timestamp) {
         query.then(function(doc) {
           TIME && console.time('query');
@@ -637,7 +650,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           resultIndex += 1;
           updateScrollLinks();
         }).catch(function(err) {
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
         // });
       }
@@ -647,33 +660,34 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   };
   var updateScrollLinks = function() {
     TIME && console.time('updateScrollLinks');
+    var entryNodes = scrollView.querySelectorAll('.entry');
     var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-    var rowsPerLink = (entries.childElementCount / (scrollLinks.length - 3));
+    var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
     for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
       scrollLinks[linkIndex].style.visibility = 'hidden';
     }
-    Array.prototype.forEach.call(entries.querySelectorAll('.linked'), function(element) {
+    Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
       element.classList.remove('.linked');
     });
-    DEBUG && console.log("entries.childElementCount, rowsPerLink, scrollLinks.length");
-    DEBUG && console.log(entries.childElementCount, rowsPerLink, scrollLinks.length);
-    for (var scrollIndex = 0; scrollIndex < entries.childElementCount; scrollIndex++) {
+    DEBUG && console.log("entryNodes.length, rowsPerLink, scrollLinks.length");
+    DEBUG && console.log(entryNodes.length, rowsPerLink, scrollLinks.length);
+    for (var scrollIndex = 0; scrollIndex < entryNodes.length; scrollIndex++) {
       if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
-        var classList = entries.childNodes[scrollIndex].classList;
+        var classList = entryNodes[scrollIndex].classList;
         if (classList) {
           classList.add('linked');
           // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
           (function () {
             var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
             var last = (link == scrollLinks[scrollLinks.length - 2]);
-            var result = entries.childNodes[scrollIndex].dataset.result;
-            if (entries.childNodes[scrollIndex].classList.contains('deleted')) {
+            var result = entryNodes[scrollIndex].dataset.result;
+            if (entryNodes[scrollIndex].classList.contains('deleted')) {
               link.textContent = 'deleted' + ' R' + result;
-              link.href = '#' + entries.childNodes[scrollIndex].id;
+              link.href = '#' + entryNodes[scrollIndex].id;
               link.style.visibility = 'visible';
             }
             else {
-              db.get(entries.childNodes[scrollIndex].id).then(function(doc) {
+              db.get(entryNodes[scrollIndex].id).then(function(doc) {
                 link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + ' R' + result;
                 link.href = '#' + doc._id;
                 link.style.visibility = 'visible';
@@ -686,7 +700,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           })();
         }
         else {
-          entries.childNodes[scrollIndex].class = 'linked';
+          entryNodes[scrollIndex].class = 'linked';
         }
       }
     }
