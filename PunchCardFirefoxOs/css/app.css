@@ -185,7 +185,7 @@ nav#punchcard_scrollbar li a {
 
 nav#punchcard_scrollbar li a:hover {
   /*   direction: ltr; */
-/*   text-align: left; */
+  /*   text-align: left; */
   font-size: large;
   border-radius: 6px;
   border: 2px solid black;
@@ -237,8 +237,15 @@ width: -moz-calc(100% + 1.5rem);
   height: calc(100% - 5rem);
 }
 
-div#entries {
-/*     width: 90%; */
+div.entries.updating {
+  background-color: silver;
+  /*     width: 90%; */
+  /*   max-height: 50%; */
+}
+
+div.entries_header a {
+  padding: 0.5rem;
+  /*     width: 90%; */
   /*   max-height: 50%; */
 }
 

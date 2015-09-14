@@ -478,8 +478,16 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         });
         var content = document.getElementById('entries_template').content;
         var entries = document.importNode(content, "deep").firstElementChild;
-        scrollView.appendChild(entries);
-        var queryInfoElement = entries.firstElementChild.firstElementChild;
+        var previousEntries = scrollView.querySelector('div.entries');
+        entries.classList.add('updating');
+        if (previousEntries) {
+          scrollView.insertBefore(entries, previousEntries);
+        }
+        else {
+          scrollView.appendChild(entries);
+        }
+        var queryInfoElement = entries.querySelector('span.info');
+        queryInfoElement.scrollIntoView();
         var update = entries.querySelector('a.update');
         var close = entries.querySelector('a.close');
         update.addEventListener('click', function(event) {
@@ -551,6 +559,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             }).on('complete', function(info) {
               resultIndex += 1;
               updateScrollLinks();
+              entries.classList.remove('updating');
             });
             // db.get(options.deleted_id, {
             //   // rev: info.doc._rev,
@@ -592,9 +601,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
         var query;
         if (options.deleted_id.length) {
-          queryInfoElement.scrollIntoView();
-          resultIndex += 1;
-          updateScrollLinks();
           return;
         }
         if (isSearch) {
@@ -616,10 +622,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         query.then(function(doc) {
           TIME && console.time('query');
           var rowCount = doc.rows.length;
-          if (isSearch && !matchLimit) {
-            queryInfoElement.textContent += '\nno search limit, providing scroll links every 5 entries.';
-            rowsPerLink = 5;
-          }
           var matches = 0;
           // NOTE: Iteration statement is needed to use break statement.
           // doc.rows.forEach(function (row, index) {
@@ -653,9 +655,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             queryInfoElement.textContent += rowCount;
           }
           TIME && console.timeEnd('query');
-          queryInfoElement.scrollIntoView();
           resultIndex += 1;
           updateScrollLinks();
+          entries.classList.remove('updating');
         }).catch(function(err) {
           console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });

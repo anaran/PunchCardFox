@@ -10,9 +10,22 @@
 
 <template id="entries_template">
   <div class="entries" data-result="QUERY RESULT ID">
-    <div>
+    <div class="entries_header">
+      <a class="add">&plus;</a>
       <!-- See https://bugzil.la/1204458 -->
-      <span>result header</span><a class="update" href="update">&circlearrowright;</a><a class="close" href="close">&cross;</a>
+      <a class="close">&cross;</a>
+      <a class="update">&circlearrowright;</a>
+      <span>query</span>
+      <select name="query_type" label="type">
+        <option>by activity</option>
+        <option>by time</option>
+        <option>deleted</option>
+      </select>
+      <select name="query_order">
+        <option>descending</option>
+        <option>ascending</option>
+      </select>
+      <span class="info">result header</span>
     </div>
   </div>
 </template>
