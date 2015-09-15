@@ -95,21 +95,21 @@ pre.revisions {
 }
 
 /* pre.start:hover {
-  font-size: x-large;
-  white-space: pre-wrap;
+font-size: x-large;
+white-space: pre-wrap;
 }
 
 pre.end:hover {
-  font-size: x-large;
-  white-space: pre-wrap;
+font-size: x-large;
+white-space: pre-wrap;
 }
 
 pre.duration:hover {
-  white-space: pre-wrap;
+white-space: pre-wrap;
 }
 
 pre.revisions:hover {
-  white-space: pre-wrap;
+white-space: pre-wrap;
 } */
 
 /*pre:hover {
@@ -170,8 +170,8 @@ nav#punchcard_scrollbar {
 }
 
 /* nav#punchcard_scrollbar:hover {
-  right: 0;
-  overflow: visible;
+right: 0;
+overflow: visible;
 } */
 
 section#view-punchcard-list {
