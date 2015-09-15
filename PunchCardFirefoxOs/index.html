@@ -38,6 +38,8 @@ Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-def
                 <script src="/bower_components/gaia-component/gaia-component.js"></script>
                 <script src="/bower_components/gaia-header/gaia-header.js"></script>
                 <script src="/bower_components/gaia-sub-header/gaia-sub-header.js"></script>
+                <script src="/bower_components/gaia-text-input/gaia-text-input.js"></script>
+                <script src="/bower_components/gaia-text-input/gaia-text-input-multiline.js"></script>
                 <link href="/scrolling.css" rel="stylesheet" type="text/css">
                 <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
                 <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
@@ -96,7 +98,7 @@ own language (as long as you provide translations).
                 </ul>
                 <nav data-type="scrollbar" id="punchcard_scrollbar">
                         <ol>
-                                <li><input autofocus id="filter" type="filter" placeholder="filter by activity"></input></li>
+                                <li><gaia-text-input id="filter" clearable placeholder="filter by activity" type="search"></gaia-text-input></li>
                                 <li id="results"></li>
                                 <!--                                         <li><a href="#">search</li>
 <li><a href="#">favorites</li> -->
