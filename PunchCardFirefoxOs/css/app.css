@@ -36,6 +36,10 @@ div.entry.deleted {
   background-color: red;
 }
 
+div.entry.filtered {
+  display: none;
+}
+
 div.entry:hover * {
   white-space: pre-wrap;
 }
@@ -69,43 +73,43 @@ pre:hover {
 }
 
 pre.start {
-  width: 50%;
+  width: 49%;
   /*   direction: ltr;
   text-overflow: clip ellipsis; */
 }
 
 pre.end {
-  width: 50%;
+  width: 49%;
   /*   direction: ltr;
   text-overflow: ellipsis clip; */
 }
 
 pre.duration {
-  width: 50%;
+  width: 49%;
   /*   text-overflow: clip ellipsis; */
 }
 
 pre.revisions {
-  width: 50%;
+  width: 49%;
   /*   text-overflow: clip ellipsis; */
 }
 
 /* pre.start:hover {
-  font-size: x-large;
-  white-space: pre-wrap;
+font-size: x-large;
+white-space: pre-wrap;
 }
 
 pre.end:hover {
-  font-size: x-large;
-  white-space: pre-wrap;
+font-size: x-large;
+white-space: pre-wrap;
 }
 
 pre.duration:hover {
-  white-space: pre-wrap;
+white-space: pre-wrap;
 }
 
 pre.revisions:hover {
-  white-space: pre-wrap;
+white-space: pre-wrap;
 } */
 
 /*pre:hover {
@@ -166,8 +170,8 @@ nav#punchcard_scrollbar {
 }
 
 /* nav#punchcard_scrollbar:hover {
-  right: 0;
-  overflow: visible;
+right: 0;
+overflow: visible;
 } */
 
 section#view-punchcard-list {
@@ -183,9 +187,9 @@ nav#punchcard_scrollbar li a {
   opacity: 1;
 }
 
-nav#punchcard_scrollbar li a:hover {
+nav#punchcard_scrollbar li *:hover {
   /*   direction: ltr; */
-/*   text-align: left; */
+  /*   text-align: left; */
   font-size: large;
   border-radius: 6px;
   border: 2px solid black;
@@ -237,8 +241,15 @@ width: -moz-calc(100% + 1.5rem);
   height: calc(100% - 5rem);
 }
 
-div#entries {
-/*     width: 90%; */
+div.entries.updating {
+  background-color: silver;
+  /*     width: 90%; */
+  /*   max-height: 50%; */
+}
+
+div.entries_header a {
+  padding: 0.5rem;
+  /*     width: 90%; */
   /*   max-height: 50%; */
 }
 

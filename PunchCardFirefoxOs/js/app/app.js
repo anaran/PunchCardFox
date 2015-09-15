@@ -14,13 +14,39 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   // window.alert(gep.getElementPath(event.target));
   // var db = new PouchDB('apa-test-2');
   var db = new PouchDB('punchcard3');
-  var entries = document.getElementById('entries');
-  var otherView = document.querySelector('section#view-after-punchcard-list');
+  // var entries = document.getElementById('entries');
+  // var otherView = document.querySelector('section#view-after-punchcard-list');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   var startMenu = document.getElementById('start_menu');
   var endMenu = document.getElementById('end_menu');
   var activityMenu = document.getElementById('activity_menu');
   var request = navigator.mozApps.getSelf();
+  var stringToRegexp = function(str) {
+    var captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
+    return captureGroups && new RegExp(captureGroups[1], captureGroups[2]);
+  };
+  var filter = document.querySelector('input#filter');
+  filter.addEventListener('input', function(event) {
+    var entryNodes = scrollView.querySelectorAll('.entry');
+    if (event.target.value.length) {
+      var regexp = stringToRegexp(event.target.value.trim());
+      Array.prototype.forEach.call(entryNodes, function(node) {
+        var activity = node.querySelector('.activity');
+        if (regexp.test(activity.textContent)) {
+          node.classList.remove('filtered');
+        }
+        else {
+          node.classList.add('filtered');
+        }
+      });
+    }
+    else {
+      Array.prototype.forEach.call(entryNodes, function(node) {
+        node.classList.remove('filtered');
+      });
+    }
+    updateScrollLinks();
+  });
   request.onsuccess = function() {
     DEBUG && console.log(JSON.stringify(request.result,
                                         Object.getOwnPropertyNames(request.result), 2));
@@ -42,9 +68,21 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     // event.preventDefault();
     // event.stopPropagation();
     var bcr = event.target.getBoundingClientRect();
+    var positionMenu = function(menu) {
+      var xProp = 'left', yProp = 'top', xOffset = event.clientX, yOffset = event.clientY;
+      if (event.clientX > window.innerWidth * 0.8) {
+        xProp = 'right';
+        xOffset = window.innerWidth - xOffset;
+      }
+      if (event.clientY > window.innerHeight * 0.8) {
+        yProp = 'bottom';
+        yOffset = window.innerHeight - yOffset;
+      }
+      menu.style = 'display: block; ' + xProp + ': ' + xOffset + 'px; ' + yProp + ': ' + yOffset + 'px';
+    }
     if (event.target.classList.contains("start")) {
       if (startMenu.style.display == 'none') {
-        startMenu.style = 'display: block; top: ' + event.clientY + 'px; left: ' + event.clientX + 'px';
+        positionMenu(startMenu);
         startMenu.dataset.id = event.target.parentElement.id;
       }
       else {
@@ -54,7 +92,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     }
     if (event.target.classList.contains("end")) {
       if (endMenu.style.display == 'none') {
-        endMenu.style = 'display: block; top: ' + event.clientY + 'px; left: ' + event.clientX + 'px';
+        positionMenu(endMenu);
         endMenu.dataset.id = event.target.parentElement.id;
       }
       else {
@@ -66,7 +104,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     }
     if (event.target.classList.contains("activity")) {
       if (activityMenu.style.display == 'none') {
-        activityMenu.style = 'display: block; top: ' + event.clientY + 'px; left: ' + event.clientX + 'px';
+        positionMenu(activityMenu);
         activityMenu.dataset.id = event.target.parentElement.id;
       }
       else {
@@ -102,11 +140,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-      window.alert(err);
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
     // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
     // document.location.reload('force');
@@ -127,11 +165,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-      window.alert(err);
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   };
   var endNowItem = document.querySelector('#end_now');
@@ -189,7 +227,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               // for the convenience of being nicely scrollable via scrollbar.
               // NOTE: Don't forget to add newlyobtained id!
               entry._id = response.id;
-              var newEntry = utilsjs.addNewEntry(entry, entries, document.getElementById(id));
+              var beforeThisElement = document.getElementById(id);
+              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+              newEntry.scrollIntoView();
               newEntry.querySelector('pre.activity').classList.add('changed');
               newEntry.querySelector('pre.start').classList.add('changed');
               newEntry.querySelector('pre.end').classList.add('changed');
@@ -201,11 +241,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               a.click();
             }).catch(function(err) {
               //errors
-              window.alert(err);
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
           }).catch(function(err) {
             //errors
-            window.alert(err);
+            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
         }
       }
@@ -386,7 +426,9 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
         entry._id = response.id;
-        var newEntry = utilsjs.addNewEntry(entry, entries, document.getElementById(id));
+        var beforeThisElement = document.getElementById(id);
+        var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+        newEntry.scrollIntoView();
         newEntry.querySelector('pre.activity').classList.add('changed');
         newEntry.querySelector('pre.start').classList.add('changed');
         newEntry.querySelector('pre.end').classList.add('changed');
@@ -394,11 +436,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        window.alert(err);
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }).catch(function(err) {
       //errors
-      window.alert(err);
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   };
   var repeatNowItem = document.querySelector('#repeat_now');
@@ -415,6 +457,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         if (true) {
           doc._deleted = true;
           return db.put(doc).then(function(response) {
+            var deletedElement = document.getElementById(id);
+            deletedElement.classList.add('deleted');
             // document.location.reload('force');
           });
         }
@@ -444,7 +488,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     // db.query(map, {reduce: false, /*startkey: "2010-06-24T15:44:08", endkey: "2010-06-25T15:44:08", */limit: 33, include_docs: true, descending: false}, function(err, doc) {
     // var obj = db.mapreduce(db);
     // db.query(map, {/*stale: 'ok', */reduce: false,
-    var queryInfoElement = document.createElement('div');
     var options = {};
     var optionsDB = new PouchDB('options');
     optionsDB.allDocs({
@@ -459,12 +502,34 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             options[option.doc._id] = option.doc.value;
           }
         });
+        var content = document.getElementById('entries_template').content;
+        var entries = document.importNode(content, "deep").firstElementChild;
+        var previousEntries = scrollView.querySelector('div.entries');
+        entries.classList.add('updating');
+        if (previousEntries) {
+          scrollView.insertBefore(entries, previousEntries);
+        }
+        else {
+          scrollView.appendChild(entries);
+        }
+        entries.id = 'R' + resultIndex;
+        var queryInfoElement = entries.querySelector('span.info');
+        queryInfoElement.scrollIntoView();
+        var update = entries.querySelector('a.update');
+        var close = entries.querySelector('a.close');
+        update.addEventListener('click', function(event) {
+          event.preventDefault();
+          alert('rerun query is not implemented yet. \u221E');
+        });
+        close.addEventListener('click', function(event) {
+          event.preventDefault();
+          scrollView.removeChild(entries);
+          updateScrollLinks();
+        });
         require(['./info'], function (infojs) {
-          var captureGroups = options.deleted_id.match(/^\/?(.+?)(?:\/([gim]*))?$/);
-          if (options.deleted_id.length && captureGroups) {
-            var regexp = new RegExp(captureGroups[1], captureGroups[2]);
+          var regexp = stringToRegexp(options.deleted_id);
+          if (options.deleted_id.length && regexp) {
             queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
-            entries.appendChild(queryInfoElement);
             db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
               // infojs({delete: info}, entries);
               // db.allDocs({
@@ -481,9 +546,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
                 open_revs: "all"
               }).then(function (otherDoc) {
                 if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
-                  infojs({get: otherDoc}, entries);
+                  // infojs({get: otherDoc}, entries);
                   var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
-                  entry.dataset.result = resultIndex;
                   entry.classList.add('deleted');
                 }
                 false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
@@ -517,8 +581,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             }).on('error', function (err) {
               DEBUG && console.log(err);
               infojs({delete_error: err}, entries);
+            }).on('complete', function(info) {
+              resultIndex += 1;
+              updateScrollLinks();
+              entries.classList.remove('updating');
             });
-
             // db.get(options.deleted_id, {
             //   // rev: info.doc._rev,
             //   revs: true,
@@ -544,7 +611,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             // }).catch(function (err) {
             //   infojs({get_error:err}, entries);
             // });
-            resultIndex += 1;
           }
         });
         var limit = options.limit.length ? Number(options.limit) : undefined;
@@ -560,9 +626,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
         var query;
         if (options.deleted_id.length) {
-          queryInfoElement.scrollIntoView();
-          resultIndex += 1;
-          updateScrollLinks();
           return;
         }
         if (isSearch) {
@@ -580,15 +643,10 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           query = db.query('foolin/by_start', opts);
           TIME && console.timeEnd('query by_start');
         }
-        entries.appendChild(queryInfoElement);
         // window.requestAnimationFrame(function (timestamp) {
         query.then(function(doc) {
           TIME && console.time('query');
           var rowCount = doc.rows.length;
-          if (isSearch && !matchLimit) {
-            queryInfoElement.textContent += '\nno search limit, providing scroll links every 5 entries.';
-            rowsPerLink = 5;
-          }
           var matches = 0;
           // NOTE: Iteration statement is needed to use break statement.
           // doc.rows.forEach(function (row, index) {
@@ -605,7 +663,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               continue;
             }
             entry = utilsjs.addNewEntry(row.doc, entries);
-            entry.dataset.result = resultIndex;
             if (isSearch) {
               if (matchLimit && (matches == matchLimit)) {
                 break;
@@ -622,11 +679,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             queryInfoElement.textContent += rowCount;
           }
           TIME && console.timeEnd('query');
-          queryInfoElement.scrollIntoView();
           resultIndex += 1;
           updateScrollLinks();
+          entries.classList.remove('updating');
         }).catch(function(err) {
-          alert(err);
+          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
         // });
       }
@@ -636,43 +693,62 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   };
   var updateScrollLinks = function() {
     TIME && console.time('updateScrollLinks');
-    var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
-    var rowsPerLink = (entries.childElementCount / (scrollLinks.length - 3));
+    var entryNodes = scrollView.querySelectorAll('.entry:not(.filtered)');
+    // query result container
+    var entriesNodes = scrollView.querySelectorAll('.entries');
+    var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li');
+    var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
     for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
-      scrollLinks[linkIndex].style.visibility = 'hidden';
+      scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
     }
-    Array.prototype.forEach.call(entries.querySelectorAll('.linked'), function(element) {
+    Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
       element.classList.remove('.linked');
     });
-    DEBUG && console.log("entries.childElementCount, rowsPerLink, scrollLinks.length");
-    DEBUG && console.log(entries.childElementCount, rowsPerLink, scrollLinks.length);
-    for (var scrollIndex = 0; scrollIndex < entries.childElementCount; scrollIndex++) {
+    DEBUG && console.log("entryNodes.length, rowsPerLink, scrollLinks.length");
+    DEBUG && console.log(entryNodes.length, rowsPerLink, scrollLinks.length);
+    for (var scrollIndex = 0; scrollIndex < entryNodes.length; scrollIndex++) {
       if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
-        entries.childNodes[scrollIndex].classList.add('linked');
-        // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
-        (function () {
-          var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
-          var last = (link == scrollLinks[scrollLinks.length - 2]);
-          var result = entries.childNodes[scrollIndex].dataset.result;
-          if (entries.childNodes[scrollIndex].classList.contains('deleted')) {
-            link.textContent = 'deleted' + ' R' + result;
-            link.href = '#' + entries.childNodes[scrollIndex].id;
-            link.style.visibility = 'visible';
-          }
-          else {
-            db.get(entries.childNodes[scrollIndex].id).then(function(doc) {
-              link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + ' R' + result;
-              link.href = '#' + doc._id;
+        var classList = entryNodes[scrollIndex].classList;
+        if (classList && !classList.contains('filtered')) {
+          classList.add('linked');
+          // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
+          (function () {
+            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2].firstElementChild;
+            var last = (link == scrollLinks[scrollLinks.length - 2].firstElementChild);
+            var result = entryNodes[scrollIndex].parentElement.id;
+            if (entryNodes[scrollIndex].classList.contains('deleted')) {
+              link.textContent = 'deleted' + ' ' + result;
+              link.href = '#' + entryNodes[scrollIndex].id;
               link.style.visibility = 'visible';
-              DEBUG && console.log({ last: last });
-              if (last) {
-                TIME && console.timeEnd('updateScrollLinks');
-              }
-            });
-          }
-        })();
+            }
+            else {
+              db.get(entryNodes[scrollIndex].id).then(function(doc) {
+                link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + result;
+                link.href = '#' + doc._id;
+                link.style.visibility = 'visible';
+                DEBUG && console.log({ last: last });
+                if (last) {
+                  TIME && console.timeEnd('updateScrollLinks');
+                }
+              });
+            }
+          })();
+        }
+        else {
+          entryNodes[scrollIndex].class = 'linked';
+        }
       }
     }
+    var resultsLink = scrollLinks[1];
+    Array.prototype.forEach.call(resultsLink.querySelectorAll('a'), function(elem) {
+      elem.parentElement.removeChild(elem);
+    });
+    Array.prototype.forEach.call(entriesNodes, function(node) {
+      var link = document.createElement('a');
+              link.textContent = node.id;
+              link.href = '#' + node.id;
+      resultsLink.appendChild(link);
+    });
   };
   runQuery();
   // function start() {

@@ -56,7 +56,8 @@ own language (as long as you provide translations).
                         <link rel="import" href="new_entry.html">
                         <link rel="import" href="options.html">
                         <link rel="import" href="about.html">
-                        <div id="entries"></div>
+                        <div id="entries">
+                        </div>
                 </section>
                 <ul id="start_menu" class="menu">
                         <!--                         <menu label="Start Menu"> -->
@@ -95,8 +96,8 @@ own language (as long as you provide translations).
                 </ul>
                 <nav data-type="scrollbar" id="punchcard_scrollbar">
                         <ol>
-                                <li><a href="#" data-icon="search"><span>Search</span></a></li>
-                                <li><a href="#" data-icon="star-empty"><span>Favorites</span></a></li>
+                                <li><input autofocus id="filter" type="filter" placeholder="filter by activity"></input></li>
+                                <li id="results"></li>
                                 <!--                                         <li><a href="#">search</li>
 <li><a href="#">favorites</li> -->
                                 <li><a href="#">A</a></li>
@@ -134,5 +135,6 @@ own language (as long as you provide translations).
 <link rel="import" href="about.html">
 </section> -->
                 <script type="text/javascript" data-main="/js/index.js" src="bower_components/alameda/alameda.js" defer></script>
+                        <link rel="import" href="templates.html">
         </body>
 </html>
