@@ -21,6 +21,32 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var endMenu = document.getElementById('end_menu');
   var activityMenu = document.getElementById('activity_menu');
   var request = navigator.mozApps.getSelf();
+  var stringToRegexp = function(str) {
+    var captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
+    return captureGroups && new RegExp(captureGroups[1], captureGroups[2]);
+  };
+  var filter = document.querySelector('input#filter');
+  filter.addEventListener('input', function(event) {
+    var entryNodes = scrollView.querySelectorAll('.entry');
+    if (event.target.value.length) {
+      var regexp = stringToRegexp(event.target.value.trim());
+      Array.prototype.forEach.call(entryNodes, function(node) {
+        var activity = node.querySelector('.activity');
+        if (regexp.test(activity.textContent)) {
+          node.classList.remove('filtered');
+        }
+        else {
+          node.classList.add('filtered');
+        }
+      });
+    }
+    else {
+      Array.prototype.forEach.call(entryNodes, function(node) {
+        node.classList.remove('filtered');
+      });
+    }
+    updateScrollLinks();
+  });
   request.onsuccess = function() {
     DEBUG && console.log(JSON.stringify(request.result,
                                         Object.getOwnPropertyNames(request.result), 2));
@@ -486,6 +512,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         else {
           scrollView.appendChild(entries);
         }
+        entries.id = 'R' + resultIndex;
         var queryInfoElement = entries.querySelector('span.info');
         queryInfoElement.scrollIntoView();
         var update = entries.querySelector('a.update');
@@ -500,9 +527,8 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           updateScrollLinks();
         });
         require(['./info'], function (infojs) {
-          var captureGroups = options.deleted_id.match(/^\/?(.+?)(?:\/([gim]*))?$/);
-          if (options.deleted_id.length && captureGroups) {
-            var regexp = new RegExp(captureGroups[1], captureGroups[2]);
+          var regexp = stringToRegexp(options.deleted_id);
+          if (options.deleted_id.length && regexp) {
             queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
             db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
               // infojs({delete: info}, entries);
@@ -522,7 +548,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
                 if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
                   // infojs({get: otherDoc}, entries);
                   var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
-                  entry.dataset.result = resultIndex;
                   entry.classList.add('deleted');
                 }
                 false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
@@ -638,7 +663,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               continue;
             }
             entry = utilsjs.addNewEntry(row.doc, entries);
-            entry.dataset.result = resultIndex;
             if (isSearch) {
               if (matchLimit && (matches == matchLimit)) {
                 break;
@@ -669,11 +693,13 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   };
   var updateScrollLinks = function() {
     TIME && console.time('updateScrollLinks');
-    var entryNodes = scrollView.querySelectorAll('.entry');
-    var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li>a');
+    var entryNodes = scrollView.querySelectorAll('.entry:not(.filtered)');
+    // query result container
+    var entriesNodes = scrollView.querySelectorAll('.entries');
+    var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li');
     var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
     for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
-      scrollLinks[linkIndex].style.visibility = 'hidden';
+      scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
     }
     Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
       element.classList.remove('.linked');
@@ -683,21 +709,21 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     for (var scrollIndex = 0; scrollIndex < entryNodes.length; scrollIndex++) {
       if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
         var classList = entryNodes[scrollIndex].classList;
-        if (classList) {
+        if (classList && !classList.contains('filtered')) {
           classList.add('linked');
           // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
           (function () {
-            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2];
-            var last = (link == scrollLinks[scrollLinks.length - 2]);
-            var result = entryNodes[scrollIndex].dataset.result;
+            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2].firstElementChild;
+            var last = (link == scrollLinks[scrollLinks.length - 2].firstElementChild);
+            var result = entryNodes[scrollIndex].parentElement.id;
             if (entryNodes[scrollIndex].classList.contains('deleted')) {
-              link.textContent = 'deleted' + ' R' + result;
+              link.textContent = 'deleted' + ' ' + result;
               link.href = '#' + entryNodes[scrollIndex].id;
               link.style.visibility = 'visible';
             }
             else {
               db.get(entryNodes[scrollIndex].id).then(function(doc) {
-                link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + ' R' + result;
+                link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + result;
                 link.href = '#' + doc._id;
                 link.style.visibility = 'visible';
                 DEBUG && console.log({ last: last });
@@ -713,6 +739,16 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         }
       }
     }
+    var resultsLink = scrollLinks[1];
+    Array.prototype.forEach.call(resultsLink.querySelectorAll('a'), function(elem) {
+      elem.parentElement.removeChild(elem);
+    });
+    Array.prototype.forEach.call(entriesNodes, function(node) {
+      var link = document.createElement('a');
+              link.textContent = node.id;
+              link.href = '#' + node.id;
+      resultsLink.appendChild(link);
+    });
   };
   runQuery();
   // function start() {

@@ -36,6 +36,10 @@ div.entry.deleted {
   background-color: red;
 }
 
+div.entry.filtered {
+  display: none;
+}
+
 div.entry:hover * {
   white-space: pre-wrap;
 }
@@ -183,7 +187,7 @@ nav#punchcard_scrollbar li a {
   opacity: 1;
 }
 
-nav#punchcard_scrollbar li a:hover {
+nav#punchcard_scrollbar li *:hover {
   /*   direction: ltr; */
   /*   text-align: left; */
   font-size: large;
