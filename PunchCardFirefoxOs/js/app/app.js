@@ -48,6 +48,10 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       });
     }
     else {
+      // NOTE: value needs to be cleared when we get called by a click on a#clear_filter
+      // FIXME: This event listener is ugly, being installed on the parent
+      // and handling both input on filter element and click on a#clear_filter element.
+      filter.value = "";
       Array.prototype.forEach.call(entryNodes, function(node) {
         node.classList.remove('filtered');
       });
