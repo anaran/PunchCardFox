@@ -169,10 +169,14 @@ nav#punchcard_scrollbar {
   right: 0;
 }
 
-/* nav#punchcard_scrollbar:hover {
-right: 0;
-overflow: visible;
-} */
+nav#punchcard_scrollbar ol:hover {
+  opacity: 0.7;
+}
+
+nav#punchcard_scrollbar p {
+  opacity: 1;
+  right: 2rem;
+}
 
 section#view-punchcard-list {
   width: calc(100% - 3ex);
@@ -196,6 +200,7 @@ gaia-text-input:hover {
   display: block !important;
   height: 3rem !important;
   background-color: white;
+  opacity: 1;
 }
 
 nav#punchcard_scrollbar li a:hover {
