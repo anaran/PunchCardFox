@@ -187,7 +187,18 @@ nav#punchcard_scrollbar li a {
   opacity: 1;
 }
 
-nav#punchcard_scrollbar li *:hover {
+gaia-text-input {
+  display: inline !important;
+  height: 1rem !important;
+}
+
+gaia-text-input:hover {
+  display: block !important;
+  height: 3rem !important;
+  background-color: white;
+}
+
+nav#punchcard_scrollbar li a:hover {
   /*   direction: ltr; */
   /*   text-align: left; */
   font-size: large;
