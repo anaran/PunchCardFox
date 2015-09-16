@@ -173,10 +173,6 @@ nav#punchcard_scrollbar ol:hover {
   opacity: 0.7;
 }
 
-nav#punchcard_scrollbar p {
-  opacity: 1;
-  right: 2rem;
-}
 
 section#view-punchcard-list {
   width: calc(100% - 3ex);

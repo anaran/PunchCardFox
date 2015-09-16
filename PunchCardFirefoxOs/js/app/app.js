@@ -57,32 +57,6 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     DEBUG && console.log(request.result,
                          Object.getOwnPropertyNames(request.error.name), 2);
   };
-  var scrolling = document.querySelector('nav[data-type="scrollbar"]>ol');
-  var overlay = document.querySelector('nav[data-type="scrollbar"]>p');
-  var updateScrollOverlay = function(event) {
-    event.preventDefault();
-    console.log(event.type, event);
-    overlay.textContent = event.target.textContent;
-  };
-  scrolling.addEventListener('mousemove', updateScrollOverlay);
-  scrolling.addEventListener('touchstart', function(event) {
-    event.preventDefault();
-    console.log(event.type, event.target);
-    scrolling.removeEventListener('mousemove', updateScrollOverlay);
-    scrolling.addEventListener('touchmove', updateScrollOverlay);
-  });
-  scrolling.addEventListener('touchend', function(event) {
-    event.preventDefault();
-    console.log(event.type, event.target);
-    scrolling.removeEventListener('touchmove', updateScrollOverlay);
-    scrolling.addEventListener('mousemove', updateScrollOverlay);
-  });
-  scrolling.addEventListener('touchcancel', function(event) {
-    event.preventDefault();
-    console.log(event.type, event.target);
-    scrolling.removeEventListener('touchmove', updateScrollOverlay);
-    scrolling.addEventListener('mousemove', updateScrollOverlay);
-  });
   scrollView.addEventListener('scroll', function (event) {
     [
       startMenu,
