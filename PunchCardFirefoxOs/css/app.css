@@ -188,15 +188,15 @@ nav#punchcard_scrollbar li a {
 }
 
 gaia-text-input {
+  background-color: white;
   display: inline !important;
   height: 1rem !important;
+  opacity: 1;
 }
 
 gaia-text-input:hover {
   display: block !important;
   height: 3rem !important;
-  background-color: white;
-  opacity: 1;
 }
 
 nav#punchcard_scrollbar li a:hover {

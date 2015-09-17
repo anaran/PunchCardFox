@@ -1,5 +1,9 @@
 /* for info.js */
 
+pre.info {
+  width: 100%;
+}
+
 pre.info:focus {
   overflow: visible;
   white-space: pre-wrap;
