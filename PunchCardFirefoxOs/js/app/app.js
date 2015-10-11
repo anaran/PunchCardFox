@@ -25,10 +25,11 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     var captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
     return captureGroups && new RegExp(captureGroups[1], captureGroups[2]);
   };
-  var filter = document.querySelector('gaia-text-input#filter');
+  // var filter = document.querySelector('gaia-text-input#filter');
+  var filter = document.querySelector('input#filter');
   var updateFilter = function(event) {
     var entryNodes = scrollView.querySelectorAll('.entry');
-    if (event.target.value.length) {
+    if (event.target.value.length > 3) {
       var regexp = stringToRegexp(event.target.value.trim());
       Array.prototype.forEach.call(entryNodes, function(node) {
         var activity = node.querySelector('.activity');

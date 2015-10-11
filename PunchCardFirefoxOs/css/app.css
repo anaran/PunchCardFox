@@ -194,6 +194,15 @@ gaia-text-input {
   opacity: 1;
 }
 
+input#filter:focus {
+  background-color: white;
+  opacity: 1;
+  position: fixed;
+  top: 3rem;
+  left: 1rem;
+  font-size: x-large;
+}
+
 gaia-text-input:hover {
   display: block !important;
   height: 3rem !important;
