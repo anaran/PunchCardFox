@@ -58,7 +58,7 @@ document.addEventListener('readystatechange', function () {
           uninstallButton.removeAttribute('disabled');
         }
         else {
-          info.textContent = manifestUrl + ' is not intalled';
+          info.textContent = manifestUrl + ' is not installed';
           uninstallButton.setAttribute('disabled', true);
           installButton.removeAttribute('disabled');
         }
@@ -75,50 +75,51 @@ document.addEventListener('readystatechange', function () {
   installButton.addEventListener('click', installApp);
   checkButton.addEventListener('click', checkInstalled);
   var getInstalled = function (url) {
-  var request = window.navigator.mozApps.getInstalled();
-  request.onerror = function(e) {
-    alert("Error calling getInstalled: " + request.error.name);
-  };
-  request.onsuccess = function(e) {
-    // alert("Success, number of apps: " + request.result.length);
-    // console.log(request.result);
-    info.textContent = manifestUrl + ' is not intalled';
-    uninstallButton.setAttribute('disabled', true);
-    installButton.removeAttribute('disabled');
-    request.result.forEach(function (app) {
-      if (app.manifestURL == url) {
-        var uninstallApp = function () {
-          try {
-            // [1202248 – TypeError: navigator.mozApps.mgmt is undefined](https://bugzil.la/1202248)
-            // TypeError: navigator.mozApps.mgmt is undefined
-            // in
-            // navigator.buildID
-            //     20150905030205
-            // navigator.javaEnabled()
-            //     true
-            // navigator.language
-            //     de
-            // navigator.languages
-            //     de,en-US
-            // navigator.userAgent
-            //     Mozilla/5.0 (Windows NT 5.1; rv:43.0) Gecko/20100101 Firefox/43.0
-            var req = navigator.mozApps.mgmt.uninstall(app, function onsuccess(result) {
-              console.log(result);
-            }, function onerror(error) {
-              console.log(error);
-            });
-          }
-          catch (error) {
-            info.textContent = JSON.stringify(error, Object.getOwnPropertyNames(error));
-          }
-        };
-        info.textContent = (new Date).toISOString() + ': ' + app.manifest.name + " version " + app.manifest.version + " was last installed " + new Date(app.installTime);
-        uninstallButton.addEventListener('click', uninstallApp);
-        installButton.setAttribute('disabled', true);
-        uninstallButton.removeAttribute('disabled');
-      }
-    });
-  };
+    // Takes no argument, multiple apps per origin are possible, contrary to previous restriction to one.
+    var request = window.navigator.mozApps.getInstalled();
+    request.onerror = function(e) {
+      alert("Error calling getInstalled: " + request.error.name);
+    };
+    request.onsuccess = function(e) {
+      // alert("Success, number of apps: " + request.result.length);
+      // console.log(request.result);
+      info.textContent = manifestUrl + ' is not installed';
+      uninstallButton.setAttribute('disabled', true);
+      installButton.removeAttribute('disabled');
+      request.result.forEach(function (app) {
+        if (app.manifestURL == url) {
+          var uninstallApp = function () {
+            try {
+              // [1202248 – TypeError: navigator.mozApps.mgmt is undefined](https://bugzil.la/1202248)
+              // TypeError: navigator.mozApps.mgmt is undefined
+              // in
+              // navigator.buildID
+              //     20150905030205
+              // navigator.javaEnabled()
+              //     true
+              // navigator.language
+              //     de
+              // navigator.languages
+              //     de,en-US
+              // navigator.userAgent
+              //     Mozilla/5.0 (Windows NT 5.1; rv:43.0) Gecko/20100101 Firefox/43.0
+              var req = navigator.mozApps.mgmt.uninstall(app, function onsuccess(result) {
+                console.log(result);
+              }, function onerror(error) {
+                console.log(error);
+              });
+            }
+            catch (error) {
+              info.textContent = JSON.stringify(error, Object.getOwnPropertyNames(error));
+            }
+          };
+          info.textContent = (new Date).toISOString() + ': ' + app.manifest.name + " version " + app.manifest.version + " was last installed " + new Date(app.installTime);
+          uninstallButton.addEventListener('click', uninstallApp);
+          installButton.setAttribute('disabled', true);
+          uninstallButton.removeAttribute('disabled');
+        }
+      });
+    };
   };
   // checkInstalled();
   getInstalled(updateUrl);
