@@ -173,6 +173,10 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     var infoNode = document.getElementById('replication_info');
+    var clearNode = document.getElementById('clear_info');
+    clearNode.addEventListener('click', function (event) {
+      infoNode.textContent = '';
+    });
     // NOTE: Don't share variables in asynchronuous code!
     // myInfo = {};
     var myOptionsInfo = {};
@@ -414,7 +418,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       // request.addEventListener('error', onRequestError);
       request.send();
       request.onreadystatechange = function() {
-        if (this.readyState == 4) {
+        if (this.readyState == request.DONE) {
           // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
           // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
           // cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
@@ -543,7 +547,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // request.onreadystatechange = function() {
     // request.onprogress = function() {
     request.onload = function() {
-      if (/* true || */this.readyState == 4) {
+      if (/* true || */this.readyState == request.DONE) {
         var infoNode = document.getElementById('replication_info');
         addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
         addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);

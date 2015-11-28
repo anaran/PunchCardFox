@@ -7,6 +7,7 @@ document.addEventListener('readystatechange', function () {
   var manifestUrl = 'http://localhost:8000/manifest.webapp';
   var checkButton = document.getElementById('check');
   var installButton = document.getElementById('install');
+  var updateButton = document.getElementById('update');
   var uninstallButton = document.getElementById('uninstall');
   var info = document.getElementById('info');
   var installApp = function () {
@@ -56,6 +57,34 @@ document.addEventListener('readystatechange', function () {
           uninstallButton.addEventListener('click', uninstallApp);
           installButton.setAttribute('disabled', true);
           uninstallButton.removeAttribute('disabled');
+          var cfu = app.checkForUpdate();
+          cfu.onsuccess = function (result) {
+            console.log('cfu.onsuccess', app, result);
+            if (app.downloadAvailable) {
+              installButton.removeAttribute('disabled');
+              updateButton.addEventListener('click', function (event) {
+                app.download();
+                app.ondownloadsuccess = function (result) {
+                  console.log(result);
+                  window.navigator.mozApps.applyDownload(app);
+                };
+                app.ondownloadapplied = function (result) {
+                  console.log(result);
+                }
+                app.ondownloadapplied = function (result) {
+                  console.log('app.ondownloadapplied', app);
+                };
+              });
+            }
+            else {
+              installButton.setAttribute('disabled', true);
+            }
+          };
+          cfu.onerror = function onerror(error) {
+            console.log('cfu.onerror', app, error);
+          };
+          console.log('app.checkForUpdate() returns', cfu, app);
+          console.log('after app.checkForUpdate(), look for onsuccess/onerror logging', app);
         }
         else {
           info.textContent = manifestUrl + ' is not installed';
