@@ -53,7 +53,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           // saveLink.click();
         }).catch(function(err) {
           //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
       }).catch(function(err) {
         console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
@@ -120,7 +120,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       exportButton.nextElementSibling.appendChild(div);
       // document.body.appendChild(div);
     }).catch(function (err) {
-              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   });
   var start = document.getElementById('start_replication');
@@ -173,53 +173,63 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     var infoNode = document.getElementById('replication_info');
-    var clearNode = document.getElementById('clear_info');
+    var clearNode = document.getElementById('clear-input-right');
     clearNode.addEventListener('click', function (event) {
+      event.preventDefault();
       infoNode.textContent = '';
     });
+    var verbositySelect = document.getElementById('verbosity');
     // NOTE: Don't share variables in asynchronuous code!
     // myInfo = {};
     var myOptionsInfo = {};
     var optionsReplication = optionsDB.sync(remoteOptionsDB)
     .on('change', function (info) {
-      myOptionsInfo[optionsDB._db_name] = info;
-      addReadOnlyInfo(myOptionsInfo, infoNode);
+      if (verbositySelect.value == 'verbose') {
+        myOptionsInfo[optionsDB._db_name] = info;
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+      }
     }).on('complete', function (info) {
-      myOptionsInfo[optionsDB._db_name] = info;
-      addReadOnlyInfo(myOptionsInfo, infoNode);
-      remoteOptionsDB.info().then(function (info) {
-        addReadOnlyInfo(info, infoNode);
-      }).catch(function (err) {
-        addReadOnlyInfo(err, infoNode);
-      });
+      if (verbositySelect.value != 'silent') {
+        myOptionsInfo[optionsDB._db_name] = info;
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+        remoteOptionsDB.info().then(function (info) {
+          addReadOnlyInfo(info, infoNode);
+        }).catch(function (err) {
+          addReadOnlyInfo(err, infoNode);
+        });
+      }
     }).on('uptodate', function (info) {
       myOptionsInfo[optionsDB._db_name] = info;
       addReadOnlyInfo(myOptionsInfo, infoNode);
     }).on('error', function (err) {
       myOptionsInfo[optionsDB._db_name] = err;
       // addReadOnlyInfo(myOptionsInfo, infoNode);
-              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
     var myInfo = {};
     var replication = PouchDB.sync(db, remoteDB)
     .on('change', function (info) {
-      myInfo[db._db_name] = info;
-      addReadOnlyInfo(myInfo, infoNode);
+      if (verbositySelect.value == 'verbose') {
+        myInfo[db._db_name] = info;
+        addReadOnlyInfo(myInfo, infoNode);
+      }
     }).on('complete', function (info) {
-      myInfo[db._db_name] = info;
-      addReadOnlyInfo(myInfo, infoNode);
-      remoteDB.info().then(function (info) {
-        addReadOnlyInfo(info, infoNode);
-      }).catch(function (err) {
-        addReadOnlyInfo(err, infoNode);
-      });
+      if (verbositySelect.value != 'silent') {
+        myInfo[db._db_name] = info;
+        addReadOnlyInfo(myInfo, infoNode);
+        remoteDB.info().then(function (info) {
+          addReadOnlyInfo(info, infoNode);
+        }).catch(function (err) {
+          addReadOnlyInfo(err, infoNode);
+        });
+      }
     }).on('uptodate', function (info) {
       myInfo[db._db_name] = info;
       addReadOnlyInfo(myInfo, infoNode);
     }).on('error', function (err) {
       myInfo[db._db_name] = err;
       addReadOnlyInfo(myInfo, infoNode);
-              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   });
 
@@ -258,7 +268,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
     db.allDocs({ limit: 4500, include_docs: true, descending: true }, function(err, doc) {
       if (err) {
-                console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       } else {
         var search = document.getElementById('search');
         search && include.parentElement.removeChild(search);
@@ -293,7 +303,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
               document.querySelector('a.save').click();
             }).catch(function(err) {
               //errors
-                      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
           });
           var edit = document.createElement('a');
