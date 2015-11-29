@@ -1,8 +1,9 @@
 {
-  "version": "0.2.0",
+  "version": "0.4.0",
   "name": "pea",
   "description": "A template with the bare minimum structure",
   "launch_path": "/build/index.html",
+  "origin": "app://{4199efc5-aadb-4172-8f44-a7e2214a17eb}",
   "icons": {
     "16": "/img/icons/icon16x16.png",
     "48": "/img/icons/icon48x48.png",
