@@ -34,6 +34,21 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     addReadOnlyInfo(info, infoNode);
     // DEBUG && console.log(info);
   });
+  addReadOnlyInfo(window.location, infoNode);
+  var request = window.navigator.mozApps.getSelf();
+  request.onsuccess = function() {
+    if (request.result) {
+      // Pull the name of the app out of the App object
+      addReadOnlyInfo(request.result.manifest, infoNode);
+    } else {
+      // alert("Called from outside of an app");
+      addReadOnlyInfo(["Called from outside of an app"], infoNode);
+    }
+  };
+  request.onerror = function() {
+    // Display error name from the DOMError object
+    alert("Error: " + request.error.name);
+  };
   // var url = window.location.hash.substring(1);
   if (readmejs) {
     var renderElement = document.querySelector('#render_markdown');

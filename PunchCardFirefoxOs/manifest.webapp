@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.7.0",
   "name": "pea",
   "description": "A template with the bare minimum structure",
   "launch_path": "/build/index.html",

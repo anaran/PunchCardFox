@@ -1,8 +1,8 @@
 {
-  "version": "0.4.0",
   "name": "pea",
+  "size": 2079332,
   "description": "A template with the bare minimum structure",
-  "package_path": "http://localhost:8000/pea.zip",
+  "package_path": "http://localhost:8000/pea_0_7_0.zip",
   "origin": "app://8297261d-622a-45eb-ac7e-9e81cb1da94a",
   "icons": {
     "16": "/img/icons/icon16x16.png",

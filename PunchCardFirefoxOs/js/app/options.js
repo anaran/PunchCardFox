@@ -211,8 +211,11 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     .on('change', function (info) {
       if (verbositySelect.value == 'verbose') {
         myInfo[db._db_name] = info;
-        addReadOnlyInfo(myInfo, infoNode);
       }
+      else {
+        myInfo[db._db_name] = info.direction;
+      }
+      addReadOnlyInfo(myInfo, infoNode);
     }).on('complete', function (info) {
       if (verbositySelect.value != 'silent') {
         myInfo[db._db_name] = info;

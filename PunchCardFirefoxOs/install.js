@@ -3,8 +3,10 @@ document.addEventListener('readystatechange', function () {
     return;
   }
   // This URL must be a full url.
-  var updateUrl = 'http://localhost:8000/update.webapp';
-  var manifestUrl = 'http://localhost:8000/manifest.webapp';
+  var updateUrl = window.location.origin + '/'
+  + (window.location.hostname == 'localhost' ? '' : 'remote-')
+  + 'update.webapp';
+  var manifestUrl = window.location.origin + '/manifest.webapp';
   var checkButton = document.getElementById('check');
   var installButton = document.getElementById('install');
   var updateButton = document.getElementById('update');
