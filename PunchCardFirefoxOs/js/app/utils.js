@@ -94,6 +94,7 @@ define(function (require) {
     end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
+    revisions.textContent = doc._rev.split(/-/)[0] + ' revs';
     // start.setAttribute('contextmenu', 'start_menu');
     // start.addEventListener('contextmenu', function (event) {
     //   this.contextMenu.dataset.id = event.target.parentElement.id;
@@ -115,31 +116,31 @@ define(function (require) {
     // entry.appendChild(start);
     // entry.appendChild(end);
 
-    db.get(doc._id, {
-      rev: doc._rev,
-      revs: true,
-      open_revs: "all"
-    }).then(function (otherDoc) {
-      revisions.textContent = otherDoc[0].ok._revisions.ids.length + ' revs';
-      // otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-      //   // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-      //   db.get(otherDoc[0].ok._id, {
-      //     open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-      //   }).then(function (otherDoc) {
-      //     // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-      //     if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-      //       // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-      //     }
-      //     else {
-      //     }
-      //     infojs({ 'rev': otherDoc }, entries);
-      //   }).catch(function (err) {
-      //     infojs({rev_error: err}, entries);
-      //   });
-      // });
-    }).catch(function (err) {
-      infojs({get_error:err}, entries);
-    });
+    // db.get(doc._id, {
+    //   rev: doc._rev,
+    //   revs: true,
+    //   open_revs: "all"
+    // }).then(function (otherDoc) {
+    //   revisions.textContent = otherDoc[0].ok._revisions.ids.length + ' revs';
+    //   // otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+    //   //   // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+    //   //   db.get(otherDoc[0].ok._id, {
+    //   //     open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+    //   //   }).then(function (otherDoc) {
+    //   //     // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+    //   //     if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+    //   //       // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+    //   //     }
+    //   //     else {
+    //   //     }
+    //   //     infojs({ 'rev': otherDoc }, entries);
+    //   //   }).catch(function (err) {
+    //   //     infojs({rev_error: err}, entries);
+    //   //   });
+    //   // });
+    // }).catch(function (err) {
+    //   infojs({get_error:err}, entries);
+    // });
     if (before) {
       // Insert before the first entry we find, if any.
       entries.insertBefore(entry, before);

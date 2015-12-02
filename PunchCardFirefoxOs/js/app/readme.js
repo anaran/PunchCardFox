@@ -73,9 +73,12 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
             var now = new Date;
             download.href = window.URL.createObjectURL(blob);
             download.download = (new URL(url)).pathname;
-            download.download = download.download.replace(/\.md$/, '@' + Number.parseInt(now.getTime() / 1000) + '.md');
+            download.download = download.download.replace(/\.md$/, '@' + (now.toJSON().replace(/:/g, '')) + '.md');
             download.download = download.download.replace(/^.*\//, '');
             download.textContent = 'Download ' + download.download;
+            download.addEventListener('click', function (event) {
+              event.target.parentElement.removeChild(event.target);
+            })
             div.appendChild(download);
             event.target.parentElement.appendChild(div);
           }

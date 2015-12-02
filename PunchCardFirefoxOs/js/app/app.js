@@ -429,6 +429,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
         entry._id = response.id;
+        entry._rev = response.rev;
         var beforeThisElement = document.getElementById(id);
         var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
         newEntry.scrollIntoView();

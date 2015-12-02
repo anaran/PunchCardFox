@@ -123,9 +123,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   });
-  var start = document.getElementById('start_replication');
-  var stop = document.getElementById('stop_replication');
-  start.addEventListener('click', function (event) {
+  var startButton = document.getElementById('start_replication');
+  startButton.addEventListener('click', function (event) {
     // TODO Adjust when using more than one template!
     // var imp = document.createElement('link');
     // imp.href = '/build/new_entry.html';
@@ -179,16 +178,51 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       infoNode.textContent = '';
     });
     var verbositySelect = document.getElementById('verbosity');
+    var syncOptions = {
+      live: true,
+      retry: true,
+      // back_off_function: function (delay) {
+      //   if (delay === 0) {
+      //     return 1000;
+      //   }
+      //   return delay * 3;
+      // }
+    };
     // NOTE: Don't share variables in asynchronuous code!
     // myInfo = {};
     var myOptionsInfo = {};
-    var optionsReplication = optionsDB.sync(remoteOptionsDB)
+    var optionsSync = optionsDB.sync(remoteOptionsDB, syncOptions)
     .on('change', function (info) {
-      if (verbositySelect.value == 'verbose') {
-        myOptionsInfo[optionsDB._db_name] = info;
+      if (verbositySelect.value != 'verbose') {
+        if (info.change &&  info.change.docs) {
+          info.change.docs = ["..."];
+        } 
+      }
+      if (verbositySelect.value != 'silent') {
+        myOptionsInfo[db._db_name] = info;
         addReadOnlyInfo(myOptionsInfo, infoNode);
       }
-    }).on('complete', function (info) {
+    })
+    .on('paused', function () {
+      // replication paused (e.g. user went offline)
+      if (verbositySelect.value != 'silent') {
+        myOptionsInfo[db._db_name] = "replication paused (e.g. user went offline)";
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+      }
+    }).on('active', function () {
+      // replicate resumed (e.g. user went back online)
+      if (verbositySelect.value != 'silent') {
+        myOptionsInfo[db._db_name] = "replicate resumed (e.g. user went back online)";
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+      }
+    }).on('denied', function (info) {
+      // a document failed to replicate, e.g. due to permissions
+      if (verbositySelect.value != 'silent') {
+        myOptionsInfo[db._db_name] = info;
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+      }
+    })
+    .on('complete', function (info) {
       if (verbositySelect.value != 'silent') {
         myOptionsInfo[optionsDB._db_name] = info;
         addReadOnlyInfo(myOptionsInfo, infoNode);
@@ -198,25 +232,49 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           addReadOnlyInfo(err, infoNode);
         });
       }
-    }).on('uptodate', function (info) {
+    })
+    .on('uptodate', function (info) {
       myOptionsInfo[optionsDB._db_name] = info;
       addReadOnlyInfo(myOptionsInfo, infoNode);
-    }).on('error', function (err) {
+    })
+    .on('error', function (err) {
       myOptionsInfo[optionsDB._db_name] = err;
-      // addReadOnlyInfo(myOptionsInfo, infoNode);
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      addReadOnlyInfo(myOptionsInfo, infoNode);
+      // console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
     var myInfo = {};
-    var replication = PouchDB.sync(db, remoteDB)
+    var dbSync = db.sync(remoteDB, syncOptions)
     .on('change', function (info) {
-      if (verbositySelect.value == 'verbose') {
+      if (verbositySelect.value != 'verbose') {
+        if (info.change &&  info.change.docs) {
+          info.change.docs = ["..."];
+        } 
+      }
+      if (verbositySelect.value != 'silent') {
         myInfo[db._db_name] = info;
+        addReadOnlyInfo(myInfo, infoNode);
       }
-      else {
-        myInfo[db._db_name] = info.direction;
+    })
+    .on('paused', function () {
+      // replication paused (e.g. user went offline)
+      if (verbositySelect.value != 'silent') {
+        myInfo[db._db_name] = "replication paused (e.g. user went offline)";
+        addReadOnlyInfo(myInfo, infoNode);
       }
-      addReadOnlyInfo(myInfo, infoNode);
-    }).on('complete', function (info) {
+    }).on('active', function () {
+      // replicate resumed (e.g. user went back online)
+      if (verbositySelect.value != 'silent') {
+        myInfo[db._db_name] = "replicate resumed (e.g. user went back online)";
+        addReadOnlyInfo(myInfo, infoNode);
+      }
+    }).on('denied', function (info) {
+      // a document failed to replicate, e.g. due to permissions
+      if (verbositySelect.value != 'silent') {
+        myInfo[db._db_name] = info;
+        addReadOnlyInfo(myInfo, infoNode);
+      }
+    })
+    .on('complete', function (info) {
       if (verbositySelect.value != 'silent') {
         myInfo[db._db_name] = info;
         addReadOnlyInfo(myInfo, infoNode);
@@ -226,14 +284,27 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           addReadOnlyInfo(err, infoNode);
         });
       }
-    }).on('uptodate', function (info) {
+    })
+    .on('uptodate', function (info) {
       myInfo[db._db_name] = info;
       addReadOnlyInfo(myInfo, infoNode);
-    }).on('error', function (err) {
+    })
+    .on('error', function (err) {
       myInfo[db._db_name] = err;
       addReadOnlyInfo(myInfo, infoNode);
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      // console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
+    var stop = document.getElementById('stop_replication');
+    stop.removeAttribute('disabled');
+    event.target.setAttribute('disabled', true);
+    if (optionsSync && dbSync) {
+      stop.addEventListener('click', function (event) {
+        startButton.removeAttribute('disabled');
+        event.target.setAttribute('disabled', true);
+        optionsSync.cancel();
+        dbSync.cancel();
+      });
+    }
   });
 
   var include = document.getElementById('include');
