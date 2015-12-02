@@ -139,6 +139,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       otherDoc.start = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(now));
+        utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
         utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, otherDoc.end));
         // saveLink.click();
       }).catch(function(err) {
@@ -164,6 +165,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
+        utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
         utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(otherDoc.start), now));
         // saveLink.click();
       }).catch(function(err) {
@@ -236,6 +238,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
               newEntry.querySelector('pre.activity').classList.add('changed');
               newEntry.querySelector('pre.start').classList.add('changed');
               newEntry.querySelector('pre.end').classList.add('changed');
+              newEntry.querySelector('pre.revisions').classList.add('changed');
               newjs.init(response.id);
               var a = document.createElement('a');
               // a.href = '/build/new.html#' + id;
@@ -436,6 +439,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
         newEntry.querySelector('pre.activity').classList.add('changed');
         newEntry.querySelector('pre.start').classList.add('changed');
         newEntry.querySelector('pre.end').classList.add('changed');
+        newEntry.querySelector('pre.revisions').classList.add('changed');
         // document.location.reload('force');
         // saveLink.click();
       }).catch(function(err) {

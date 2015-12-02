@@ -199,26 +199,26 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
         } 
       }
       if (verbositySelect.value != 'silent') {
-        myOptionsInfo[db._db_name] = info;
+        myOptionsInfo[optionsDB._db_name] = info;
         addReadOnlyInfo(myOptionsInfo, infoNode);
       }
     })
     .on('paused', function () {
       // replication paused (e.g. user went offline)
       if (verbositySelect.value != 'silent') {
-        myOptionsInfo[db._db_name] = "replication paused (e.g. user went offline)";
+        myOptionsInfo[optionsDB._db_name] = "replication paused (e.g. user went offline)";
         addReadOnlyInfo(myOptionsInfo, infoNode);
       }
     }).on('active', function () {
       // replicate resumed (e.g. user went back online)
       if (verbositySelect.value != 'silent') {
-        myOptionsInfo[db._db_name] = "replicate resumed (e.g. user went back online)";
+        myOptionsInfo[optionsDB._db_name] = "replicate resumed (e.g. user went back online)";
         addReadOnlyInfo(myOptionsInfo, infoNode);
       }
     }).on('denied', function (info) {
       // a document failed to replicate, e.g. due to permissions
       if (verbositySelect.value != 'silent') {
-        myOptionsInfo[db._db_name] = info;
+        myOptionsInfo[optionsDB._db_name] = info;
         addReadOnlyInfo(myOptionsInfo, infoNode);
       }
     })
