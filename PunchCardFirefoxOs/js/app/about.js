@@ -13,7 +13,6 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
 
   // var addReadOnlyInfo = require('info');
   var addReadOnlyInfo = infojs;
-  var db = new PouchDB('punchcard3');
   var databasesLinkNode = document.getElementById('databases_link');
   var applicationLinkNode = document.getElementById('application_link');
   var databasesInfoNode = document.getElementById('databases_info');
@@ -27,32 +26,61 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     applicationInfoNode.textContent = '';
   });
   databasesLinkNode.addEventListener('click', function (event) {
-    event.preventDefault();
+    // event.preventDefault();
     // event.stopPropagation();
+    var db = new PouchDB('punchcard3');
+    var optionsDB = new PouchDB('options');
+    var destination = document.getElementById('protocol').value +
+        document.getElementById('hostportpath').value;
+    // window.alert('replicating starts for destination\n' + destination);
+    //     var opts = {auth:
+    //                     {'username': document.getElementById('user').value,
+    //                      'password': document.getElementById('pass').value
+    //                     },
+    //                     headers: {
+    //                       'Content-Type': 'application/json'
+    //                     }};
+    var myXHR = function () {
+      var request;
+      if (false && /* false && */window.location.protocol == "app:") {
+        request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
+      }
+      else {
+        request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
+        // request = new XMLHttpRequest();
+      }
+      return request;
+    }
+    var opts = {
+      ajax: {
+        xhr: myXHR,
+        // headers: { 'Cookie': cookie },
+        timeout: 30000
+      }
+    };
+    var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
+    var remoteDB = new PouchDB(destination + db._db_name, opts);
     db.info().then(function (info) {
       addReadOnlyInfo(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
-    var optionsDB = new PouchDB('options');
     optionsDB.info().then(function (info) {
       addReadOnlyInfo(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
-    var db2 = new PouchDB('apa-test-2');
-    db2.info().then(function (info) {
+    remoteDB.info().then(function (info) {
       addReadOnlyInfo(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
-    var db3 = new PouchDB('apa-test-3');
-    db3.info().then(function (info) {
+    remoteOptionsDB.info().then(function (info) {
       addReadOnlyInfo(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
   });
-  addReadOnlyInfo(window.location, applicationInfoNode);
   applicationLinkNode.addEventListener('click', function (event) {
-    event.preventDefault();
+    // event.preventDefault();
     // event.stopPropagation();
+    addReadOnlyInfo(window.location, applicationInfoNode);
     var request = window.navigator.mozApps.getSelf();
     request.onsuccess = function() {
       if (request.result) {

@@ -1,5 +1,5 @@
 ;'use strict';
-define(['require', 'app/utils'], function(require, utilsjs) {
+define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -19,6 +19,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   var startMenu = document.getElementById('start_menu');
   var endMenu = document.getElementById('end_menu');
+  var revisionsMenu = document.getElementById('revisions_menu');
   var activityMenu = document.getElementById('activity_menu');
   var request = navigator.mozApps.getSelf();
   var stringToRegexp = function(str) {
@@ -62,6 +63,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
     [
       startMenu,
       endMenu,
+      revisionsMenu,
       activityMenu
     ].forEach(function (menu) {
       menu.style.display = 'none';
@@ -104,6 +106,22 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       }
     }
     if (event.target.classList.contains("revisions")) {
+      if (revisionsMenu.style.display == 'none') {
+        positionMenu(revisionsMenu);
+        revisionsMenu.dataset.id = event.target.parentElement.id;
+        if (event.target.parentElement.classList.contains('available')) {
+          // document.getElementById('add_as_new_revision').setAttribute('href', '#add_as_new_revision');
+          // document.getElementById('show_revisions').removeAttribute('href');
+        }
+        else {
+          // document.getElementById('add_as_new_revision').removeAttribute('href');
+          // document.getElementById('show_revisions').setAttribute('href', '#show_revisions');
+        }
+      }
+      else {
+        revisionsMenu.style = 'display: none;';
+        delete revisionsMenu.dataset.id;
+      }
     }
     if (event.target.classList.contains("activity")) {
       if (activityMenu.style.display == 'none') {
@@ -180,6 +198,93 @@ define(['require', 'app/utils'], function(require, utilsjs) {
   var endNowItem = document.querySelector('#end_now');
   if (endNowItem) {
     endNowItem.addEventListener('click', endNow);
+  }
+  var showRevisions = function (event) {
+    event.preventDefault();
+    var parts = getDataSetIdHideMenu(event).split(/\./);
+    var id = parts[0];
+    var rev = parts[1];
+    console.log(id, rev);
+    if (!document.getElementById(id).classList.contains('available')) {
+      db.get(id, {
+        // Defaults to winning revision
+        // rev: doc._rev,
+        revs_info: true
+        // open_revs: "all"
+        // conflicts: true
+      }).then(function (otherDoc) {
+        console.log(otherDoc);
+        var currentRev = otherDoc._rev;
+        otherDoc._revs_info.filter(function (rev) {
+          return rev.status == 'available';
+        }).forEach(function (available) {
+          if (available.rev != currentRev) {
+            db.get(id, { rev: available.rev }).then(function (availableDoc) {
+              console.log(availableDoc);
+              var entry = {
+                _rev: availableDoc._rev,
+                _id: availableDoc._id,
+                activity: availableDoc.activity,
+                start: availableDoc.start,
+                end: availableDoc.end
+              };
+              var beforeThisElement = document.getElementById(id);
+              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement, 'available');
+              newEntry.scrollIntoView();
+              newEntry.classList.add('available');
+            });
+          }
+        });
+      }).catch(function (err) {
+        infojs({
+          get_error: err
+        }, entries);
+      });
+    }
+  };
+  var showRevisionsItem = document.querySelector('#show_revisions');
+  if (showRevisionsItem) {
+    showRevisionsItem.addEventListener('click', showRevisions);
+  }
+  var addAsNewRevision = function (event) {
+    event.preventDefault();
+    var parts = getDataSetIdHideMenu(event).split(/\./);
+    var id = parts[0];
+    var rev = parts[1];
+    console.log(id, rev);
+    if (id && rev) {
+      db.get(id).then(function(currentDoc) {
+        db.get(id, {
+          rev: rev
+        }).then(function(otherDoc) {
+          DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
+          // Put a new doc based on the current revision using otherDoc content.
+          otherDoc._rev = currentDoc._rev
+          db.put(otherDoc).then(function(response) {
+            var start = new Date(otherDoc.start);
+            var end = new Date(otherDoc.end);
+            utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(start));
+            utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatStartDate(end));
+            utilsjs.updateEntriesElement(id, 'pre.activity', otherDoc.activity);
+            utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
+            utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
+          }).catch(function(err) {
+            //errors
+            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          });
+        }).catch(function(err) {
+          //errors
+          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        });
+      }).catch(function(err) {
+        //errors
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      });
+    }
+  };
+  var addAsNewRevisionItem = document.querySelector('#add_as_new_revision');
+  if (addAsNewRevisionItem) {
+    addAsNewRevisionItem.addEventListener('click', addAsNewRevision);
   }
   var edit = function (event) {
     event.preventDefault();
@@ -432,7 +537,10 @@ define(['require', 'app/utils'], function(require, utilsjs) {
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
       db.post(entry).then(function(response) {
         entry._id = response.id;
-        entry._rev = response.rev;
+        // NOTE Don't pass rev if it is the current/new revision.
+        // See showRevisions for its use in HTML id to identify
+        // historic revisions in UI.
+        // entry._rev = response.rev;
         var beforeThisElement = document.getElementById(id);
         var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
         newEntry.scrollIntoView();
@@ -534,93 +642,91 @@ define(['require', 'app/utils'], function(require, utilsjs) {
           scrollView.removeChild(entries);
           updateScrollLinks();
         });
-        require(['./info'], function (infojs) {
-          var regexp = stringToRegexp(options.deleted_id);
-          if (options.deleted_id.length && regexp) {
-            queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
-            db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
-              // infojs({delete: info}, entries);
-              // db.allDocs({
-              //   include_docs: true,
-              //   keys: [info.id]
-              // }).then(function (otherDoc) {
-              //   infojs({otherDoc: otherDoc}, entries);
-              // }).catch(function (err) {
-              //   infojs({all_docs_error: err}, entries);
-              // });
-              db.get(info.doc._id, {
-                rev: info.doc._rev,
-                revs: true,
-                open_revs: "all"
-              }).then(function (otherDoc) {
-                if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
-                  // infojs({get: otherDoc}, entries);
-                  var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
-                  entry.classList.add('deleted');
-                }
-                false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-                  // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-                  db.get(otherDoc[0].ok._id, {
-                    open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-                  }).then(function (otherDoc) {
-                    // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-                    if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-                      // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-                    }
-                    else {
-                    }
-                    infojs({ 'rev': otherDoc }, entries);
-                  }).catch(function (err) {
-                    infojs({rev_error: err}, entries);
-                  });
-                });
-              }).catch(function (err) {
-                infojs({get_error:err}, entries);
-              });
-              //   if (info.seq == 894) {
-              //     info.doc._deleted = false;
-              //     db.put(info.doc).then(function (otherDoc) {
-              //       infojs(otherDoc, entries);
-              //     }).catch(function (err) {
-              //       infojs(err, entries);
-              //     });
-              //   }
-              // changes() was canceled
-            }).on('error', function (err) {
-              DEBUG && console.log(err);
-              infojs({delete_error: err}, entries);
-            }).on('complete', function(info) {
-              resultIndex += 1;
-              updateScrollLinks();
-              entries.classList.remove('updating');
-            });
-            // db.get(options.deleted_id, {
-            //   // rev: info.doc._rev,
-            //   revs: true,
-            //   open_revs: "all"
+        var regexp = stringToRegexp(options.deleted_id);
+        if (options.deleted_id.length && regexp) {
+          queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
+          db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
+            // infojs({delete: info}, entries);
+            // db.allDocs({
+            //   include_docs: true,
+            //   keys: [info.id]
             // }).then(function (otherDoc) {
-            //   infojs({get:otherDoc}, entries);
-            //   otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-            //     // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-            //     db.get(otherDoc[0].ok._id, {
-            //       open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-            //     }).then(function (otherDoc) {
-            //       // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-            //       if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-            //         // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-            //       }
-            //       else {
-            //       }
-            //       infojs({ 'rev': otherDoc }, entries);
-            //     }).catch(function (err) {
-            //       infojs({rev_error: err}, entries);
-            //     });
-            //   });
+            //   infojs({otherDoc: otherDoc}, entries);
             // }).catch(function (err) {
-            //   infojs({get_error:err}, entries);
+            //   infojs({all_docs_error: err}, entries);
             // });
-          }
-        });
+            db.get(info.doc._id, {
+              rev: info.doc._rev,
+              revs: true,
+              open_revs: "all"
+            }).then(function (otherDoc) {
+              if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
+                // infojs({get: otherDoc}, entries);
+                var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
+                entry.classList.add('deleted');
+              }
+              false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+                // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+                db.get(otherDoc[0].ok._id, {
+                  open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+                }).then(function (otherDoc) {
+                  // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+                  if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+                    // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+                  }
+                  else {
+                  }
+                  infojs({ 'rev': otherDoc }, entries);
+                }).catch(function (err) {
+                  infojs({rev_error: err}, entries);
+                });
+              });
+            }).catch(function (err) {
+              infojs({get_error:err}, entries);
+            });
+            //   if (info.seq == 894) {
+            //     info.doc._deleted = false;
+            //     db.put(info.doc).then(function (otherDoc) {
+            //       infojs(otherDoc, entries);
+            //     }).catch(function (err) {
+            //       infojs(err, entries);
+            //     });
+            //   }
+            // changes() was canceled
+          }).on('error', function (err) {
+            DEBUG && console.log(err);
+            infojs({delete_error: err}, entries);
+          }).on('complete', function(info) {
+            resultIndex += 1;
+            updateScrollLinks();
+            entries.classList.remove('updating');
+          });
+          // db.get(options.deleted_id, {
+          //   // rev: info.doc._rev,
+          //   revs: true,
+          //   open_revs: "all"
+          // }).then(function (otherDoc) {
+          //   infojs({get:otherDoc}, entries);
+          //   otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+          //     // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+          //     db.get(otherDoc[0].ok._id, {
+          //       open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+          //     }).then(function (otherDoc) {
+          //       // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+          //       if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+          //         // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+          //       }
+          //       else {
+          //       }
+          //       infojs({ 'rev': otherDoc }, entries);
+          //     }).catch(function (err) {
+          //       infojs({rev_error: err}, entries);
+          //     });
+          //   });
+          // }).catch(function (err) {
+          //   infojs({get_error:err}, entries);
+          // });
+        }
         var limit = options.limit.length ? Number(options.limit) : undefined;
         var matchLimit = options.match_limit.length ? Number(options.match_limit) : undefined;
         var dec = !!options.descending;
@@ -670,7 +776,7 @@ define(['require', 'app/utils'], function(require, utilsjs) {
             if (!('activity' in row.doc)) {
               continue;
             }
-            entry = utilsjs.addNewEntry(row.doc, entries);
+            entry = utilsjs.addNewEntry(row.doc, entries, undefined, undefined, 'showAvailable');
             if (isSearch) {
               if (matchLimit && (matches == matchLimit)) {
                 break;

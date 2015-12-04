@@ -37,6 +37,10 @@ div.entry.deleted {
   color: white;
 }
 
+div.entry.available {
+  background-color: silver;
+}
+
 div.entry.filtered {
   display: none;
 }

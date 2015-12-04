@@ -1,5 +1,5 @@
 'use strict';
-define(function (require) {
+define(['./info'], function (infojs) {
   // >> (new Date()).toLocaleString(navigator.languages, {
   //      month: 'short',
   //      hour: 'numeric',
@@ -37,8 +37,10 @@ define(function (require) {
   };
   var updateEntriesElement = function (id, selector, value) {
     var updateItem = document.getElementById(id).querySelector(selector);
-    updateItem.textContent = value;
-    updateItem.classList.add('changed');
+    if (updateItem.textContent != value) {
+      updateItem.textContent = value;
+      updateItem.classList.add('changed');
+    }
     // NOTE: Just a nuisance, UI makes changes obvious.
     // if (window.confirm('Reload changes?')) {
     //   document.location.reload('force');
@@ -75,11 +77,17 @@ define(function (require) {
   };
   // FIXME: this module must not have a hardcoded pouchdb reference!
   var db = new PouchDB('punchcard3');
-  var addNewEntry = function (doc, entries, before) {
+  var addNewEntry = function (doc, entries, before, available, showAvailable) {
     var content = document.getElementById('entry_template').content;
     var entry = document.importNode(content, "deep").firstElementChild;
     // var span = document.createElement('span');
-    entry.id = doc._id;
+    if (available) {
+      // NOTE . is allowed in HTML id attribute and not used in couchdb uuids.
+      entry.id = doc._id + '.' + doc._rev;
+    }
+    else {
+      entry.id = doc._id;
+    }
     var start = entry.children[0];
     var end = entry.children[1];
     var duration = entry.children[2];
@@ -94,7 +102,29 @@ define(function (require) {
     end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
-    revisions.textContent = doc._rev.split(/-/)[0] + ' revs';
+    if (true || showAvailable) {
+      if (false) {
+        // NOTE: This fast version is not accurate,
+        // since revisions may not be available.
+        revisions.textContent = doc._rev.split(/-/)[0] + ' revs';
+      }
+      else {
+        db.get(doc._id, {
+          // Defaults to winning revision
+          // rev: doc._rev,
+          revs_info: true
+          // open_revs: "all"
+          // conflicts: true
+        }).then(function (otherDoc) {
+          var currentRev = otherDoc._rev;
+          revisions.textContent = otherDoc._revs_info.filter(function (rev) {
+            return rev.status == 'available' && rev.rev != currentRev;
+          }).length;
+        }).catch(function (err) {
+          infojs({get_error:err}, entries);
+        });
+      }
+    }
     // start.setAttribute('contextmenu', 'start_menu');
     // start.addEventListener('contextmenu', function (event) {
     //   this.contextMenu.dataset.id = event.target.parentElement.id;

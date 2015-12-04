@@ -123,6 +123,12 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     });
   });
+  var infoNode = document.getElementById('replication_info');
+  var clearNode = document.getElementById('clear_replication_info');
+  clearNode.addEventListener('click', function (event) {
+    // event.preventDefault();
+    infoNode.textContent = '';
+  });
   var startButton = document.getElementById('start_replication');
   startButton.addEventListener('click', function (event) {
     // TODO Adjust when using more than one template!
@@ -171,12 +177,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     };
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
-    var infoNode = document.getElementById('replication_info');
-    var clearNode = document.getElementById('clear-input-right');
-    clearNode.addEventListener('click', function (event) {
-      event.preventDefault();
-      infoNode.textContent = '';
-    });
     var verbositySelect = document.getElementById('verbosity');
     var syncOptions = {
       live: true,

@@ -1,6 +1,6 @@
 'use strict';
 try {
-  define(['app/utils'], function(utilsjs) {
+  define(['app/utils', './info'], function(utilsjs, infojs) {
     // DOMContentLoaded is fired once the document has been loaded and parsed,
     // but without waiting for other external resources to load (css/images/etc)
     // That makes the app more responsive and perceived as faster.
