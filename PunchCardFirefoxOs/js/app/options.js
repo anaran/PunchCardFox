@@ -11,8 +11,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   // window.addEventListener('DOMContentLoaded', function() {
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
-  var DEBUG = false;
-
   var addReadOnlyInfo = infojs;
   var XHR_TIMEOUT_MS = 30000;
   var cookie;
@@ -110,7 +108,19 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       // handle result
       var div = document.createElement('div');
       var download = document.createElement('a');
-      var blob = new window.Blob([JSON.stringify(result, null, 2)], {
+      // Map to JSON which can be directly loaded into new datadase using
+      // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
+      // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
+      var docs = {
+        'docs': result.rows.map(function (row) {
+          // NOTE Causes "error":"conflict","reason":"Document update conflict."
+          // on POST _bulk_docs to new database
+          // Above curl command works fine without the _rev field.
+          delete row.doc._rev;
+          return row.doc;
+        })
+      };
+      var blob = new window.Blob([JSON.stringify(docs, null, 2)], {
         type: 'text/plain; charset=utf-8'
       });
       download.href = window.URL.createObjectURL(blob);
@@ -130,33 +140,10 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     infoNode.textContent = '';
   });
   var startButton = document.getElementById('start_replication');
+  var stopButton = document.getElementById('stop_replication');
   startButton.addEventListener('click', function (event) {
-    // TODO Adjust when using more than one template!
-    // var imp = document.createElement('link');
-    // imp.href = '/build/new_entry.html';
-    // imp.rel = 'import';
-    // imp.onload = function(e) {
-    //   window.alert(e.type, e.target.import);
-    // };
-    // imp.onerror = function(e) {
-    //   window.alert(e.type);
-    // };
-    // document.head.appendChild(imp);
-    // var link = document.querySelector('link[rel=import]');
-    // var ne = link.import;
-    // var newEntry = ne.querySelector('template');
-    // var clonedNewEntry = newEntry.cloneNode(true);
-    // document.body.appendChild(clonedNewEntry);
     var destination = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value;
-    // window.alert('replicating starts for destination\n' + destination);
-    //     var opts = {auth:
-    //                     {'username': document.getElementById('user').value,
-    //                      'password': document.getElementById('pass').value
-    //                     },
-    //                     headers: {
-    //                       'Content-Type': 'application/json'
-    //                     }};
     var myXHR = function () {
       var request;
       if (false && /* false && */window.location.protocol == "app:") {
@@ -178,8 +165,9 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     var verbositySelect = document.getElementById('verbosity');
+    var liveSyncing = document.getElementById('live');
     var syncOptions = {
-      live: true,
+      live: !!liveSyncing.checked,
       retry: true,
       // back_off_function: function (delay) {
       //   if (delay === 0) {
@@ -284,6 +272,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           addReadOnlyInfo(err, infoNode);
         });
       }
+      startButton.removeAttribute('disabled');
+      stopButton.setAttribute('disabled', true);
     })
     .on('uptodate', function (info) {
       myInfo[db._db_name] = info;
@@ -292,13 +282,13 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     .on('error', function (err) {
       myInfo[db._db_name] = err;
       addReadOnlyInfo(myInfo, infoNode);
-      // console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      startButton.removeAttribute('disabled');
+      stopButton.setAttribute('disabled', true);
     });
-    var stop = document.getElementById('stop_replication');
-    stop.removeAttribute('disabled');
-    event.target.setAttribute('disabled', true);
+    stopButton.removeAttribute('disabled');
+    startButton.setAttribute('disabled', true);
     if (optionsSync && dbSync) {
-      stop.addEventListener('click', function (event) {
+      stopButton.addEventListener('click', function (event) {
         startButton.removeAttribute('disabled');
         event.target.setAttribute('disabled', true);
         optionsSync.cancel();

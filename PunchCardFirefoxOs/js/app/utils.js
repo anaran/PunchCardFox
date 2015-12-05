@@ -77,11 +77,10 @@ define(['./info'], function (infojs) {
   };
   // FIXME: this module must not have a hardcoded pouchdb reference!
   var db = new PouchDB('punchcard3');
-  var addNewEntry = function (doc, entries, before, available, showAvailable) {
+  var addNewEntry = function (doc, entries, before, addRevisionToElementId) {
     var content = document.getElementById('entry_template').content;
     var entry = document.importNode(content, "deep").firstElementChild;
-    // var span = document.createElement('span');
-    if (available) {
+    if (addRevisionToElementId) {
       // NOTE . is allowed in HTML id attribute and not used in couchdb uuids.
       entry.id = doc._id + '.' + doc._rev;
     }
@@ -102,29 +101,17 @@ define(['./info'], function (infojs) {
     end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
-    if (true || showAvailable) {
-      if (false) {
-        // NOTE: This fast version is not accurate,
-        // since revisions may not be available.
-        revisions.textContent = doc._rev.split(/-/)[0] + ' revs';
-      }
-      else {
-        db.get(doc._id, {
-          // Defaults to winning revision
-          // rev: doc._rev,
-          revs_info: true
-          // open_revs: "all"
-          // conflicts: true
-        }).then(function (otherDoc) {
-          var currentRev = otherDoc._rev;
-          revisions.textContent = otherDoc._revs_info.filter(function (rev) {
-            return rev.status == 'available' && rev.rev != currentRev;
-          }).length;
-        }).catch(function (err) {
-          infojs({get_error:err}, entries);
-        });
-      }
-    }
+    revisions.textContent = revisionOrdinal
+      ? (revisionOrdinal + ' of ' + revisionCount + ' revs')
+    : (revisionCount + ' revs');
+    [
+      activity,
+      end,
+      revisions,
+      start
+    ].forEach(function (elem) {
+      // elem.classList.add('changed');
+    });
     // start.setAttribute('contextmenu', 'start_menu');
     // start.addEventListener('contextmenu', function (event) {
     //   this.contextMenu.dataset.id = event.target.parentElement.id;

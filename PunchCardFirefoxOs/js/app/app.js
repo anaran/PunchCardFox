@@ -157,8 +157,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       otherDoc.start = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(now));
-        utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, otherDoc.end));
+        setAvailableRevisionCount(document.getElementById(id));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, new Date(otherDoc.end)));
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -183,7 +183,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
-        utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
+        setAvailableRevisionCount(document.getElementById(id));
         utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(otherDoc.start), now));
         // saveLink.click();
       }).catch(function(err) {
@@ -198,6 +198,39 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var endNowItem = document.querySelector('#end_now');
   if (endNowItem) {
     endNowItem.addEventListener('click', endNow);
+  }
+  var setAvailableRevisionCount = function(entry) {
+    // Possibly do estimate shortcut when accurate
+    // revision reporting is disabled for performance reasons.
+    // It takes a while when displaying 1000 entries.
+    var revisions = entry.querySelector('pre.revisions');
+    if (false) {
+      revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
+    }
+    else {
+      db.get(entry.id, {
+        // Defaults to winning revision
+        // rev: doc._rev,
+        revs_info: true
+        // open_revs: "all"
+        // conflicts: true
+      }).then(function (otherDoc) {
+        var currentRev = otherDoc._rev;
+        var availableRevisions = otherDoc._revs_info.filter(function (rev) {
+          return rev.status == 'available' && rev.rev != currentRev;
+        })
+        revisions.textContent = (availableRevisions ? availableRevisions.length : 0) + ' revs';
+      }).catch(function (err) {
+        infojs({
+          get_error: err
+        }, entries);
+      });
+    }
+    // getIt.then(function (result) {
+    //   return result;
+    // }).catch(function (err) {
+    //   return err;
+    // });
   }
   var showRevisions = function (event) {
     event.preventDefault();
@@ -216,24 +249,26 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         console.log(otherDoc);
         var currentRev = otherDoc._rev;
         otherDoc._revs_info.filter(function (rev) {
-          return rev.status == 'available';
-        }).forEach(function (available) {
-          if (available.rev != currentRev) {
-            db.get(id, { rev: available.rev }).then(function (availableDoc) {
-              console.log(availableDoc);
-              var entry = {
-                _rev: availableDoc._rev,
-                _id: availableDoc._id,
-                activity: availableDoc.activity,
-                start: availableDoc.start,
-                end: availableDoc.end
-              };
-              var beforeThisElement = document.getElementById(id);
-              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement, 'available');
-              newEntry.scrollIntoView();
-              newEntry.classList.add('available');
-            });
-          }
+          return rev.status == 'available' && rev.rev != currentRev;
+        }).forEach(function (available, index, obj) {
+          db.get(id, { rev: available.rev }).then(function (availableDoc) {
+            console.log(availableDoc);
+            var entry = {
+              _rev: availableDoc._rev,
+              _id: availableDoc._id,
+              activity: availableDoc.activity,
+              start: availableDoc.start,
+              end: availableDoc.end
+            };
+            var beforeThisElement = document.getElementById(id);
+            var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
+                                               beforeThisElement, addRevisionToElementId);
+            newEntry.querySelector('pre.revisions').textContent = (index + 1) + ' of ' + obj.length + ' revs';
+            // NOTE addRevisionToElementId argument makes this more obvious.
+            // newEntry.id = entry._id + '.' + entry._rev;
+            newEntry.scrollIntoView();
+            newEntry.classList.add('available');
+          });
         });
       }).catch(function (err) {
         infojs({
@@ -266,7 +301,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(start));
             utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatStartDate(end));
             utilsjs.updateEntriesElement(id, 'pre.activity', otherDoc.activity);
-            utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
+            setAvailableRevisionCount(document.getElementById(id));
             utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
           }).catch(function(err) {
             //errors
@@ -543,6 +578,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         // entry._rev = response.rev;
         var beforeThisElement = document.getElementById(id);
         var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+        setAvailableRevisionCount(document.getElementById(id));
         newEntry.scrollIntoView();
         newEntry.querySelector('pre.activity').classList.add('changed');
         newEntry.querySelector('pre.start').classList.add('changed');
@@ -776,7 +812,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             if (!('activity' in row.doc)) {
               continue;
             }
-            entry = utilsjs.addNewEntry(row.doc, entries, undefined, undefined, 'showAvailable');
+            entry = utilsjs.addNewEntry(row.doc, entries, undefined, 0);
+            setAvailableRevisionCount(entry);
             if (isSearch) {
               if (matchLimit && (matches == matchLimit)) {
                 break;

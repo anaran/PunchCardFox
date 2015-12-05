@@ -78,12 +78,14 @@ pre:hover {
 }
 
 pre.start {
+  white-space: pre-wrap;
   width: 49%;
   /*   direction: ltr;
   text-overflow: clip ellipsis; */
 }
 
 pre.end {
+  white-space: pre-wrap;
   width: 49%;
   /*   direction: ltr;
   text-overflow: ellipsis clip; */

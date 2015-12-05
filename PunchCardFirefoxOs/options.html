@@ -27,14 +27,14 @@
     <input type="password" id="pass" data-l10n-id="pass" placeholder="pass">
     <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path">
     <button id="start_replication" data-l10n-id="start">Start Live Replication</button>
-    <button id="replicate_from" data-l10n-id="start">Replicate From</button>
+    <input type="checkbox" id="live" data-l10n-id="live">
     <p>
       <a href="#clear_replication_info" id="clear_replication_info">Clear info</a>
-<select id="verbosity">
-  <option>silent</option>
-  <option selected>quiet</option>
-  <option>verbose</option>
-</select>
+      <select id="verbosity">
+        <option>silent</option>
+        <option selected>quiet</option>
+        <option>verbose</option>
+      </select>
     </p>
     <p id="replication_info">
     </p>
