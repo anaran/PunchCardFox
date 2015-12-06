@@ -201,13 +201,17 @@ gaia-text-input {
   opacity: 1;
 }
 
-input#filter:focus {
-  background-color: white;
-  opacity: 1;
+input#filter {
+  opacity: 0.7;
   position: fixed;
-  top: 3rem;
-  left: 1rem;
+  bottom: 0;
+  left: 0;
   font-size: x-large;
+}
+
+input#filter:focus {
+  opacity: 1;
+  background-color: white;
 }
 
 gaia-text-input:hover {

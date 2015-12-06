@@ -24,10 +24,15 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var request = navigator.mozApps.getSelf();
   var stringToRegexp = function(str) {
     var captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
-    return captureGroups && new RegExp(captureGroups[1], captureGroups[2]);
+    // Default to ignore case.
+    // Regexp syntax requires at least a slash at end, possibly followedd by flags.
+    return captureGroups &&
+      new RegExp(captureGroups[1],
+                 typeof captureGroups[2] == 'undefined' ? "i" : captureGroups[2]);
   };
+  var filter = document.querySelector('#filter');
   // var filter = document.querySelector('gaia-text-input#filter');
-  var filter = document.querySelector('input#filter');
+  // var filter = document.querySelector('input#filter');
   var updateFilter = function(event) {
     var entryNodes = scrollView.querySelectorAll('.entry');
     if (event.target.value.length > 3) {
@@ -848,7 +853,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     // query result container
     var entriesNodes = scrollView.querySelectorAll('.entries');
     var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li');
-    var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
+    var rowsPerLink = (entryNodes.length / (scrollLinks.length - 2));
     for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
       scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
     }

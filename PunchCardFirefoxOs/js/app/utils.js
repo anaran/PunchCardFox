@@ -101,9 +101,6 @@ define(['./info'], function (infojs) {
     end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
-    revisions.textContent = revisionOrdinal
-      ? (revisionOrdinal + ' of ' + revisionCount + ' revs')
-    : (revisionCount + ' revs');
     [
       activity,
       end,
