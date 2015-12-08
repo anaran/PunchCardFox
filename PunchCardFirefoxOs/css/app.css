@@ -204,7 +204,7 @@ gaia-text-input {
 input#filter {
   opacity: 0.7;
   position: fixed;
-  bottom: 0;
+  top: 3rem;
   left: 0;
   font-size: x-large;
 }

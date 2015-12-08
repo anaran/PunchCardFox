@@ -267,7 +267,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             };
             var beforeThisElement = document.getElementById(id);
             var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
-                                               beforeThisElement, addRevisionToElementId);
+                                               beforeThisElement, 'addRevisionToElementId');
             newEntry.querySelector('pre.revisions').textContent = (index + 1) + ' of ' + obj.length + ' revs';
             // NOTE addRevisionToElementId argument makes this more obvious.
             // newEntry.id = entry._id + '.' + entry._rev;
@@ -427,6 +427,20 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var pasteActivityItem = document.querySelector('#paste_activity_menuitem');
   if (pasteActivityItem) {
     pasteActivityItem.addEventListener('click', pasteActivity);
+  }
+  var toggleFilter = function(event) {
+    event.preventDefault();
+    if (filter.style['display'] == 'none') {
+      filter.style['display'] = 'block';
+      filter.focus();
+    }
+    else {
+      filter.style['display'] = 'none';
+    }
+  };
+  var titleItem = document.querySelector('gaia-header>h1');
+  if (titleItem) {
+    titleItem.addEventListener('click', toggleFilter);
   }
   var toggleEdit = function(event) {
     event.preventDefault();
@@ -768,8 +782,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           //   infojs({get_error:err}, entries);
           // });
         }
-        var limit = options.limit.length ? Number(options.limit) : undefined;
-        var matchLimit = options.match_limit.length ? Number(options.match_limit) : undefined;
+        var limit = options.limit.length ? Number(options.limit) : 100;
+        var matchLimit = options.match_limit.length ? Number(options.match_limit) : 50;
         var dec = !!options.descending;
         var opts = { include_docs: true, descending: dec, limit: limit };
         // startkey: "2015-02",

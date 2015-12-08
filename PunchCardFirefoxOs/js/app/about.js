@@ -20,13 +20,18 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
   var databasesClearNode = document.getElementById('databases_clear');
   var applicationClearNode = document.getElementById('application_clear');
   databasesClearNode.addEventListener('click', function (event) {
+    // NOTE Do not go to link, which is somewhat disruptive.
+    event.preventDefault();
     databasesInfoNode.textContent = '';
   });
   applicationClearNode.addEventListener('click', function (event) {
+    // NOTE Do not go to link, which is somewhat disruptive.
+    event.preventDefault();
     applicationInfoNode.textContent = '';
   });
   databasesLinkNode.addEventListener('click', function (event) {
-    // event.preventDefault();
+    // NOTE Do not go to link, which is somewhat disruptive.
+    event.preventDefault();
     // event.stopPropagation();
     var db = new PouchDB('punchcard3');
     var optionsDB = new PouchDB('options');
@@ -78,7 +83,8 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     });
   });
   applicationLinkNode.addEventListener('click', function (event) {
-    // event.preventDefault();
+    // NOTE Do not go to link, which is somewhat disruptive.
+    event.preventDefault();
     // event.stopPropagation();
     addReadOnlyInfo(window.location, applicationInfoNode);
     var request = window.navigator.mozApps.getSelf();
@@ -105,6 +111,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     var toggleEdit = document.getElementById('readme_edit_toggle');
     var readmeClose = document.getElementById('readme_close');
     readmeClose.addEventListener('click', function (event) {
+      // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       if (editElement.style['display'] == 'none') {
         renderElement.textContent = '';
@@ -115,6 +122,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
       }
     });
     readmeLink.addEventListener('click', function (event) {
+      // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       readmejs.init(event.target.href + '#' + Date.now(), renderElement, editElement, toggleEdit).
       // event.stopPropagation();
@@ -128,6 +136,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
       });
     });
     readme2Link.addEventListener('click', function (event) {
+      // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       readmejs.init(event.target.href, renderElement, editElement, toggleEdit).
       // event.stopPropagation();

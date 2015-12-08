@@ -12,15 +12,37 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   var addReadOnlyInfo = infojs;
+  var infoNode = document.getElementById('replication_info');
   var XHR_TIMEOUT_MS = 30000;
   var cookie;
   var setCookie;
   var db = new PouchDB('punchcard3');
   // No need to keep a lot of history for user options.
-  var optionsDB = new PouchDB('options', { auto_compaction: true });
+  var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
   var persistentNodeList = document.querySelectorAll('.persistent');
   Array.prototype.forEach.call(persistentNodeList, function (element) {
-    optionsDB.get(element.id).then(function(otherDoc) {
+    optionsDB.get(element.id, {
+      conflicts: true
+    }).then(function(otherDoc) {
+      if (otherDoc._conflicts) {
+        addReadOnlyInfo({ conflicts: otherDoc._conflicts }, infoNode);
+        // FIXME: just delete conflict for now for options.
+        // DON'T DO THIS FOR VALUABLE DOCUMENTS!
+        otherDoc._conflicts.forEach(function (conflict) {
+          optionsDB.put({
+            _id: otherDoc._id,
+            _rev: conflict,
+            _deleted: true
+          }).then(function(response) {
+            console.log('conflict deleted', response);
+            // document.location.reload('force');
+            // saveLink.click();
+          }).catch(function(err) {
+            //errors
+            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          });
+        });
+      }
       if (element.type == 'checkbox') {
         element.checked = otherDoc.value;
       }
@@ -32,7 +54,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       console.log(err, element);
       var value = element.type == 'checkbox' ? element.checked : element.value;
       if (element.id) {
-        return optionsDB.put({ _id: element.id, value: value });
+        optionsDB.put({ _id: element.id, value: value });
       }
       else {
         console.log("no id for saving options doc", element);
@@ -45,7 +67,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       var value = element.type == 'checkbox' ? element.checked : element.value;
       optionsDB.get(element.id).then(function(otherDoc) {
         otherDoc.value = value;
-        return optionsDB.put(otherDoc).then(function(response) {
+        optionsDB.put(otherDoc).then(function(response) {
           console.log('saved changed option', response);
           // document.location.reload('force');
           // saveLink.click();
@@ -56,7 +78,10 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       }).catch(function(err) {
         console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         if (element.id) {
-          return optionsDB.put({ _id: element.id, value: value });
+          optionsDB.put({ _id: element.id, value: value }).catch(function(err) {
+            //errors
+            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          });
         }
         else {
           console.log("no id for saving options doc", element);
@@ -68,12 +93,16 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     include_docs: false
   }).then(function (result) {
     result.rows && result.rows.forEach(function (row) {
-      if (!Array.prototype.map.call(persistentNodeList, function (element) { return element.id }).includes(row.key)) {
-        optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
-          console.log('deleted no longer used', row.key, row.value.rev);
-        }).catch(function(err) {
-          console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-        });
+      if (!Array.prototype.map.call(persistentNodeList, function (element) {
+        return element.id
+      }).includes(row.key)) {
+        if (!row.key.startsWith("_design/")) {
+          optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
+            console.log('deleted no longer used', row.key, row.value.rev);
+          }).catch(function(err) {
+            console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          });
+        }
       }
     });
   });
@@ -99,48 +128,65 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //     // DEBUG && console.log(doc);
   //   });
   // });
-  var exportButton = document.getElementById('export');
-  exportButton.addEventListener('click', function (event) {
-    db.allDocs({
-      include_docs: true/*, 
+  var exporter = function(db) {
+    return function (event) {
+      db.allDocs({
+        include_docs: true/*, 
   attachments: true*/
-    }).then(function (result) {
-      // handle result
-      var div = document.createElement('div');
-      var download = document.createElement('a');
-      // Map to JSON which can be directly loaded into new datadase using
-      // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
-      // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
-      var docs = {
-        'docs': result.rows.map(function (row) {
-          // NOTE Causes "error":"conflict","reason":"Document update conflict."
-          // on POST _bulk_docs to new database
-          // Above curl command works fine without the _rev field.
-          delete row.doc._rev;
-          return row.doc;
-        })
-      };
-      var blob = new window.Blob([JSON.stringify(docs, null, 2)], {
-        type: 'text/plain; charset=utf-8'
+      }).then(function (result) {
+        // handle result
+        var div = document.createElement('div');
+        var download = document.createElement('a');
+        // Map to JSON which can be directly loaded into new datadase using
+        // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
+        // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
+        var docs = {
+          'docs': result.rows.map(function (row) {
+            // NOTE Causes "error":"conflict","reason":"Document update conflict."
+            // on POST _bulk_docs to new database
+            // Above curl command works fine without the _rev field.
+            delete row.doc._rev;
+            return row.doc;
+          })
+        };
+        var blob = new window.Blob([JSON.stringify(docs, null, 2)], {
+          type: 'text/plain; charset=utf-8'
+        });
+        download.href = window.URL.createObjectURL(blob);
+        download.download = db._db_name + '-' + result.total_rows + '-' + Date.now() + '.txt';
+        download.textContent = 'Download exported database ' + db._db_name;
+        div.appendChild(download);
+        var deleteButton = document.createElement('input');
+        deleteButton.type = 'button';
+        deleteButton.value = 'Delete databae ' + db._db_name;
+        deleteButton.addEventListener('click', function (event) {
+          db.destroy().then(function (response) {
+            console.log('deleted database', db._db_name);
+          }).catch(function (err) {
+            console.log(err);
+          });
+        });
+        div.appendChild(deleteButton);
+        event.target.nextElementSibling.appendChild(div);
+      }).catch(function (err) {
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
-      download.href = window.URL.createObjectURL(blob);
-      download.download = 'punchcard-' + result.total_rows + '-' + Date.now() + '.txt';
-      download.textContent = 'Download exported data';
-      div.appendChild(download);
-      exportButton.nextElementSibling.appendChild(div);
-      // document.body.appendChild(div);
-    }).catch(function (err) {
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-    });
-  });
+    };
+  };
+  var exportDbButton = document.getElementById('export.db');
+  exportDbButton.addEventListener('click', exporter(db));
+  var exportOptionsButton = document.getElementById('export.options');
+  exportOptionsButton.addEventListener('click', exporter(optionsDB));
   var infoNode = document.getElementById('replication_info');
   var clearNode = document.getElementById('clear_replication_info');
   clearNode.addEventListener('click', function (event) {
-    // event.preventDefault();
+    // NOTE Do not go to link, which is somewhat disruptive.
+    event.preventDefault();
     infoNode.textContent = '';
   });
   var startButton = document.getElementById('start_replication');
   var stopButton = document.getElementById('stop_replication');
+  var syncType = document.getElementById('sync_type');
   startButton.addEventListener('click', function (event) {
     var destination = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value;
@@ -169,6 +215,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var syncOptions = {
       live: !!liveSyncing.checked,
       retry: true,
+      // return_docs: false
       // back_off_function: function (delay) {
       //   if (delay === 0) {
       //     return 1000;
@@ -179,121 +226,176 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // NOTE: Don't share variables in asynchronuous code!
     // myInfo = {};
     var myOptionsInfo = {};
-    var optionsSync = optionsDB.sync(remoteOptionsDB, syncOptions)
-    .on('change', function (info) {
-      if (verbositySelect.value != 'verbose') {
-        if (info.change &&  info.change.docs) {
-          info.change.docs = ["..."];
-        } 
+    var syncMethod;
+    var dbSync;
+    var optionsSync;
+    // FIXME Default to Replicate from after app is installed.
+    // sync is very slow when the local database is empty.
+    if (true) {
+      switch (syncType.value) {
+        case 'Replicate from': {
+          optionsSync = optionsDB.replicate.from(remoteOptionsDB, syncOptions);
+          break;
+        }
+        case 'Replicate to': {
+          optionsSync = optionsDB.replicate.to(remoteOptionsDB, syncOptions);
+          break;
+        }
+        case 'Sync with': {
+          optionsSync = optionsDB.sync(remoteOptionsDB, syncOptions);
+          break;
+        }
+        default:
+          addReadOnlyInfo({ 'unknown sync type': syncType.value }, infoNode);
       }
-      if (verbositySelect.value != 'silent') {
-        myOptionsInfo[optionsDB._db_name] = info;
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-      }
-    })
-    .on('paused', function () {
-      // replication paused (e.g. user went offline)
-      if (verbositySelect.value != 'silent') {
-        myOptionsInfo[optionsDB._db_name] = "replication paused (e.g. user went offline)";
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-      }
-    }).on('active', function () {
-      // replicate resumed (e.g. user went back online)
-      if (verbositySelect.value != 'silent') {
-        myOptionsInfo[optionsDB._db_name] = "replicate resumed (e.g. user went back online)";
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-      }
-    }).on('denied', function (info) {
-      // a document failed to replicate, e.g. due to permissions
-      if (verbositySelect.value != 'silent') {
-        myOptionsInfo[optionsDB._db_name] = info;
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-      }
-    })
-    .on('complete', function (info) {
-      if (verbositySelect.value != 'silent') {
-        myOptionsInfo[optionsDB._db_name] = info;
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-        remoteOptionsDB.info().then(function (info) {
-          addReadOnlyInfo(info, infoNode);
-        }).catch(function (err) {
-          addReadOnlyInfo(err, infoNode);
-        });
-      }
-    })
-    .on('uptodate', function (info) {
-      myOptionsInfo[optionsDB._db_name] = info;
-      addReadOnlyInfo(myOptionsInfo, infoNode);
-    })
-    .on('error', function (err) {
-      myOptionsInfo[optionsDB._db_name] = err;
-      addReadOnlyInfo(myOptionsInfo, infoNode);
-      // console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-    });
-    var myInfo = {};
-    var dbSync = db.sync(remoteDB, syncOptions)
-    .on('change', function (info) {
-      if (verbositySelect.value != 'verbose') {
-        if (info.change &&  info.change.docs) {
-          info.change.docs = ["..."];
-        } 
-      }
-      if (verbositySelect.value != 'silent') {
-        myInfo[db._db_name] = info;
-        addReadOnlyInfo(myInfo, infoNode);
-      }
-    })
-    .on('paused', function () {
-      // replication paused (e.g. user went offline)
-      if (verbositySelect.value != 'silent') {
-        myInfo[db._db_name] = "replication paused (e.g. user went offline)";
-        addReadOnlyInfo(myInfo, infoNode);
-      }
-    }).on('active', function () {
-      // replicate resumed (e.g. user went back online)
-      if (verbositySelect.value != 'silent') {
-        myInfo[db._db_name] = "replicate resumed (e.g. user went back online)";
-        addReadOnlyInfo(myInfo, infoNode);
-      }
-    }).on('denied', function (info) {
-      // a document failed to replicate, e.g. due to permissions
-      if (verbositySelect.value != 'silent') {
-        myInfo[db._db_name] = info;
-        addReadOnlyInfo(myInfo, infoNode);
-      }
-    })
-    .on('complete', function (info) {
-      if (verbositySelect.value != 'silent') {
-        myInfo[db._db_name] = info;
-        addReadOnlyInfo(myInfo, infoNode);
-        remoteDB.info().then(function (info) {
-          addReadOnlyInfo(info, infoNode);
-        }).catch(function (err) {
-          addReadOnlyInfo(err, infoNode);
-        });
-      }
-      startButton.removeAttribute('disabled');
-      stopButton.setAttribute('disabled', true);
-    })
-    .on('uptodate', function (info) {
-      myInfo[db._db_name] = info;
-      addReadOnlyInfo(myInfo, infoNode);
-    })
-    .on('error', function (err) {
-      myInfo[db._db_name] = err;
-      addReadOnlyInfo(myInfo, infoNode);
-      startButton.removeAttribute('disabled');
-      stopButton.setAttribute('disabled', true);
-    });
-    stopButton.removeAttribute('disabled');
-    startButton.setAttribute('disabled', true);
-    if (optionsSync && dbSync) {
-      stopButton.addEventListener('click', function (event) {
+      optionsSync.on('change', function (info) {
+        if (verbositySelect.value != 'verbose') {
+          if (info.change &&  info.change.docs) {
+            info.change.docs = ["..."];
+          } 
+          if (info.docs) {
+            info.docs = ["..."];
+          } 
+        }
+        if (verbositySelect.value != 'silent') {
+          myOptionsInfo[optionsDB._db_name] = info;
+          addReadOnlyInfo(myOptionsInfo, infoNode);
+        }
+      })
+        .on('paused', function () {
+        // replication paused (e.g. user went offline)
+        if (verbositySelect.value != 'silent') {
+          myOptionsInfo[optionsDB._db_name] = "replication paused (e.g. user went offline)";
+          addReadOnlyInfo(myOptionsInfo, infoNode);
+        }
+      })
+        .on('active', function () {
+        // replicate resumed (e.g. user went back online)
+        if (verbositySelect.value != 'silent') {
+          myOptionsInfo[optionsDB._db_name] = "replicate resumed (e.g. user went back online)";
+          addReadOnlyInfo(myOptionsInfo, infoNode);
+        }
+      })
+        .on('denied', function (info) {
+        // a document failed to replicate, e.g. due to permissions
+        if (verbositySelect.value != 'silent') {
+          myOptionsInfo[optionsDB._db_name] = info;
+          addReadOnlyInfo(myOptionsInfo, infoNode);
+        }
+      })
+        .on('complete', function (info) {
+        if (verbositySelect.value != 'silent') {
+          myOptionsInfo[optionsDB._db_name] = info;
+          addReadOnlyInfo(myOptionsInfo, infoNode);
+          remoteOptionsDB.info().then(function (info) {
+            addReadOnlyInfo(info, infoNode);
+          }).catch(function (err) {
+            addReadOnlyInfo(err, infoNode);
+          });
+        }
         startButton.removeAttribute('disabled');
-        event.target.setAttribute('disabled', true);
-        optionsSync.cancel();
-        dbSync.cancel();
+        stopButton.setAttribute('disabled', true);
+      })
+        .on('uptodate', function (info) {
+        myOptionsInfo[optionsDB._db_name] = info;
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+      })
+        .on('error', function (err) {
+        myOptionsInfo[optionsDB._db_name] = err;
+        addReadOnlyInfo(myOptionsInfo, infoNode);
+        startButton.removeAttribute('disabled');
+        stopButton.setAttribute('disabled', true);
+        // console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
+    }
+    if (true) {
+      switch (syncType.value) {
+        case 'Replicate from': {
+          dbSync = db.replicate.from(remoteDB, syncOptions);
+          break;
+        }
+        case 'Replicate to': {
+          dbSync = db.replicate.to(remoteDB, syncOptions);
+          break;
+        }
+        case 'Sync with': {
+          dbSync = db.sync(remoteDB, syncOptions);
+          break;
+        }
+        default:
+          addReadOnlyInfo({ 'unknown sync type': syncType.value }, infoNode);
+      }
+      var myInfo = {};
+      dbSync.on('change', function (info) {
+        if (verbositySelect.value != 'verbose') {
+          if (info.change &&  info.change.docs) {
+            info.change.docs = ["..."];
+          } 
+          if (info.docs) {
+            info.docs = ["..."];
+          } 
+        }
+        if (verbositySelect.value != 'silent') {
+          myInfo[db._db_name] = info;
+          addReadOnlyInfo(myInfo, infoNode);
+        }
+      })
+        .on('paused', function () {
+        // replication paused (e.g. user went offline)
+        if (verbositySelect.value != 'silent') {
+          myInfo[db._db_name] = "replication paused (e.g. user went offline)";
+          addReadOnlyInfo(myInfo, infoNode);
+        }
+      })
+        .on('active', function () {
+        // replicate resumed (e.g. user went back online)
+        if (verbositySelect.value != 'silent') {
+          myInfo[db._db_name] = "replicate resumed (e.g. user went back online)";
+          addReadOnlyInfo(myInfo, infoNode);
+        }
+      })
+        .on('denied', function (info) {
+        // a document failed to replicate, e.g. due to permissions
+        if (verbositySelect.value != 'silent') {
+          myInfo[db._db_name] = info;
+          addReadOnlyInfo(myInfo, infoNode);
+        }
+      })
+        .on('complete', function (info) {
+        if (verbositySelect.value != 'silent') {
+          myInfo[db._db_name] = info;
+          addReadOnlyInfo(myInfo, infoNode);
+          remoteDB.info().then(function (info) {
+            addReadOnlyInfo(info, infoNode);
+          }).catch(function (err) {
+            addReadOnlyInfo(err, infoNode);
+          });
+        }
+        startButton.removeAttribute('disabled');
+        stopButton.setAttribute('disabled', true);
+      })
+        .on('uptodate', function (info) {
+        myInfo[db._db_name] = info;
+        addReadOnlyInfo(myInfo, infoNode);
+      })
+        .on('error', function (err) {
+        myInfo[db._db_name] = err;
+        addReadOnlyInfo(myInfo, infoNode);
+        startButton.removeAttribute('disabled');
+        stopButton.setAttribute('disabled', true);
+      });
+    }
+    startButton.setAttribute('disabled', true);
+    stopButton.removeAttribute('disabled');
+    var cancelSync = function (event) {
+      startButton.removeAttribute('disabled');
+      stopButton.setAttribute('disabled', true);
+      this.removeEventListener('click', cancelSync);
+      optionsSync.cancel();
+      dbSync.cancel();
+    };
+    if (optionsSync && dbSync) {
+      stopButton.addEventListener('click', cancelSync);
     }
   });
 
