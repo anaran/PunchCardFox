@@ -313,7 +313,8 @@ try {
               changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(endDate));
               (changedStart || changedEnd) && utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(startDate, endDate));
               changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
-              utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
+              // TO be set by caller
+              // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
               return true;
             }).catch(function(err) {
               //errors

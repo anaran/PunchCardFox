@@ -534,6 +534,22 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   if (aboutItem) {
     aboutItem.addEventListener('click', toggleAbout);
   }
+  var reloadApp = function(event) {
+    event.preventDefault();
+    document.location.reload('force');
+  };
+  var roloadItem = document.querySelector('a.reload');
+  if (roloadItem) {
+    roloadItem.addEventListener('click', reloadApp);
+  }
+  var search = function(event) {
+    event.preventDefault();
+    // document.location.reload('force');
+  };
+  var searchItem = document.querySelector('a.search');
+  if (searchItem) {
+    searchItem.addEventListener('click', search);
+  }
 
   var toggleOptionDisplay = function(event) {
     event.preventDefault();
@@ -868,7 +884,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var entriesNodes = scrollView.querySelectorAll('.entries');
     var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ol>li');
     var rowsPerLink = (entryNodes.length / (scrollLinks.length - 2));
-    for (var linkIndex = 2; linkIndex < scrollLinks.length - 1; linkIndex++)  {
+    for (var linkIndex = 1; linkIndex < scrollLinks.length - 1; linkIndex++)  {
       scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
     }
     Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
@@ -883,7 +899,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           classList.add('linked');
           // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
           (function () {
-            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2].firstElementChild;
+            var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 1].firstElementChild;
             var last = (link == scrollLinks[scrollLinks.length - 2].firstElementChild);
             var result = entryNodes[scrollIndex].parentElement.id;
             if (entryNodes[scrollIndex].classList.contains('deleted')) {
@@ -909,7 +925,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         }
       }
     }
-    var resultsLink = scrollLinks[1];
+    var resultsLink = scrollLinks[0];
     Array.prototype.forEach.call(resultsLink.querySelectorAll('a'), function(elem) {
       elem.parentElement.removeChild(elem);
     });
