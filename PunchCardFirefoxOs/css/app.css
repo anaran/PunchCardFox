@@ -166,7 +166,7 @@ nav#punchcard_scrollbar li {
 
 nav#punchcard_scrollbar:hover li {
   overflow: visible;
-  width: 11rem;
+  width: 12rem;
 }
 
 nav#punchcard_scrollbar {
@@ -190,6 +190,7 @@ nav#punchcard_scrollbar li a {
   font-size: small;
   color: black;
   background-color: white;
+  opacity: 1;
 }
 
 gaia-text-input {
