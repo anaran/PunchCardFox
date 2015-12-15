@@ -10,31 +10,33 @@
     <input class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id">
   </section>
   <section>
-    <button id="import" data-l10n-id="import">Import</button>
+    <input type="button" id="import" data-l10n-id="import" value="Import"/>
     <p>
     </p>
-    <button id="export.db" data-l10n-id="export.db">Export</button>
+    <input type="button" id="export.db" data-l10n-id="export.db" value="Export"/>
     <p>
     </p>
-    <button id="export.options" data-l10n-id="export.options">Export</button>
+    <input type="button" id="export.options" data-l10n-id="export.options" value="Export"/>
     <p>
     </p>
     <p>
-      <button id="login" data-l10n-id="login">Login</button>
-      <button id="logout" data-l10n-id="logout">Logout</button>
+      <input type="button" id="login" data-l10n-id="login" value="Login"/>
+      <input type="button" id="logout" data-l10n-id="logout" value="Logout"/>
     </p>
   </section>
   <section>
     <input class="persistent" type="text" id="protocol" data-l10n-id="protocol" value="https://">
     <input class="persistent" type="password" id="user" data-l10n-id="user" placeholder="user">
     <input type="password" id="pass" data-l10n-id="pass" placeholder="pass">
-    <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path">
+    <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path/">
       <select id="sync_type">
         <option>Replicate from</option>
         <option>Replicate to</option>
         <option selected>Sync with</option>
       </select>
-    <button id="start_replication" data-l10n-id="start">now</button>
+    <input class="persistent" type="text" id="db_name" data-l10n-id="db_name" placeholder="database name">
+    <input class="persistent" type="number" id="doc_size" data-l10n-id="doc_size" value="1000">
+    <input type="button" id="start_replication" data-l10n-id="start" value="now">
     <input type="checkbox" id="live" data-l10n-id="live">
     <p>
       <a href="#clear_replication_info" id="clear_replication_info">Clear info</a>
@@ -46,6 +48,6 @@
     </p>
     <p id="replication_info">
     </p>
-    <button id="stop_replication" data-l10n-id="stop">Stop Replication</button>
+    <input type="button" id="stop_replication" data-l10n-id="stop" value="Stop Replication">
   </section>
 </section>

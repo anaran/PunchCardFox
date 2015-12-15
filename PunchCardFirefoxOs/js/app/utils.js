@@ -95,8 +95,8 @@ define(['./info'], function (infojs) {
     // start.contentEditable = true;
     // end.contentEditable = true;
     // activity.contentEditable = true;
-    var startDate = new Date(doc.start || doc.clockin_ms);
-    var endDate = new Date(doc.end || doc.clockout_ms);
+    var startDate = new Date(doc._id.substring(0, 24));
+    var endDate = 'end' in doc ? new Date(doc.end) : startDate;
     start.textContent = formatStartDate(startDate);
     end.textContent = formatEndDate(endDate);
     duration.textContent = reportDateTimeDiff(startDate, endDate);

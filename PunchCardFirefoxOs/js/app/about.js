@@ -33,7 +33,9 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     // NOTE Do not go to link, which is somewhat disruptive.
     event.preventDefault();
     // event.stopPropagation();
-    var db = new PouchDB('punchcard3');
+    var databaseName = document.getElementById('db_name');
+    var db = new PouchDB(databaseName.value);
+    // var db = new PouchDB('punchcard3');
     var optionsDB = new PouchDB('options');
     var destination = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value;

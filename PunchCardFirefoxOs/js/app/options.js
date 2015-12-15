@@ -16,7 +16,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   var XHR_TIMEOUT_MS = 30000;
   var cookie;
   var setCookie;
-  var db = new PouchDB('punchcard3');
   // No need to keep a lot of history for user options.
   var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
   var persistentNodeList = document.querySelectorAll('.persistent');
@@ -128,8 +127,9 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //     // DEBUG && console.log(doc);
   //   });
   // });
-  var exporter = function(db) {
+  var exporter = function(getDB) {
     return function (event) {
+      var db = getDB();
       db.allDocs({
         include_docs: true/*, 
   attachments: true*/
@@ -174,9 +174,14 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     };
   };
   var exportDbButton = document.getElementById('export.db');
-  exportDbButton.addEventListener('click', exporter(db));
+  exportDbButton.addEventListener('click', exporter(function () {
+    var databaseName = document.getElementById('db_name');
+    return new PouchDB(databaseName.value);
+  }));
   var exportOptionsButton = document.getElementById('export.options');
-  exportOptionsButton.addEventListener('click', exporter(optionsDB));
+  exportOptionsButton.addEventListener('click', exporter(function () {
+    return optionsDB;
+  }));
   var infoNode = document.getElementById('replication_info');
   var clearNode = document.getElementById('clear_replication_info');
   clearNode.addEventListener('click', function (event) {
@@ -190,6 +195,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   startButton.addEventListener('click', function (event) {
     var destination = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value;
+    var databaseName = document.getElementById('db_name');
+    var db = new PouchDB(databaseName.value);
     var myXHR = function () {
       var request;
       if (false && /* false && */window.location.protocol == "app:") {
@@ -212,6 +219,15 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     var verbositySelect = document.getElementById('verbosity');
     var liveSyncing = document.getElementById('live');
+    var activityMaxSyncLength = document.getElementById('doc_size').value;
+    var pullOptions = {
+      live: !!liveSyncing.checked,
+      retry: true,
+      filter: 'ok/filter_activity_length',
+      query_params: {
+        "activity_length": activityMaxSyncLength
+      }
+    };
     var syncOptions = {
       live: !!liveSyncing.checked,
       retry: true,
@@ -311,7 +327,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     if (true) {
       switch (syncType.value) {
         case 'Replicate from': {
-          dbSync = db.replicate.from(remoteDB, syncOptions);
+          dbSync = db.replicate.from(remoteDB, pullOptions);
           break;
         }
         case 'Replicate to': {
@@ -319,7 +335,11 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           break;
         }
         case 'Sync with': {
-          dbSync = db.sync(remoteDB, syncOptions);
+          dbSync = db.sync(remoteDB, pullOptions);
+          // dbSync = db.sync(remoteDB, {
+          //   push: pullOptions,
+          //   pull: syncOptions
+          // });
           break;
         }
         default:
@@ -515,8 +535,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   };
   // ---
 
-  var login = document.querySelector('button#login');
-  var logout = document.querySelector('button#logout');
+  var login = document.querySelector('#login');
+  var logout = document.querySelector('#logout');
 
   // Forms will take the values in the input fields they contain
   // and send them to a server for further processing,
