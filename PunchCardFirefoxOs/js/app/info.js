@@ -9,15 +9,15 @@ try {
         // Does not work, set attribute instead.
         // pre.readOnly = true;
         pre.setAttribute('readonly', true);
-        pre.textContent = JSON.stringify(info, null, 2);
+        pre.textContent = JSON.stringify(info, Object.getOwnPropertyNames(info), 2);
         element.insertBefore(pre, element.firstElementChild);
       }
       catch (e) {
-        window.alert(e.message + '\n' + e.stack);
+        window.alert(JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
       }
     };
   });
 }
 catch (e) {
-  window.alert(e.message + '\n' + e.stack);
+  window.alert(JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
 }

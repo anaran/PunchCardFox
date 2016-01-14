@@ -337,8 +337,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
         case 'Sync with': {
           dbSync = db.sync(remoteDB, pullOptions);
           // dbSync = db.sync(remoteDB, {
-          //   push: pullOptions,
-          //   pull: syncOptions
+          //   pull: pullOptions,
+          //   push: syncOptions
           // });
           break;
         }

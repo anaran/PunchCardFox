@@ -317,8 +317,7 @@ try {
               // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
               return true;
             }).catch(function(err) {
-              //errors
-              window.alert(err);
+                  infojs(err, entries);
               return false;
             });
           }
@@ -326,8 +325,7 @@ try {
             return false;
           }
         }).catch(function(err) {
-          //errors
-          window.alert(err);
+                  infojs(err, entries);
           return false;
         });
       }

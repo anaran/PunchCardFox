@@ -81,8 +81,8 @@ define(['./info'], function (infojs) {
     var content = document.getElementById('entry_template').content;
     var entry = document.importNode(content, "deep").firstElementChild;
     if (addRevisionToElementId) {
-      // NOTE . is allowed in HTML id attribute and not used in couchdb uuids.
-      entry.id = doc._id + '.' + doc._rev;
+      // NOTE _ is allowed in HTML id attribute and not used in my Date.toJSON() _id.
+      entry.id = doc._id + '_' + doc._rev;
     }
     else {
       entry.id = doc._id;

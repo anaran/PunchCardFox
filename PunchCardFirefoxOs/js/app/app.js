@@ -13,9 +13,9 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   // require('getElementPath');
   // window.alert(gep.getElementPath(event.target));
   // var db = new PouchDB('apa-test-2');
-  var databaseName = document.getElementById('db_name');
-  var db = new PouchDB(databaseName.value);
-  // var db = new PouchDB('punchcard3');
+  var db;
+  // var databaseName = document.getElementById('db_name');
+  // var db = new PouchDB(databaseName.value);
   // var entries = document.getElementById('entries');
   // var otherView = document.querySelector('section#view-after-punchcard-list');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
@@ -228,9 +228,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         })
         revisions.textContent = (availableRevisions ? availableRevisions.length : 0) + ' revs';
       }).catch(function (err) {
-        infojs({
-          get_error: err
-        }, entries);
+        // var e = new Error("db.get in setAvailableRevisionCount");
+        // infojs({
+        //   get_error: JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
+        // }, entries);
+        infojs(err, entries);
       });
     }
     // getIt.then(function (result) {
@@ -241,7 +243,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   }
   var showRevisions = function (event) {
     event.preventDefault();
-    var parts = getDataSetIdHideMenu(event).split(/\./);
+    // Keep this _ separator in sync with function addNewEntry in utils.js
+    var parts = getDataSetIdHideMenu(event).split(/_/);
     var id = parts[0];
     var rev = parts[1];
     console.log(id, rev);
@@ -278,9 +281,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           });
         });
       }).catch(function (err) {
-        infojs({
-          get_error: err
-        }, entries);
+        infojs(err, entries);
       });
     }
   };
@@ -290,7 +291,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   }
   var addAsNewRevision = function (event) {
     event.preventDefault();
-    var parts = getDataSetIdHideMenu(event).split(/\./);
+    // Keep this _ separator in sync with function addNewEntry in utils.js
+    var parts = getDataSetIdHideMenu(event).split(/_/);
     var id = parts[0];
     var rev = parts[1];
     console.log(id, rev);
@@ -691,7 +693,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             options[option.doc._id] = option.doc.value;
           }
         });
-        var db = new PouchDB(options.db_name);
+        db = new PouchDB(options.db_name);
         var content = document.getElementById('entries_template').content;
         var entries = document.importNode(content, "deep").firstElementChild;
         var previousEntries = scrollView.querySelector('div.entries');
@@ -752,11 +754,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
                   }
                   infojs({ 'rev': otherDoc }, entries);
                 }).catch(function (err) {
-                  infojs({rev_error: err}, entries);
+                  infojs(err, entries);
                 });
               });
             }).catch(function (err) {
-              infojs({get_error:err}, entries);
+              infojs(err, entries);
             });
             //   if (info.seq == 894) {
             //     info.doc._deleted = false;
@@ -805,6 +807,28 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         var matchLimit = options.match_limit.length ? Number(options.match_limit) : 50;
         var dec = !!options.descending;
         var opts = { include_docs: true, descending: dec, limit: limit };
+        var start = document.querySelector('#start');
+        var end = document.querySelector('#end');
+        if (start && end) {
+          var startDate = new Date(start.value).toJSON();
+          var endDate = new Date(end.value).toJSON();
+          if (startDate) {
+            if (dec) {
+              opts.endkey = startDate;
+            }
+            else {
+              opts.startkey = startDate;
+            }
+          }
+          if (endDate) {
+            if (dec) {
+              opts.startkey = endDate;
+            }
+            else {
+              opts.endkey = endDate;
+            }
+          }
+        }
         // startkey: "2015-02",
         // endkey: "2015-03",
         // var queryInfoElement = document.getElementById('query_search_info');
@@ -828,7 +852,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ';
           opts.reduce = false;
           TIME && console.time('query by_start');
-          query = db.query('foolin/by_start', opts);
+          query = db.allDocs(opts);
+          // query = db.query('foolin/by_start', opts);
           TIME && console.timeEnd('query by_start');
         }
         // window.requestAnimationFrame(function (timestamp) {
@@ -872,12 +897,12 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           updateScrollLinks();
           entries.classList.remove('updating');
         }).catch(function(err) {
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+                  infojs(err, entries);
         });
         // });
       }
     }).catch(function (err) {
-      DEBUG && console.log(err);
+                  infojs(err, entries);
     });
   };
   var updateScrollLinks = function() {
@@ -912,7 +937,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             }
             else {
               db.get(entryNodes[scrollIndex].id).then(function(doc) {
-                link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + result;
+                link.textContent = (new Date(doc._id.substring(0, 24))).toDateString() + result;
                 link.href = '#' + doc._id;
                 link.style.visibility = 'visible';
                 DEBUG && console.log({ last: last });
@@ -939,7 +964,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       resultsLink.appendChild(link);
     });
   };
-  runQuery();
+  // runQuery();
   // function start() {
   //
   //   var message = document.getElementById('message');
