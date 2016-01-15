@@ -150,20 +150,20 @@ try {
           // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         }, false);
         // NOTE: We use double click to reset value for mouse clicks to be sure there was no associated mouse move.
-        true && offset.addEventListener('dblclick', function(event) {
-          event.preventDefault();
-          event.stopPropagation();
-          LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
-          LOG && console.log(event);
-          offset.style.backgroundColor = 'white';
-          offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
-          prevX = prevY = deltaX = deltaY = deltaSum = 0;
-          updateDateTimeGui();
-          // prevX = event.touches[event.touches.length - 1].clientX;
-          // prevY = event.touches[event.touches.length - 1].clientY;
-          // event.dataTransfer.effectAllowed = "all";
-          // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
-        }, false);
+        // true && offset.addEventListener('dblclick', function(event) {
+        //   event.preventDefault();
+        //   event.stopPropagation();
+        //   LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
+        //   LOG && console.log(event);
+        //   offset.style.backgroundColor = 'white';
+        //   offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
+        //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
+        //   updateDateTimeGui();
+        //   // prevX = event.touches[event.touches.length - 1].clientX;
+        //   // prevY = event.touches[event.touches.length - 1].clientY;
+        //   // event.dataTransfer.effectAllowed = "all";
+        //   // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
+        // }, false);
         // offset.addEventListener('click', function(event) {
         //   event.preventDefault();
         //   event.stopPropagation();

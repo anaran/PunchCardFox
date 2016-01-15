@@ -23,5 +23,8 @@
     "pouchdb": "~4.0.1",
     "pouchdb-authentication": "~0.4.1",
     "pouchdb.mapreduce.noeval": "~0.2.0"
+  },
+  "resolutions": {
+    "gaia-icons": "~0.10.0"
   }
 }

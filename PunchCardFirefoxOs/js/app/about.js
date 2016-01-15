@@ -12,7 +12,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
   var DEBUG = false;
 
   // var addReadOnlyInfo = require('info');
-  var addReadOnlyInfo = infojs;
+  let addReadOnlyInfo = infojs;
   var databasesLinkNode = document.getElementById('databases_link');
   var applicationLinkNode = document.getElementById('application_link');
   var databasesInfoNode = document.getElementById('databases_info');
@@ -108,7 +108,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
   if (readmejs) {
     var renderElement = document.querySelector('#render_markdown');
     var editElement = document.querySelector('#edit_markdown');
-    var readmeLink = document.getElementById('readme_link');
+    let readmeLink = document.getElementById('readme_link');
     var readme2Link = document.getElementById('readme2_link');
     var toggleEdit = document.getElementById('readme_edit_toggle');
     var readmeClose = document.getElementById('readme_close');

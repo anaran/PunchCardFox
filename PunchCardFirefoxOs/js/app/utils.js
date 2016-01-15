@@ -96,10 +96,19 @@ define(['./info'], function (infojs) {
     // end.contentEditable = true;
     // activity.contentEditable = true;
     var startDate = new Date(doc._id.substring(0, 24));
-    var endDate = 'end' in doc ? new Date(doc.end) : startDate;
+    if ('end' in doc) {
+      let endDate = new Date(doc.end);
+      // Legacy values from Sqlite database use 0 for undefined values
+      if (Math.abs(endDate.getTime()) > 1000) {
+        end.textContent = formatEndDate(endDate);
+        duration.textContent = reportDateTimeDiff(startDate, endDate);
+      }
+    }
+    // Element needs some content to receive click event to bring up endMenu.
+    if (end.textContent.length == 0) {
+      end.textContent = ' ';
+    }
     start.textContent = formatStartDate(startDate);
-    end.textContent = formatEndDate(endDate);
-    duration.textContent = reportDateTimeDiff(startDate, endDate);
     activity.textContent = doc.activity;
     [
       activity,
