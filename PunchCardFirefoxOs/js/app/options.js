@@ -630,8 +630,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
         }
       }
     } catch (e) {
-      alert(e.message + '\n' + e.stack);
-      // alert(JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
+      addReadOnlyInfo(e, infoNode);
     }
   };
 

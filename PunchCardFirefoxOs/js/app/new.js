@@ -11,7 +11,9 @@ try {
     // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
     var DEBUG = false, LOG = true;
     var saved = false;
-    var db = new PouchDB('punchcard3');
+    let entries = document.getElementById('entries');
+    let databaseName = document.getElementById('db_name');
+    let db = new PouchDB(databaseName.value);
     var id = document.location.hash.substring(1);
     var startDateTime = new Date;
     var endDateTime = new Date;
@@ -79,7 +81,7 @@ try {
           }
           if (Number.isNaN(newDateTime.getMilliseconds())) {
             // window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
-            window.alert('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).');
+            infojs('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).', entries);
           }
           else {
             elementUpdater(newDateTime);
@@ -221,7 +223,7 @@ try {
         }, false);
         true && offset.addEventListener('mousemove', function(event) {
           event.preventDefault();
-          event.stopPropagation();
+          // event.stopPropagation();
           if (event.buttons == 0) {
             prevX = event.clientX;
             prevY = event.clientY;
@@ -278,10 +280,10 @@ try {
     var isValidEntry = function (entry) {
       if (!!entry.activity &&
           !!entry.activity.length &&
-          !!entry.start &&
-          !!entry.start.length &&
-          !!entry.end &&
-          !!entry.end.length) {
+          !!entry._id &&
+          entry._id.length == 36 &&
+          (!('end' in entry) ||
+          entry.end.length == 24)) {
         return true;
       }
       else {
@@ -294,19 +296,32 @@ try {
       DEBUG && window.alert('saving...');
       if (activity.dataset.id) {
         var id = activity.dataset.id.toString();
+        // TODO: Why remove?
         activity.removeAttribute('data-id');
+        let oldStartText = id.substring(0, 24);
+        document.getElementById(id).scrollIntoView();
         return db.get(id).then(function(otherDoc) {
           var startDate = getDateTime(start);
           var endDate = getDateTime(end);
           var activityText = activity.value;
           var startText = startDate.toJSON();
           var endText = endDate.toJSON();
-          var changedStart = !(otherDoc.start == startText);
+          var changedStart = !(oldStartText == startText);
           var changedEnd = !(otherDoc.end == endText);
           var changedActivity = !(otherDoc.activity == activityText);
           otherDoc.activity = activityText;
-          otherDoc.start = startText;
-          otherDoc.end = endText;
+          if (changedStart) {
+            otherDoc._deleted = true;
+            db.put(otherDoc).then(function(response) {
+            }).catch(function(err) {
+              infojs(err, entries);
+            });
+            otherDoc._id = startText + Math.random().toString(16).substring(3, 15)
+          }
+          // end may be left empty.
+          if (end.value.length) {
+            otherDoc.end = endText;
+          }
           if (isValidEntry(otherDoc)) {
             return db.put(otherDoc).then(function(response) {
               changedStart && utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(startDate));
@@ -317,7 +332,7 @@ try {
               // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
               return true;
             }).catch(function(err) {
-                  infojs(err, entries);
+              infojs(err, entries);
               return false;
             });
           }
@@ -325,22 +340,22 @@ try {
             return false;
           }
         }).catch(function(err) {
-                  infojs(err, entries);
+          infojs(err, entries);
           return false;
         });
       }
       else {
         var entry = {
-          // _id: db.post(),
           // activity: activity.textContent,
           activity: activity.value,
-          start: getDateTime(start).toJSON(),
-          end: getDateTime(end).toJSON()
+          _id: getDateTime(start).toJSON() + Math.random().toString(16).substring(3, 15),
         };
+        // end may be left empty.
+        if (end.value.length) {
+          entry.end = getDateTime(end).toJSON();
+        }
         if (isValidEntry(entry)) {
-          return db.post(entry).then(function(response) {
-            var entries = document.getElementById('entries');
-            entry._id = response.id;
+          return db.put(entry).then(function(response) {
             // Insert before the first entry
             var newEntry = utilsjs.addNewEntry(entry, entries, entries.querySelector('div.entry'));
             newEntry.querySelector('pre.activity').classList.add('changed');
@@ -349,7 +364,7 @@ try {
             return true;
           }).catch(function(err) {
             //errors
-            window.alert(err);
+            infojs(err, entries);
             return false;
           });
         }
@@ -418,7 +433,7 @@ try {
           return true;
         }}, this);
       if (!found) {
-        DEBUG && window.alert(callback.toSource() + ' was never registered');
+        infojs(callback.toSource() + ' was never registered', entries);
       }
       return found;
     };
@@ -471,15 +486,16 @@ try {
         db.get(id).then(function(otherDoc) {
           // activity.textContent = otherDoc.activity;
           activity.value = otherDoc.activity;
-          var start = new Date(otherDoc.start);
+          var start = new Date(otherDoc._id.substring(0, 24));
           startDateTime = start;
           startUpdater(start);
-          var end = new Date(otherDoc.end);
-          endDateTime = end;
-          endUpdater(end);
+          if ('end' in otherDoc) {
+            var end = new Date(otherDoc.end);
+            endDateTime = end;
+            endUpdater(end);
+          }
         }).catch(function(err) {
-          //errors
-          window.alert(err);
+          infojs(err, entries);
         });
       }
       else {
@@ -506,5 +522,6 @@ try {
   });
 }
 catch (e) {
-  window.alert(e.message + '\n' + e.stack);
+  let entries = document.getElementById('entries');
+  infojs(e, entries);
 }

@@ -160,20 +160,41 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     event.preventDefault();
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
-      var now = new Date;
-      otherDoc.start = now.toJSON();
-      return db.put(otherDoc).then(function(response) {
-        utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(now));
-        setAvailableRevisionCount(document.getElementById(id));
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, new Date(otherDoc.end)));
-        // saveLink.click();
-      }).catch(function(err) {
-        //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-      });
+      var startDate = new Date;
+      var startText = startDate.toJSON();
+      let oldStartText = otherDoc._id.substring(0, 24);
+      var changedStart = !(oldStartText == startText);
+      if (changedStart) {
+        let newDoc = {
+
+        };
+        otherDoc._deleted = true;
+        db.put(otherDoc).then(function(response) {
+        }).catch(function(err) {
+          infojs(err, entries);
+        });
+        newDoc = {
+          _id: startText + Math.random().toString(16).substring(3, 15),
+          activity: otherDoc.activity
+        };
+        if ('end' in otherDoc) {
+          newDoc.end = otherDoc.end;
+        }
+        db.put(newDoc).then(function(response) {
+          utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(startDate));
+          setAvailableRevisionCount(document.getElementById(id));
+          if ('end' in newDoc) {
+            utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(startDate, new Date(newDoc.end)));
+          }
+          // saveLink.click();
+        }).catch(function(err) {
+          //errors
+          infojs(err, entries);
+        });
+      }
     }).catch(function(err) {
       //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs(err, entries);
     });
     // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
     // document.location.reload('force');
@@ -187,19 +208,20 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var now = new Date;
+      let startText = otherDoc._id.substring(0,24);
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
         setAvailableRevisionCount(document.getElementById(id));
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(otherDoc.start), now));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs(err, entries);
       });
     }).catch(function(err) {
       //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs(err, entries);
     });
   };
   var endNowItem = document.querySelector('#end_now');
@@ -211,6 +233,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     // revision reporting is disabled for performance reasons.
     // It takes a while when displaying 1000 entries.
     var revisions = entry.querySelector('pre.revisions');
+    // Revision prefix does not account for unavailable revs (e.g missing).
     if (false) {
       revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
     }
@@ -303,26 +326,32 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         }).then(function(otherDoc) {
           DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
           // Put a new doc based on the current revision using otherDoc content.
-          otherDoc._rev = currentDoc._rev
+          otherDoc._rev = currentDoc._rev;
           db.put(otherDoc).then(function(response) {
-            var start = new Date(otherDoc.start);
-            var end = new Date(otherDoc.end);
+            var start = new Date(otherDoc._id.substring(0, 24));
             utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(start));
-            utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatStartDate(end));
+            if ('end' in otherDoc) {
+              let end = new Date(otherDoc.end);
+              utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatStartDate(end));
+              utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
+            }
+            else {
+              // Element needs some content to receive click event to bring up endMenu.
+              utilsjs.updateEntriesElement(id, 'pre.end', ' ');
+            }
             utilsjs.updateEntriesElement(id, 'pre.activity', otherDoc.activity);
             setAvailableRevisionCount(document.getElementById(id));
-            utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
           }).catch(function(err) {
             //errors
-            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+            infojs(err, entries);
           });
         }).catch(function(err) {
           //errors
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          infojs(err, entries);
         });
       }).catch(function(err) {
         //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs(err, entries);
       });
     }
   };
@@ -370,12 +399,17 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           var id = getDataSetIdHideMenu(event);
           db.get(id).then(function(otherDoc) {
             var entry = {
-              // _id: db.post(),
+              // The random part is vital to always be unique,
+              // since the new entry/doc initailly has same start time,
+              // which is the initial part of the _id
+              _id: otherDoc._id.substring(0, 24) + Math.random().toString(16).substring(3, 15),
               activity: otherDoc.activity,
-              start: otherDoc.start,
-              end: otherDoc.end
             };
-            db.post(entry).then(function(response) {
+            // end may not be present in original document.
+            if ('end' in otherDoc) {
+              entry.end = otherDoc.end;
+            }
+            db.put(entry).then(function(response) {
               // This is a way to put new entry above others.
               // TODO: Find a cleaner design. entries has acccumulated various foreign elements
               // for the convenience of being nicely scrollable via scrollbar.
@@ -396,11 +430,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               a.click();
             }).catch(function(err) {
               //errors
-              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+              infojs(err, entries);
             });
           }).catch(function(err) {
             //errors
-            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+            infojs(err, entries);
           });
         }
       }
@@ -603,13 +637,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var entry = {
-        // _id: db.post(),
+        _id: (new Date()).toJSON() + Math.random().toString(16).substring(3, 15),
         activity: otherDoc.activity,
-        start: new Date,
-        end: new Date
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
-      db.post(entry).then(function(response) {
+      db.put(entry).then(function(response) {
         entry._id = response.id;
         // NOTE Don't pass rev if it is the current/new revision.
         // See showRevisions for its use in HTML id to identify
@@ -627,11 +659,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs(err, entries);
       });
     }).catch(function(err) {
       //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs(err, entries);
     });
   };
   var repeatNowItem = document.querySelector('#repeat_now');
@@ -643,19 +675,28 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(doc) {
       if (window.confirm('Delete entry? ' + doc.activity)) {
-        // FIXME: .remove should be equivalent, according to
+        // db.remove is not equivalent to db.put with _deleted = true
+        // as might be assumed from
         // http://pouchdb.com/api.html#delete_document
+        // See
+        // http://pouchdb.com/api.html#filtered-replication
+        // and
+        // https://github.com/pouchdb/pouchdb/issues/4796
         if (true) {
           doc._deleted = true;
           return db.put(doc).then(function(response) {
             var deletedElement = document.getElementById(id);
             deletedElement.classList.add('deleted');
             // document.location.reload('force');
+          }).catch(function (err) {
+            infojs(err, entries);
           });
         }
         else {
           return db.remove(doc).then(function(response) {
             // document.location.reload('force');
+          }).catch(function (err) {
+            infojs(err, entries);
           });
         }
       }
@@ -897,12 +938,12 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           updateScrollLinks();
           entries.classList.remove('updating');
         }).catch(function(err) {
-                  infojs(err, entries);
+          infojs(err, entries);
         });
         // });
       }
     }).catch(function (err) {
-                  infojs(err, entries);
+      infojs(err, entries);
     });
   };
   var updateScrollLinks = function() {

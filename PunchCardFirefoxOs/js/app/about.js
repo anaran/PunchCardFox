@@ -11,8 +11,6 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
   'use strict';
   var DEBUG = false;
 
-  // var addReadOnlyInfo = require('info');
-  let addReadOnlyInfo = infojs;
   var databasesLinkNode = document.getElementById('databases_link');
   var applicationLinkNode = document.getElementById('application_link');
   var databasesInfoNode = document.getElementById('databases_info');
@@ -68,19 +66,19 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
     var remoteDB = new PouchDB(destination + db._db_name, opts);
     db.info().then(function (info) {
-      addReadOnlyInfo(info, databasesInfoNode);
+      infojs(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
     optionsDB.info().then(function (info) {
-      addReadOnlyInfo(info, databasesInfoNode);
+      infojs(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
     remoteDB.info().then(function (info) {
-      addReadOnlyInfo(info, databasesInfoNode);
+      infojs(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
     remoteOptionsDB.info().then(function (info) {
-      addReadOnlyInfo(info, databasesInfoNode);
+      infojs(info, databasesInfoNode);
       // DEBUG && console.log(info);
     });
   });
@@ -88,16 +86,16 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     // NOTE Do not go to link, which is somewhat disruptive.
     event.preventDefault();
     // event.stopPropagation();
-    addReadOnlyInfo(window.location, applicationInfoNode);
+    infojs(window.location, applicationInfoNode);
     var request = window.navigator.mozApps.getSelf();
     request.onsuccess = function() {
       if (request.result) {
         // Pull the name of the app out of the App object
-        addReadOnlyInfo(request.result.manifest, applicationInfoNode);
-        // addReadOnlyInfo(request.result.manifest, applicationInfoNode);
+        infojs(request.result.manifest, applicationInfoNode);
+        // infojs(request.result.manifest, applicationInfoNode);
       } else {
         // alert("Called from outside of an app");
-        addReadOnlyInfo(["Called from outside of an app"], applicationInfoNode);
+        infojs(["Called from outside of an app"], applicationInfoNode);
       }
     };
     request.onerror = function() {

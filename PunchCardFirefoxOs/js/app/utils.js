@@ -17,7 +17,7 @@ define(['./info'], function (infojs) {
     year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'narrow',
     hour: 'numeric', minute: 'numeric', second: 'numeric'
   });
-  var formatStartDate = function (date) {
+  var formatStartDate = (date) => {
     // return date.toLocaleString();
     // return date.toString().substring(0, 24);
     return idtf.format(date);
@@ -29,13 +29,13 @@ define(['./info'], function (infojs) {
     // return date.toLocaleString(navigator.language);
     // return date.toLocaleString(navigator.languages);
   };
-  var formatEndDate = function (date) {
+  var formatEndDate = (date) => {
     // return date.toString().substring(4, 24);
     // NOTE Make clear we use same format as for start date,
     // instead of duplicating implementation here.
     return formatStartDate(date);
   };
-  var updateEntriesElement = function (id, selector, value) {
+  var updateEntriesElement = (id, selector, value) => {
     var updateItem = document.getElementById(id).querySelector(selector);
     if (updateItem.textContent != value) {
       updateItem.textContent = value;
@@ -46,7 +46,7 @@ define(['./info'], function (infojs) {
     //   document.location.reload('force');
     // }
   };
-  var pad = function (text, length, padding) {
+  var pad = (text, length, padding) => {
     padding = padding ? padding : '0';
     text += '';
     while (text.length < length) {
@@ -54,7 +54,7 @@ define(['./info'], function (infojs) {
     }
     return text;
   };
-  var reportDateTimeDiff = function (d1, d2) {
+  var reportDateTimeDiff = (d1, d2) => {
     var dt = d2.getTime() - d1.getTime(),
         milliSecondsPerDay = 24 * 3600000,
         dtDayFraction = dt % milliSecondsPerDay,
@@ -75,8 +75,8 @@ define(['./info'], function (infojs) {
     }
     return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
   };
-  // FIXME: this module must not have a hardcoded pouchdb reference!
-  var db = new PouchDB('punchcard3');
+  let databaseName = document.getElementById('db_name');
+  let db = new PouchDB(databaseName.value);
   var addNewEntry = function (doc, entries, before, addRevisionToElementId) {
     var content = document.getElementById('entry_template').content;
     var entry = document.importNode(content, "deep").firstElementChild;
@@ -99,7 +99,7 @@ define(['./info'], function (infojs) {
     if ('end' in doc) {
       let endDate = new Date(doc.end);
       // Legacy values from Sqlite database use 0 for undefined values
-      if (Math.abs(endDate.getTime()) > 1000) {
+      if (Math.abs(endDate.getTime()) >= 1000) {
         end.textContent = formatEndDate(endDate);
         duration.textContent = reportDateTimeDiff(startDate, endDate);
       }
