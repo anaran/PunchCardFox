@@ -165,11 +165,10 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       let oldStartText = otherDoc._id.substring(0, 24);
       var changedStart = !(oldStartText == startText);
       if (changedStart) {
-        let newDoc = {
-
-        };
+        let newDoc = {};
         otherDoc._deleted = true;
         db.put(otherDoc).then(function(response) {
+          document.getElementById(response.id).classList.add('deleted');
         }).catch(function(err) {
           infojs(err, entries);
         });
@@ -181,12 +180,14 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           newDoc.end = otherDoc.end;
         }
         db.put(newDoc).then(function(response) {
-          utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(startDate));
-          setAvailableRevisionCount(document.getElementById(id));
-          if ('end' in newDoc) {
-            utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(startDate, new Date(newDoc.end)));
-          }
-          // saveLink.click();
+          var beforeThisElement = document.getElementById(id);
+          var newEntry = utilsjs.addNewEntry(newDoc, beforeThisElement.parentElement, beforeThisElement);
+          setAvailableRevisionCount(document.getElementById(response.id));
+          newEntry.scrollIntoView();
+          newEntry.querySelector('pre.activity').classList.add('changed');
+          newEntry.querySelector('pre.start').classList.add('changed');
+          newEntry.querySelector('pre.end').classList.add('changed');
+          newEntry.querySelector('pre.revisions').classList.add('changed');
         }).catch(function(err) {
           //errors
           infojs(err, entries);
@@ -238,7 +239,10 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
     }
     else {
-      db.get(entry.id, {
+      var parts = entry.id.split(/_/);
+      var id = parts[0];
+      var rev = parts[1];
+      db.get(id, {
         // Defaults to winning revision
         // rev: doc._rev,
         revs_info: true
@@ -267,25 +271,32 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var showRevisions = function (event) {
     event.preventDefault();
     // Keep this _ separator in sync with function addNewEntry in utils.js
-    var parts = getDataSetIdHideMenu(event).split(/_/);
+    let elementId = getDataSetIdHideMenu(event);
+    var parts = elementId.split(/_/);
     var id = parts[0];
     var rev = parts[1];
-    console.log(id, rev);
-    if (!document.getElementById(id).classList.contains('available')) {
-      db.get(id, {
+    DEBUG && console.log(id, rev);
+    if (!document.getElementById(elementId).classList.contains('available')) {
+      let options = {
         // Defaults to winning revision
         // rev: doc._rev,
-        revs_info: true
         // open_revs: "all"
         // conflicts: true
-      }).then(function (otherDoc) {
+        revs_info: true
+      };
+      if (rev) {
+        options.rev = rev;
+      }
+      else {
+      }
+      db.get(id, options).then(function (otherDoc) {
         console.log(otherDoc);
         var currentRev = otherDoc._rev;
         otherDoc._revs_info.filter(function (rev) {
           return rev.status == 'available' && rev.rev != currentRev;
         }).forEach(function (available, index, obj) {
           db.get(id, { rev: available.rev }).then(function (availableDoc) {
-            console.log(availableDoc);
+            DEBUG && console.log(availableDoc);
             var entry = {
               _rev: availableDoc._rev,
               _id: availableDoc._id,
@@ -293,14 +304,19 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               start: availableDoc.start,
               end: availableDoc.end
             };
-            var beforeThisElement = document.getElementById(id);
+            var beforeThisElement = document.getElementById(elementId);
             var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
                                                beforeThisElement, 'addRevisionToElementId');
             newEntry.querySelector('pre.revisions').textContent = (index + 1) + ' of ' + obj.length + ' revs';
             // NOTE addRevisionToElementId argument makes this more obvious.
             // newEntry.id = entry._id + '.' + entry._rev;
             newEntry.scrollIntoView();
-            newEntry.classList.add('available');
+            if (availableDoc._deleted) {
+              newEntry.classList.add('deleted');
+            }
+            else {
+              newEntry.classList.add('available');
+            }
           });
         });
       }).catch(function (err) {
@@ -312,48 +328,63 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   if (showRevisionsItem) {
     showRevisionsItem.addEventListener('click', showRevisions);
   }
-  var addAsNewRevision = function (event) {
-    event.preventDefault();
-    // Keep this _ separator in sync with function addNewEntry in utils.js
-    var parts = getDataSetIdHideMenu(event).split(/_/);
-    var id = parts[0];
-    var rev = parts[1];
-    console.log(id, rev);
-    if (id && rev) {
-      db.get(id).then(function(currentDoc) {
-        db.get(id, {
-          rev: rev
-        }).then(function(otherDoc) {
-          DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
-          // Put a new doc based on the current revision using otherDoc content.
-          otherDoc._rev = currentDoc._rev;
-          db.put(otherDoc).then(function(response) {
-            var start = new Date(otherDoc._id.substring(0, 24));
-            utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(start));
-            if ('end' in otherDoc) {
-              let end = new Date(otherDoc.end);
-              utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatStartDate(end));
-              utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
-            }
-            else {
-              // Element needs some content to receive click event to bring up endMenu.
-              utilsjs.updateEntriesElement(id, 'pre.end', ' ');
-            }
-            utilsjs.updateEntriesElement(id, 'pre.activity', otherDoc.activity);
-            setAvailableRevisionCount(document.getElementById(id));
-          }).catch(function(err) {
-            //errors
-            infojs(err, entries);
-          });
-        }).catch(function(err) {
-          //errors
-          infojs(err, entries);
-        });
+  let putNewRevision = (id, thisRevision, currentRevision) => {
+    let elementId = id;
+    // Put a new doc based on the current revision using otherDoc content.
+    // There is no currentRevision when the doc has since be deleted.
+    if (currentRevision) {
+      otherDoc._rev = currentRevision;
+    }
+    else {
+      elementId += '_' + thisRevision;
+    }
+    db.get(id, {
+      rev: thisRevision
+    }).then(function(otherDoc) {
+      DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
+      // We need to get rid of _deleted property, if this is a deleted version.
+      if (otherDoc._deleted) {
+        delete otherDoc._deleted;
+      }
+      db.put(otherDoc).then(function(response) {
+        document.getElementById(elementId).classList.remove('deleted');
+        var start = new Date(otherDoc._id.substring(0, 24));
+        utilsjs.updateEntriesElement(elementId, 'pre.start', utilsjs.formatStartDate(start));
+        if ('end' in otherDoc) {
+          let end = new Date(otherDoc.end);
+          utilsjs.updateEntriesElement(elementId, 'pre.end', utilsjs.formatStartDate(end));
+          utilsjs.updateEntriesElement(elementId, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
+        }
+        else {
+          // Element needs some content to receive click event to bring up endMenu.
+          utilsjs.updateEntriesElement(elementId, 'pre.end', ' ');
+        }
+        utilsjs.updateEntriesElement(elementId, 'pre.activity', otherDoc.activity);
+        setAvailableRevisionCount(document.getElementById(elementId));
       }).catch(function(err) {
         //errors
         infojs(err, entries);
       });
-    }
+    }).catch(function(err) {
+      //errors
+      infojs(err, entries);
+    });
+  };
+  var addAsNewRevision = function (event) {
+    event.preventDefault();
+    // Keep this _ separator in sync with function addNewEntry in utils.js
+    let elementId = getDataSetIdHideMenu(event);
+    var parts = elementId.split(/_/);
+    var id = parts[0];
+    var rev = parts[1];
+    DEBUG && console.log(id, rev);
+    db.get(id).then(function(currentDoc) {
+      putNewRevision(id, rev, currentDoc._rev);
+    }).catch(function(err) {
+      // This is a deleted doc, use revision.
+      putNewRevision(id, rev);
+      // infojs(err, entries);
+    });
   };
   var addAsNewRevisionItem = document.querySelector('#add_as_new_revision');
   if (addAsNewRevisionItem) {
@@ -686,6 +717,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           doc._deleted = true;
           return db.put(doc).then(function(response) {
             var deletedElement = document.getElementById(id);
+            // Keep this _ separator in sync with function addNewEntry in utils.js
+            deletedElement.id = response.id + '_' + response.rev;
             deletedElement.classList.add('deleted');
             // document.location.reload('force');
           }).catch(function (err) {
@@ -762,7 +795,9 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         var regexp = stringToRegexp(options.deleted_id);
         if (options.deleted_id.length && regexp) {
           queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
-          db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
+          var changesSinceElement = document.getElementById('changes_since_sequence');
+        var changesSinceSequence = options.changes_since_sequence.length ? Number(options.changes_since_sequence) : 0;
+          db.changes({ include_docs: true, /*style: 'all_docs', */since: changesSinceSequence }).on('delete', function(info) {
             // infojs({delete: info}, entries);
             // db.allDocs({
             //   include_docs: true,
@@ -779,7 +814,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             }).then(function (otherDoc) {
               if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
                 // infojs({get: otherDoc}, entries);
-                var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
+                // Adding revision to id allows us to add document back
+                var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
                 entry.classList.add('deleted');
               }
               false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
@@ -874,13 +910,13 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         // endkey: "2015-03",
         // var queryInfoElement = document.getElementById('query_search_info');
         var isSearch = (options.include.length || options.exclude.length);
-        queryInfoElement.textContent = (isSearch ? 'search' : 'query') + ' in progress...';
+        queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
         var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
         var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
         var query;
-        if (options.deleted_id.length) {
-          return;
-        }
+        // if (options.deleted_id.length) {
+        //   return;
+        // }
         if (isSearch) {
           queryInfoElement.textContent += '\nSearch limited to ' + matchLimit + ' matches of "' + includeRegExp +
             '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') +
