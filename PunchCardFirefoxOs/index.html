@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="manifest" href="./manifest.json">
     <!--                 <link rel="manifest" href="manifest.webapp"> -->
     <meta charset="utf-8">
     <title>Privileged app</title>
@@ -15,7 +16,7 @@ Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
-    <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="./css/app.css">
 
     <!--
 Inline JavaScript code is not allowed for privileged and certified apps,
@@ -30,27 +31,28 @@ execute the deferred files.
 Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-defer
 -->
 
-    <!--                                 <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.js"></script> -->
-    <script type="text/javascript" src="/bower_components/pouchdb/dist/pouchdb.min.js"></script>
-    <script src="/bower_components/font-fit/font-fit.js"></script>
-    <script src="/bower_components/gaia-icons/gaia-icons.js"></script>
-    <link rel="stylesheet" type="text/css" href="/bower_components/gaia-icons/gaia-icons.css">
-    <script src="/bower_components/gaia-component/gaia-component.js"></script>
-    <script src="/bower_components/gaia-header/gaia-header.js"></script>
-    <script src="/bower_components/gaia-sub-header/gaia-sub-header.js"></script>
-    <script src="/bower_components/gaia-text-input/gaia-text-input.js"></script>
-    <script src="/bower_components/gaia-text-input/gaia-text-input-multiline.js"></script>
-    <link href="/scrolling.css" rel="stylesheet" type="text/css">
+    <!--                                 <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.js"></script> -->
+    <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.min.js"></script>
+    <script type="text/javascript" src="./bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js"></script>
+    <script src="./bower_components/font-fit/font-fit.js"></script>
+    <script src="./bower_components/gaia-icons/gaia-icons.js"></script>
+    <link rel="stylesheet" type="text/css" href="./bower_components/gaia-icons/gaia-icons.css">
+    <script src="./bower_components/gaia-component/gaia-component.js"></script>
+    <script src="./bower_components/gaia-header/gaia-header.js"></script>
+    <script src="./bower_components/gaia-sub-header/gaia-sub-header.js"></script>
+    <script src="./bower_components/gaia-text-input/gaia-text-input.js"></script>
+    <script src="./bower_components/gaia-text-input/gaia-text-input-multiline.js"></script>
+    <link href="./scrolling.css" rel="stylesheet" type="text/css">
     <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
-    <link href="/bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
+    <link href="./bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css">
 
     <!--
 The following two lines are for loading the localisations library
 and the localisation data-so people can use the app in their
 own language (as long as you provide translations).
 -->
-    <link rel="prefetch" type="application/l10n" href="/data/locales.ini" />
-    <script type="text/javascript" src="/js/libs/l10n.js" defer></script>
+    <link rel="prefetch" type="application/l10n" href="./data/locales.ini" />
+    <script type="text/javascript" src="./js/libs/l10n.js" defer></script>
   </head>
   <body role="application">
     <link rel="import" href="common-header.html">
@@ -147,7 +149,17 @@ own language (as long as you provide translations).
 <link rel="import" href="options.html">
 <link rel="import" href="about.html">
 </section> -->
-    <script type="text/javascript" data-main="/js/index.js" src="bower_components/alameda/alameda.js" defer></script>
+    <script type="text/javascript" src="./service-worker.js" defer></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('../service-worker.js').then(function(registration){
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }).catch(function(err){
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  }
+</script>
+    <script type="text/javascript" data-main="../js/index.js" src="./bower_components/alameda/alameda.js" defer></script>
     <link rel="import" href="templates.html">
   </body>
 </html>

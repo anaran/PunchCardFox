@@ -1,6 +1,6 @@
 requirejs.config({
   waitSeconds: 7,
-  baseUrl: '/js/libs',
+  baseUrl: '../js/libs',
   paths: {
     app: '../app',
   }});

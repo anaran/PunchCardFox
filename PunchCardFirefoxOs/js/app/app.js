@@ -23,7 +23,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var endMenu = document.getElementById('end_menu');
   var revisionsMenu = document.getElementById('revisions_menu');
   var activityMenu = document.getElementById('activity_menu');
-  var request = navigator.mozApps.getSelf();
+  // var request = navigator.mozApps.getSelf();
   var stringToRegexp = function(str) {
     var captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
     // Default to ignore case.
@@ -58,14 +58,14 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   filter.addEventListener('input', updateFilter);
   filter.addEventListener('click', updateFilter);
-  request.onsuccess = function() {
-    DEBUG && console.log(JSON.stringify(request.result,
-                                        Object.getOwnPropertyNames(request.result), 2));
-  };
-  request.onerror = function() {
-    DEBUG && console.log(request.result,
-                         Object.getOwnPropertyNames(request.error.name), 2);
-  };
+  // request.onsuccess = function() {
+  //   DEBUG && console.log(JSON.stringify(request.result,
+  //                                       Object.getOwnPropertyNames(request.result), 2));
+  // };
+  // request.onerror = function() {
+  //   DEBUG && console.log(request.result,
+  //                        Object.getOwnPropertyNames(request.error.name), 2);
+  // };
   scrollView.addEventListener('scroll', function (event) {
     [
       startMenu,

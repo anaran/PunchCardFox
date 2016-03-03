@@ -32,11 +32,11 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     event.preventDefault();
     // event.stopPropagation();
     var databaseName = document.getElementById('db_name');
-    var db = new PouchDB(databaseName.value);
-    // var db = new PouchDB('punchcard3');
-    var optionsDB = new PouchDB('options');
+    // var db = new PouchDB(databaseName.value);
+    // // var db = new PouchDB('punchcard3');
+    // var optionsDB = new PouchDB('options');
     var destination = document.getElementById('protocol').value +
-        document.getElementById('hostportpath').value;
+      document.getElementById('hostportpath').value;
     // window.alert('replicating starts for destination\n' + destination);
     //     var opts = {auth:
     //                     {'username': document.getElementById('user').value,
@@ -63,23 +63,42 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
         timeout: 30000
       }
     };
-    var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
-    var remoteDB = new PouchDB(destination + db._db_name, opts);
-    db.info().then(function (info) {
-      infojs(info, databasesInfoNode);
-      // DEBUG && console.log(info);
-    });
-    optionsDB.info().then(function (info) {
-      infojs(info, databasesInfoNode);
-      // DEBUG && console.log(info);
-    });
-    remoteDB.info().then(function (info) {
-      infojs(info, databasesInfoNode);
-      // DEBUG && console.log(info);
-    });
-    remoteOptionsDB.info().then(function (info) {
-      infojs(info, databasesInfoNode);
-      // DEBUG && console.log(info);
+    // var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
+    // var remoteDB = new PouchDB(destination + db._db_name, opts);
+    // db.info().then(function (info) {
+    //   infojs(info, databasesInfoNode);
+    //   // DEBUG && console.log(info);
+    // });
+    // optionsDB.info().then(function (info) {
+    //   infojs(info, databasesInfoNode);
+    //   // DEBUG && console.log(info);
+    // });
+    // remoteDB.info().then(function (info) {
+    //   infojs(info, databasesInfoNode);
+    //   // DEBUG && console.log(info);
+    // });
+    // remoteOptionsDB.info().then(function (info) {
+    //   infojs(info, databasesInfoNode);
+    //   // DEBUG && console.log(info);
+    // });
+    PouchDB.allDbs().then(function (dbs) {
+      // dbs is an array of strings, e.g. ['mydb1', 'mydb2']
+      console.log('dbs', dbs, 'destination', destination);
+      dbs && dbs.forEach(function (db) {
+        let localDB = new PouchDB(db);
+        let remoteDB = new PouchDB(destination + db, opts);
+        localDB.info().then(function (info) {
+          infojs(info, databasesInfoNode);
+          // DEBUG && console.log(info);
+        });
+        remoteDB.info().then(function (info) {
+          infojs(info, databasesInfoNode);
+          // DEBUG && console.log(info);
+        });
+      }).catch(function (err) {
+          infojs(err, databasesInfoNode);
+        // handle err
+      });
     });
   });
   applicationLinkNode.addEventListener('click', function (event) {
@@ -125,29 +144,29 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
       // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       readmejs.init(event.target.href + '#' + Date.now(), renderElement, editElement, toggleEdit).
-      // event.stopPropagation();
-      // then(
-      //   function (resolve) {
-      //     window.alert(JSON.stringify(resolve, null, 2));
-      //   }).
-      catch(function (reject) {
-        window.alert('Document ' + event.target.href +
-                     ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
-      });
+        // event.stopPropagation();
+        // then(
+        //   function (resolve) {
+        //     window.alert(JSON.stringify(resolve, null, 2));
+        //   }).
+        catch(function (reject) {
+          window.alert('Document ' + event.target.href +
+                       ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+        });
     });
     readme2Link.addEventListener('click', function (event) {
       // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       readmejs.init(event.target.href, renderElement, editElement, toggleEdit).
-      // event.stopPropagation();
-      // then(
-      //   function (resolve) {
-      //     window.alert(JSON.stringify(resolve, null, 2));
-      //   }).
-      catch(function (reject) {
-        window.alert('Document ' + event.target.href +
-                     ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
-      });
+        // event.stopPropagation();
+        // then(
+        //   function (resolve) {
+        //     window.alert(JSON.stringify(resolve, null, 2));
+        //   }).
+        catch(function (reject) {
+          window.alert('Document ' + event.target.href +
+                       ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+        });
     });
   }
   return true;

@@ -13,7 +13,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
   var addReadOnlyInfo = infojs;
   var infoNode = document.getElementById('replication_info');
-  var XHR_TIMEOUT_MS = 30000;
+  var XHR_TIMEOUT_MS = 65000;
   var cookie;
   var setCookie;
   // No need to keep a lot of history for user options.
@@ -223,6 +223,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var pullOptions = {
       live: !!liveSyncing.checked,
       retry: true,
+      timeout: XHR_TIMEOUT_MS,
       filter: 'ok/filter_activity_length',
       query_params: {
         "activity_length": activityMaxSyncLength
@@ -231,6 +232,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     var syncOptions = {
       live: !!liveSyncing.checked,
       retry: true,
+      timeout: XHR_TIMEOUT_MS,
       // return_docs: false
       // back_off_function: function (delay) {
       //   if (delay === 0) {
