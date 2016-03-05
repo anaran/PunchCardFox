@@ -9,8 +9,8 @@ self.addEventListener('activate', function(event){
   event.waitUntil(self.clients.claim());
 });
 
-var cacheName = 'punchcard-cache-v4';
-caches.delete('punchcard-cache-v3'); // Delete the old one
+var cacheName = 'punchcard-cache-v5';
+caches.delete('punchcard-cache-v4'); // Delete the old one
 var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
 
 function fetchAndCache(request){
