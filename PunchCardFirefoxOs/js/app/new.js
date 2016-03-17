@@ -64,7 +64,7 @@ try {
     });
     var setDateFromStringOrNumber = function (ticker, elementUpdater) {
       return function (event) {
-        if (event.keyCode == 13) {
+        if (event.keyCode == KeyEvent.DOM_VK_RETURN) {
           event.preventDefault();
           ticker();
           var newDateTime;
@@ -316,11 +316,19 @@ try {
             }).catch(function(err) {
               infojs(err, entries);
             });
+            // NOTE: Remove _deleted property before modified doc is put into db!
+            // Else it would be created in a deleted state.
+            delete otherDoc._deleted;
+            // NOTE: Remove _rev property before new doc is put into db!
+            delete otherDoc._rev;
             otherDoc._id = startText + Math.random().toString(16).substring(3, 15)
           }
           // end may be left empty.
           if (end.value.length) {
             otherDoc.end = endText;
+          }
+          else {
+            delete otherDoc.end;
           }
           if (isValidEntry(otherDoc)) {
             return db.put(otherDoc).then(function(response) {

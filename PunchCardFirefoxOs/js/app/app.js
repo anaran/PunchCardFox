@@ -846,6 +846,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             //     });
             //   }
             // changes() was canceled
+          }).on('change', function(info) {
+                var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
           }).on('error', function (err) {
             DEBUG && console.log(err);
             infojs({delete_error: err}, entries);

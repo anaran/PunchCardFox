@@ -36,7 +36,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     // // var db = new PouchDB('punchcard3');
     // var optionsDB = new PouchDB('options');
     var destination = document.getElementById('protocol').value +
-      document.getElementById('hostportpath').value;
+        document.getElementById('hostportpath').value;
     // window.alert('replicating starts for destination\n' + destination);
     //     var opts = {auth:
     //                     {'username': document.getElementById('user').value,
@@ -96,7 +96,7 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
           // DEBUG && console.log(info);
         });
       }).catch(function (err) {
-          infojs(err, databasesInfoNode);
+        infojs(err, databasesInfoNode);
         // handle err
       });
     });
@@ -106,21 +106,25 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
     event.preventDefault();
     // event.stopPropagation();
     infojs(window.location, applicationInfoNode);
-    var request = window.navigator.mozApps.getSelf();
-    request.onsuccess = function() {
-      if (request.result) {
-        // Pull the name of the app out of the App object
-        infojs(request.result.manifest, applicationInfoNode);
-        // infojs(request.result.manifest, applicationInfoNode);
-      } else {
-        // alert("Called from outside of an app");
-        infojs(["Called from outside of an app"], applicationInfoNode);
-      }
-    };
-    request.onerror = function() {
-      // Display error name from the DOMError object
-      alert("Error: " + request.error.name);
-    };
+    infojs(document.head.querySelector('link[rel=manifest]').href, applicationInfoNode);
+    // NOTE: Only availabe for Firefox OS packaged apps:
+    if ('mozApps' in window.navigator) {
+      var request = window.navigator.mozApps.getSelf();
+      request.onsuccess = function() {
+        if (request.result) {
+          // Pull the name of the app out of the App object
+          infojs(request.result.manifest, applicationInfoNode);
+          // infojs(request.result.manifest, applicationInfoNode);
+        } else {
+          // alert("Called from outside of an app");
+          infojs(["Called from outside of an app"], applicationInfoNode);
+        }
+      };
+      request.onerror = function() {
+        // Display error name from the DOMError object
+        alert("Error: " + request.error.name);
+      };
+    }
   });
   if (readmejs) {
     var renderElement = document.querySelector('#render_markdown');
@@ -144,29 +148,29 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
       // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       readmejs.init(event.target.href + '#' + Date.now(), renderElement, editElement, toggleEdit).
-        // event.stopPropagation();
-        // then(
-        //   function (resolve) {
-        //     window.alert(JSON.stringify(resolve, null, 2));
-        //   }).
-        catch(function (reject) {
-          window.alert('Document ' + event.target.href +
-                       ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
-        });
+      // event.stopPropagation();
+      // then(
+      //   function (resolve) {
+      //     window.alert(JSON.stringify(resolve, null, 2));
+      //   }).
+      catch(function (reject) {
+        window.alert('Document ' + event.target.href +
+                     ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+      });
     });
     readme2Link.addEventListener('click', function (event) {
       // NOTE Do not go to link, which is somewhat disruptive.
       event.preventDefault();
       readmejs.init(event.target.href, renderElement, editElement, toggleEdit).
-        // event.stopPropagation();
-        // then(
-        //   function (resolve) {
-        //     window.alert(JSON.stringify(resolve, null, 2));
-        //   }).
-        catch(function (reject) {
-          window.alert('Document ' + event.target.href +
-                       ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
-        });
+      // event.stopPropagation();
+      // then(
+      //   function (resolve) {
+      //     window.alert(JSON.stringify(resolve, null, 2));
+      //   }).
+      catch(function (reject) {
+        window.alert('Document ' + event.target.href +
+                     ' could not be initialized.\n\n' + JSON.stringify(reject, null, 2));
+      });
     });
   }
   return true;

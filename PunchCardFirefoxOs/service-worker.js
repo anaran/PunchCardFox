@@ -9,26 +9,28 @@ self.addEventListener('activate', function(event){
   event.waitUntil(self.clients.claim());
 });
 
-var cacheName = 'punchcard-cache-v5';
-caches.delete('punchcard-cache-v4'); // Delete the old one
+var newCacheName = 'punchcard-cache-v7';
+var oldCacheName = 'punchcard-cache-v6';
+caches.delete(oldCacheName); // Delete the old one
+console.log('caches.delete('+oldCacheName+')');
 var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
 
 function fetchAndCache(request){
   return fetch(request.clone()).then(function(response){
     if (request.method == 'GET' && response && successResponses.test(response.status) && (response.type == 'basic' || /\.(js|png|ttf|woff|woff2)/i.test(request.url) || /fonts\.googleapis\.com/i.test(request.url))){
       console.log('Cache', request.url);
-      caches.open(cacheName).then(function(cache){
+      caches.open(newCacheName).then(function(cache){
         cache.put(request, response);
-        });
-      }
+      });
+    }
     return response;
-    });
+  });
 };
 
 function cacheOnly(request){
-  return caches.open(cacheName).then(function(cache){
+  return caches.open(newCacheName).then(function(cache){
     return cache.match(request);
-    });
+  });
 };
 
 // Fastest strategy from https://github.com/GoogleChrome/sw-toolbox
@@ -43,20 +45,20 @@ self.addEventListener('fetch', function(event){
       reasons.push(reason.toString());
       if (rejected){
         reject(new Error('Both cache and network failed: "' + reasons.join('", "') + '"'));
-        } else {
-          rejected = true;
-          }
-      };
+      } else {
+        rejected = true;
+      }
+    };
 
     var maybeResolve = function(result){
       if (result instanceof Response){
         resolve(result);
-        } else {
-          maybeReject('No result returned');
-          }
-      };
+      } else {
+        maybeReject('No result returned');
+      }
+    };
 
     fetchAndCache(request.clone()).then(maybeResolve, maybeReject);
     cacheOnly(request).then(maybeResolve, maybeReject);
-    }));
+  }));
 });
