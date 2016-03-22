@@ -12,8 +12,7 @@ try {
     var DEBUG = false, LOG = true;
     var saved = false;
     let entries = document.getElementById('entries');
-    let databaseName = document.getElementById('db_name');
-    let db = new PouchDB(databaseName.value);
+    let db = new PouchDB('punchcard');
     var id = document.location.hash.substring(1);
     var startDateTime = new Date;
     var endDateTime = new Date;

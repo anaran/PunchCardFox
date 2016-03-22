@@ -75,8 +75,6 @@ define(['./info'], function (infojs) {
     }
     return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
   };
-  let databaseName = document.getElementById('db_name');
-  let db = new PouchDB(databaseName.value);
   var addNewEntry = function (doc, entries, before, addRevisionToElementId) {
     try {
       var content = document.getElementById('entry_template').content;

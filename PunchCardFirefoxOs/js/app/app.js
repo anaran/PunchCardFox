@@ -10,12 +10,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var DEBUG = false;
   var TIME = false;
   var resultIndex = 1;
-  // require('getElementPath');
-  // window.alert(gep.getElementPath(event.target));
-  // var db = new PouchDB('apa-test-2');
   var db;
-  // var databaseName = document.getElementById('db_name');
-  // var db = new PouchDB(databaseName.value);
   // var entries = document.getElementById('entries');
   // var otherView = document.querySelector('section#view-after-punchcard-list');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
@@ -767,7 +762,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             options[option.doc._id] = option.doc.value;
           }
         });
-        db = new PouchDB(options.db_name);
+        db = new PouchDB('punchcard');
         var content = document.getElementById('entries_template').content;
         var entries = document.importNode(content, "deep").firstElementChild;
         var previousEntries = scrollView.querySelector('div.entries');
