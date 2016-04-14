@@ -1,4 +1,4 @@
-define(['app/info', 'app/readme'], function(infojs, readmejs) {
+define(['app/info', 'app/readme', 'app/pouchdb-ui'], function(infojs, readmejs, pouchdbuijs) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -84,6 +84,10 @@ define(['app/info', 'app/readme'], function(infojs, readmejs) {
                 infojs(err, databasesInfoNode);
                 // handle err
               });
+              let pui = new pouchdbuijs.PouchdbUI();
+              let dbUI = databasesInfoNode.appendChild(pui);
+              dbUI.setAttribute('db_name', db);
+              dbUI.setAttribute('bad_db_name', db);
             });
           }
         }).catch(function (err) {

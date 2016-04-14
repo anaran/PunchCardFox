@@ -130,64 +130,6 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //     // DEBUG && console.log(doc);
   //   });
   // });
-  //FIXME: Move to about.js, use html template to create import, export, delete UI.
-  if (!'FIXED') {
-    var exporter = function(getDB) {
-      return function (event) {
-        var db = getDB();
-        db.allDocs({
-          include_docs: true/*, 
-  attachments: true*/
-        }).then(function (result) {
-          // handle result
-          var div = document.createElement('div');
-          var download = document.createElement('a');
-          // Map to JSON which can be directly loaded into new datadase using
-          // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
-          // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
-          var docs = {
-            'docs': result.rows.map(function (row) {
-              // NOTE Causes "error":"conflict","reason":"Document update conflict."
-              // on POST _bulk_docs to new database
-              // Above curl command works fine without the _rev field.
-              delete row.doc._rev;
-              return row.doc;
-            })
-          };
-          var blob = new window.Blob([JSON.stringify(docs, null, 2)], {
-            type: 'text/plain; charset=utf-8'
-          });
-          download.href = window.URL.createObjectURL(blob);
-          download.download = db._db_name + '-' + result.total_rows + '-' + Date.now() + '.txt';
-          download.textContent = 'Download exported database ' + db._db_name;
-          div.appendChild(download);
-          var deleteButton = document.createElement('input');
-          deleteButton.type = 'button';
-          deleteButton.value = 'Delete databae ' + db._db_name;
-          deleteButton.addEventListener('click', function (event) {
-            db.destroy().then(function (response) {
-              console.log('deleted database', db._db_name);
-            }).catch(function (err) {
-              console.log(err);
-            });
-          });
-          div.appendChild(deleteButton);
-          event.target.nextElementSibling.appendChild(div);
-        }).catch(function (err) {
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-        });
-      };
-    };
-    var exportDbButton = document.getElementById('export.db');
-    exportDbButton.addEventListener('click', exporter(function () {
-      var databaseName = document.getElementById('db_name');
-      return new PouchDB('punchcard');
-    }));
-    var exportOptionsButton = document.getElementById('export.options');
-    exportOptionsButton.addEventListener('click', exporter(function () {
-      return optionsDB;
-    }));
-  }
   var infoNode = document.getElementById('replication_info');
   var clearNode = document.getElementById('clear_replication_info');
   clearNode.addEventListener('click', function (event) {
