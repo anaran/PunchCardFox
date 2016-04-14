@@ -240,23 +240,6 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
   let PouchdbUI = document.registerElement('pouchdb-ui', {
     prototype: proto,
   });
-  //FIXME: Move to about.js, use html template to create import, export, delete UI.
-  if (!'FIXED') {
-    var exporter = function(getDB) {
-      return function (event) {
-        var db = getDB();
-      };
-    };
-    var exportDbButton = document.getElementById('export.db');
-    exportDbButton.addEventListener('click', exporter(function () {
-      var databaseName = document.getElementById('db_name');
-      return new PouchDB('punchcard');
-    }));
-    var exportOptionsButton = document.getElementById('export.options');
-    exportOptionsButton.addEventListener('click', exporter(function () {
-      return optionsDB;
-    }));
-  }
   return {
     PouchdbUI: PouchdbUI
   };
