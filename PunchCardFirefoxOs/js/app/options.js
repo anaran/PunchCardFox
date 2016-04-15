@@ -222,7 +222,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
         var myInfo = {};
         dbSync.on('change', function (info) {
           if (verbositySelect != 'verbose') {
-            if (info.change &&  info.change.docs) {
+            if (info.change && info.change.docs) {
               info.change.docs = ["..."];
             } 
             if (info.docs) {

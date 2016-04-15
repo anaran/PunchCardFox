@@ -9,7 +9,7 @@ try {
         // Does not work, set attribute instead.
         // pre.readOnly = true;
         pre.setAttribute('readonly', true);
-        pre.textContent = JSON.stringify(info, Object.getOwnPropertyNames(info), 2);
+        pre.textContent = JSON.stringify(info, info instanceof Error ? Object.getOwnPropertyNames(info) : null, 2);
         element.insertBefore(pre, element.firstElementChild);
       }
       catch (e) {
