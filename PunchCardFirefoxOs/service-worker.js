@@ -17,7 +17,10 @@ var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
 
 function fetchAndCache(request){
   return fetch(request.clone()).then(function(response){
-    if (request.method == 'GET' && response && successResponses.test(response.status) && (response.type == 'basic' || /\.(js|png|ttf|woff|woff2)/i.test(request.url) || /fonts\.googleapis\.com/i.test(request.url))){
+    if (request.method == 'GET' && response && successResponses.test(response.status) &&
+        request.url.match(this.registration.scope) &&
+        (response.type == 'basic' || /\.(js|png|ttf|woff|woff2)/i.test(request.url) ||
+         /fonts\.googleapis\.com/i.test(request.url))){
       console.log('Cache', request.url);
       caches.open(newCacheName).then(function(cache){
         cache.put(request, response);
