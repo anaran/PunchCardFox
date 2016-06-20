@@ -13,22 +13,27 @@ define(['./info'], function (infojs) {
   // <- "Mi., 9. Sep. 15, 01:07:04 MESZ"
   // >> navigator.languages
   // <- Array [ "de", "en-US" ]
-  var idtf = new Intl.DateTimeFormat(navigator.languages, {
-    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'narrow',
-    hour: 'numeric', minute: 'numeric', second: 'numeric'
-  });
-  var formatStartDate = (date) => {
-    // return date.toLocaleString();
-    // return date.toString().substring(0, 24);
-    return idtf.format(date);
-    // return Intl.DateTimeFormat(date, navigator.languages, {
-    //   year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
-    //   hour: 'numeric', minute: 'numeric', second: 'numeric'
-    // });
-    // NOTE: These following have bad performance even in Windows Desktop Firefox!
-    // return date.toLocaleString(navigator.language);
-    // return date.toLocaleString(navigator.languages);
+  let formatStartDate = (date) => {
+    return date.toLocaleString();
   };
+  if ('Intl' in window) {
+    let idtf = new Intl.DateTimeFormat(navigator.languages, {
+      year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'narrow',
+      hour: 'numeric', minute: 'numeric', second: 'numeric'
+    });
+    formatStartDate = (date) => {
+      // return date.toLocaleString();
+      // return date.toString().substring(0, 24);
+      return idtf.format(date);
+      // return Intl.DateTimeFormat(date, navigator.languages, {
+      //   year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
+      //   hour: 'numeric', minute: 'numeric', second: 'numeric'
+      // });
+      // NOTE: These following have bad performance even in Windows Desktop Firefox!
+      // return date.toLocaleString(navigator.language);
+      // return date.toLocaleString(navigator.languages);
+    };
+  }
   var formatEndDate = (date) => {
     // return date.toString().substring(4, 24);
     // NOTE Make clear we use same format as for start date,
