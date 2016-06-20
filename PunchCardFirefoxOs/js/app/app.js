@@ -547,7 +547,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var ediNewItem = document.querySelector('a.edit');
   if (ediNewItem) {
-    ediNewItem.addEventListener('click', toggleEdit);
+    ediNewItem.addEventListener('click', toggleEdit, 'capture');
   }
   var toggleAbout = function(event) {
     event.preventDefault();
@@ -596,7 +596,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var aboutItem = document.querySelector('a.about');
   if (aboutItem) {
-    aboutItem.addEventListener('click', toggleAbout);
+    aboutItem.addEventListener('click', toggleAbout, 'capture');
   }
   var reloadApp = function(event) {
     event.preventDefault();
@@ -604,7 +604,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var roloadItem = document.querySelector('a.reload');
   if (roloadItem) {
-    roloadItem.addEventListener('click', reloadApp);
+    roloadItem.addEventListener('click', reloadApp, 'capture');
   }
   var search = function(event) {
     event.preventDefault();
@@ -612,7 +612,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var searchItem = document.querySelector('a.search');
   if (searchItem) {
-    searchItem.addEventListener('click', search);
+    searchItem.addEventListener('click', search, 'capture');
   }
 
   var toggleOptionDisplay = function(event) {
@@ -646,7 +646,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var optionsItem = document.querySelector('a.settings');
   if (optionsItem) {
-    optionsItem.addEventListener('click', toggleOptionDisplay);
+    optionsItem.addEventListener('click', toggleOptionDisplay, 'capture');
     // NOTE: Let's bring up a menu on click, if necessary, as is already done for #start_menu, etc.
     // optionsItem.addEventListener('contextmenu', function (event) {
     //   window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');

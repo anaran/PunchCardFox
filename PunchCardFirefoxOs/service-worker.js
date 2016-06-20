@@ -9,8 +9,8 @@ self.addEventListener('activate', function(event){
   event.waitUntil(self.clients.claim());
 });
 
-var newCacheName = 'punchcard-cache-v10';
-var oldCacheName = 'punchcard-cache-v9';
+var newCacheName = 'punchcard-cache-v11';
+var oldCacheName = 'punchcard-cache-v10';
 caches.delete(oldCacheName); // Delete the old one
 console.log('caches.delete('+oldCacheName+')');
 var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
