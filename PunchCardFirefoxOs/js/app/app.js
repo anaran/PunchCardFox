@@ -395,7 +395,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           newEntry.style.display = 'block';
           // TODO: Re-use of header icon for existing and new entries may be confusing.
 
-          ediNewItem.style.opacity = '0.3';
+          editNewItem.style.opacity = '0.3';
           var id = getDataSetIdHideMenu(event);
           newjs.init(id);
           var a = document.createElement('a');
@@ -421,7 +421,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           newEntry.style.display = 'block';
           // TODO: Re-use of header icon for existing and new entries may be confusing.
 
-          ediNewItem.style.opacity = '0.3';
+          editNewItem.style.opacity = '0.3';
           var id = getDataSetIdHideMenu(event);
           db.get(id).then(function(otherDoc) {
             var entry = {
@@ -528,26 +528,30 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             newEntry.scrollIntoView();
           }
           else {
+            // save return a promise for the asynchronously executing editing UI.
             var res = newjs.save();
             DEBUG && console.log(res);
             res && res.then(function (result) {
-              if (result) {
-                // otherView.style.display = 'none';
+              // window.alert('Sucessfull save of\n' + JSON.stringify(result, null, 2));
+              // otherView.style.display = 'none';
+              newEntry.style.display = 'none';
+              event.target.style.opacity = '1.0';
+              document.getElementById('modified' in result ? result.modified.id : result.new.id).scrollIntoView();
+            }).catch(function (err) {
+              infojs(err, entries);
+              if (window.confirm(err)) {
                 newEntry.style.display = 'none';
                 event.target.style.opacity = '1.0';
-                // document.location.reload('force');
               }
-            }).catch(function (err) {
-              window.alert('saving entry failed, please review values of start, end, activity.');
             });
           }
         }
       }
     });
   };
-  var ediNewItem = document.querySelector('a.edit');
-  if (ediNewItem) {
-    ediNewItem.addEventListener('click', toggleEdit, 'capture');
+  var editNewItem = document.querySelector('a.edit');
+  if (editNewItem) {
+    editNewItem.addEventListener('click', toggleEdit, 'capture');
   }
   var toggleAbout = function(event) {
     event.preventDefault();
@@ -752,7 +756,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var optionsDB = new PouchDB('options');
     optionsDB.allDocs({
       include_docs: true/*,
-  attachments: true*/
+    attachments: true*/
     }).then(function (result) {
       if ('rows' in result) {
         DEBUG && console.log('reading all options for db for query configuration', result);
@@ -791,7 +795,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         if (options.deleted_id.length && regexp) {
           queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
           var changesSinceElement = document.getElementById('changes_since_sequence');
-        var changesSinceSequence = options.changes_since_sequence.length ? Number(options.changes_since_sequence) : 0;
+          var changesSinceSequence = options.changes_since_sequence.length ? Number(options.changes_since_sequence) : 0;
           db.changes({ include_docs: true, /*style: 'all_docs', */since: changesSinceSequence }).on('delete', function(info) {
             // infojs({delete: info}, entries);
             // db.allDocs({
@@ -842,7 +846,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             //   }
             // changes() was canceled
           }).on('change', function(info) {
-                var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+            var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
           }).on('error', function (err) {
             DEBUG && console.log(err);
             infojs({delete_error: err}, entries);
