@@ -536,7 +536,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               // otherView.style.display = 'none';
               newEntry.style.display = 'none';
               event.target.style.opacity = '1.0';
-              document.getElementById('modified' in result ? result.modified.id : result.new.id).scrollIntoView();
+              document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView();
             }).catch(function (err) {
               infojs(err, entries);
               if (window.confirm(err)) {
@@ -885,25 +885,27 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         var matchLimit = options.match_limit.length ? Number(options.match_limit) : 50;
         var dec = !!options.descending;
         var opts = { include_docs: true, descending: dec, limit: limit };
-        var start = document.querySelector('#start');
-        var end = document.querySelector('#end');
-        if (start && end) {
-          var startDate = new Date(start.value).toJSON();
-          var endDate = new Date(end.value).toJSON();
-          if (startDate) {
-            if (dec) {
-              opts.endkey = startDate;
+        if (document.querySelector('#new_entry').style.display != 'none') {
+          var start = document.querySelector('#start');
+          var end = document.querySelector('#end');
+          if (start && end) {
+            var startDate = new Date(start.value).toJSON();
+            var endDate = new Date(end.value).toJSON();
+            if (startDate) {
+              if (dec) {
+                opts.endkey = startDate;
+              }
+              else {
+                opts.startkey = startDate;
+              }
             }
-            else {
-              opts.startkey = startDate;
-            }
-          }
-          if (endDate) {
-            if (dec) {
-              opts.startkey = endDate;
-            }
-            else {
-              opts.endkey = endDate;
+            if (endDate) {
+              if (dec) {
+                opts.startkey = endDate;
+              }
+              else {
+                opts.endkey = endDate;
+              }
             }
           }
         }
