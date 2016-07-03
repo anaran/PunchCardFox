@@ -1,20 +1,58 @@
 // Taken from https://railrouter.sg/
 self.addEventListener('install', function(event){
   // console.log('Install');
-  console.log(`Installing ${newCacheName}`);
+  console.log(`Installing ${version}`);
 });
 
-self.addEventListener('activate', function(event){
-  // console.log('Activate', event, JSON.stringify(self, Object.getOwnPropertyNames(self), 2));
-  console.log('Activate');
-  // Calling claim() to force a "controllerchange" event on navigator.serviceWorker
-  event.waitUntil(self.clients.claim());
+// self.addEventListener('activate', function(event){
+//   // console.log('Activate', event, JSON.stringify(self, Object.getOwnPropertyNames(self), 2));
+//   console.log('Activate');
+//   // Calling claim() to force a "controllerchange" event on navigator.serviceWorker
+//   event.waitUntil(self.clients.claim());
+// });
+
+// NOTE: activate listener taken from
+// https://serviceworke.rs/immediate-claim_service-worker_doc.html
+// `onactivate` is usually called after a worker was installed and the page
+// got refreshed. Since we call `skipWaiting()` in `oninstall`, `onactivate` is
+// called immediately.
+self.addEventListener('activate', function(event) {
+  // Just for debugging, list all controlled clients.
+  self.clients.matchAll({
+    includeUncontrolled: true
+  }).then(function(clientList) {
+    var urls = clientList.map(function(client) {
+      return client.url;
+    });
+    console.log('[ServiceWorker] Matching clients:', urls.join(', '));
+  });
+
+  event.waitUntil(
+    // Delete old cache entries that don't match the current version.
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName !== version) {
+            console.log('[ServiceWorker] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(function() {
+      // `claim()` sets this worker as the active worker for all clients that
+      // match the workers scope and triggers an `oncontrollerchange` event for
+      // the clients.
+      console.log('[ServiceWorker] Claiming clients for version', version);
+      return self.clients.claim();
+    })
+  );
 });
 
-var newCacheName = 'punchcard-cache-v14';
-var oldCacheName = 'punchcard-cache-v13';
-caches.delete(oldCacheName); // Delete the old one
-console.log('caches.delete('+oldCacheName+')');
+var version = 'punchcard-v15';
+// var newCacheName = 'punchcard-cache-v14';
+// var oldCacheName = 'punchcard-cache-v13';
+// caches.delete(oldCacheName); // Delete the old one
+// console.log('caches.delete('+oldCacheName+')');
 var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
 
 function fetchAndCache(request){
@@ -24,7 +62,7 @@ function fetchAndCache(request){
         (response.type == 'basic' || /\.(js|png|ttf|woff|woff2)/i.test(request.url) ||
          /fonts\.googleapis\.com/i.test(request.url))){
       console.log('Cache', request.url);
-      caches.open(newCacheName).then(function(cache){
+      caches.open(version).then(function(cache){
         cache.put(request, response);
       });
     }
@@ -33,7 +71,7 @@ function fetchAndCache(request){
 };
 
 function cacheOnly(request){
-  return caches.open(newCacheName).then(function(cache){
+  return caches.open(version).then(function(cache){
     return cache.match(request);
   });
 };
