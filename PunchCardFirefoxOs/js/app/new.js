@@ -422,7 +422,7 @@ try {
               newEntry.querySelector('pre.end').classList.add('changed');
               // Too early, will scroll out of view when new entry UI is no longer displayed in caller.
               // document.getElementById(response.id).scrollIntoView();
-              resolve({ new: entry });
+              resolve({ new: response });
             }).catch(function(err) {
               //errors
               infojs(err, entries);
