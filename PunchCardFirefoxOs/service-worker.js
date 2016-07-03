@@ -1,16 +1,18 @@
 // Taken from https://railrouter.sg/
 self.addEventListener('install', function(event){
-  console.log('Install');
+  // console.log('Install');
+  console.log(`Installing ${newCacheName}`);
 });
 
 self.addEventListener('activate', function(event){
+  // console.log('Activate', event, JSON.stringify(self, Object.getOwnPropertyNames(self), 2));
   console.log('Activate');
   // Calling claim() to force a "controllerchange" event on navigator.serviceWorker
   event.waitUntil(self.clients.claim());
 });
 
-var newCacheName = 'punchcard-cache-v11';
-var oldCacheName = 'punchcard-cache-v10';
+var newCacheName = 'punchcard-cache-v14';
+var oldCacheName = 'punchcard-cache-v13';
 caches.delete(oldCacheName); // Delete the old one
 console.log('caches.delete('+oldCacheName+')');
 var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
