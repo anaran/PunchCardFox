@@ -350,7 +350,7 @@ try {
             var changedEnd = !(otherDoc.end == endText);
             var changedActivity = !(otherDoc.activity == activityText);
             otherDoc.activity = activityText;
-            if (changedStart) {
+            if (changedStart && startDate.toJSON()) {
               otherDoc._deleted = true;
               db.put(otherDoc).then(function(response) {
                 document.getElementById(response.id).classList.add('deleted');
