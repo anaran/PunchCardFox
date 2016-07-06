@@ -324,19 +324,19 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     showRevisionsItem.addEventListener('click', showRevisions);
   }
   let putNewRevision = (id, thisRevision, currentRevision) => {
-    let elementId = id;
-    // Put a new doc based on the current revision using otherDoc content.
-    // There is no currentRevision when the doc has since be deleted.
-    if (currentRevision) {
-      otherDoc._rev = currentRevision;
-    }
-    else {
-      elementId += '_' + thisRevision;
-    }
     db.get(id, {
       rev: thisRevision
     }).then(function(otherDoc) {
       DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
+      let elementId = otherDoc._id;
+      // Put a new doc based on the current revision using otherDoc content.
+      // There is no currentRevision when the doc has since be deleted.
+      if (currentRevision) {
+        otherDoc._rev = currentRevision;
+      }
+      else {
+        elementId += '_' + thisRevision;
+      }
       // We need to get rid of _deleted property, if this is a deleted version.
       if (otherDoc._deleted) {
         delete otherDoc._deleted;
