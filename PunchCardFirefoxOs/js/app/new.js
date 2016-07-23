@@ -381,9 +381,10 @@ try {
                   utilsjs.updateEntriesElement(id, 'pre.duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
                 changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
                 // document.getElementById(response.id).scrollIntoView();
-              // Update id attribute to reflect now document id.
-              // Fixes bug where future menu operations on replaced entry would not work.
-              document.getElementById(id).id = response.id;
+                // Update id attribute to reflect now document id.
+                // Fixes bug where future menu operations on replaced entry would not work.
+                document.getElementById(id).id = response.id;
+                document.getElementById(response.id).classList.remove('deleted');
                 resolve({ modified: response });
                 // TO be set by caller
                 // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
