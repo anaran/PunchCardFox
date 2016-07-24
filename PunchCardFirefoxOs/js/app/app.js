@@ -604,6 +604,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   }
   var reloadApp = function(event) {
     event.preventDefault();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(function(registration) {
+        registration.unregister();
+      });
+    }
     document.location.reload('force');
   };
   var roloadItem = document.querySelector('a.reload');
