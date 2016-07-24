@@ -22,6 +22,9 @@ self.addEventListener('activate', function(event) {
     includeUncontrolled: true
   }).then(function(clientList) {
     var urls = clientList.map(function(client) {
+      client.postMessage({
+        message: `Claiming clients for version ${version}`
+      });
       return client.url;
     });
     console.log('[ServiceWorker] Matching clients:', urls.join(', '));
@@ -43,9 +46,9 @@ self.addEventListener('activate', function(event) {
       // match the workers scope and triggers an `oncontrollerchange` event for
       // the clients.
       console.log('[ServiceWorker] Claiming clients for version', version);
+
       return self.clients.claim();
-    })
-  );
+    }));
 });
 
 var version = 'punchcard-v18';

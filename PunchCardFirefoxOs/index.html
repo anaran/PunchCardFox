@@ -157,6 +157,11 @@ own language (as long as you provide translations).
     }).catch(function(err){
       console.log('ServiceWorker registration failed: ', err);
     });
+    // See https://github.com/mozilla/serviceworker-cookbook/blob/master/message-relay/index.js
+    // Listen for any messages from the service worker.
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      window.alert(event.data.message);
+});
   }
 </script>
     <script type="text/javascript" data-main="../js/index.js" src="./bower_components/alameda/alameda.js" defer></script>

@@ -528,7 +528,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             newEntry.scrollIntoView();
           }
           else {
-            // save return a promise for the asynchronously executing editing UI.
+            // save returns a promise for the asynchronously executing editing UI.
             var res = newjs.save();
             DEBUG && console.log(res);
             res && res.then(function (result) {

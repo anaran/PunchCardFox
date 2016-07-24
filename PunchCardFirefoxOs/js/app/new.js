@@ -350,24 +350,32 @@ try {
             var changedEnd = !(otherDoc.end == endText);
             var changedActivity = !(otherDoc.activity == activityText);
             otherDoc.activity = activityText;
-            if (changedStart && startDate.toJSON()) {
-              otherDoc._deleted = true;
-              db.put(otherDoc).then(function(response) {
-                document.getElementById(response.id).classList.add('deleted');
-              }).catch(function(err) {
-                infojs(err, entries);
-                reject('Cannot delete entry with old start time.\nDiscard edit?'
-                       + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-              });
-              // NOTE: Remove _deleted property before modified doc is put into db!
-              // Else it would be created in a deleted state.
-              delete otherDoc._deleted;
-              // NOTE: Remove _rev property before new doc is put into db!
-              delete otherDoc._rev;
-              otherDoc._id = startDate.toJSON() + Math.random().toString(16).substring(3, 15);
+            // Delete old doc when startDate for new doc is a valid date
+            if (startDate.toJSON()) {
+              if (changedStart) {
+                otherDoc._deleted = true;
+                db.put(otherDoc).then(function(response) {
+                  document.getElementById(response.id).classList.add('deleted');
+                }).catch(function(err) {
+                  infojs(err, entries);
+                  reject('Cannot delete entry with old start time.\nDiscard edit?'
+                         + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+                });
+                // NOTE: Remove _deleted property before modified doc is put into db!
+                // Else it would be created in a deleted state.
+                delete otherDoc._deleted;
+                // NOTE: Remove _rev property before new doc is put into db!
+                delete otherDoc._rev;
+                otherDoc._id = startDate.toJSON() + Math.random().toString(16).substring(3, 15);
+              }
             }
-            // end may be left empty.
-            if (end.value.length) {
+            else {
+              reject('Cannot save modified entry with invalid start date.\nDiscard edit?');
+              // FIXME: I need to understand chaining and nesting of promises.
+              return;
+            }
+            // end may be left empty. endText is a valid date, else null.
+            if (endText) {
               otherDoc.end = endText;
             }
             else {
