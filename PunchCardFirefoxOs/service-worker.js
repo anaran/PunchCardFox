@@ -2,6 +2,8 @@
 self.addEventListener('install', function(event){
   // console.log('Install');
   console.log(`Installing ${version}`);
+  console.log('[ServiceWorker] Skip waiting on install');
+  self.skipWaiting();
 });
 
 // self.addEventListener('activate', function(event){
