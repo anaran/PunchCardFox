@@ -140,10 +140,10 @@ own language (as long as you provide translations).
         <li><a href="#entries">Top of the list</a></li>
       </ol>
     </nav>
-      <!--
+    <!--
 <gaia-text-input autofocus="true" id="filter" clearable placeholder="filter by activity" type="search"></gaia-text-input>
 -->
-      <input autofocus="true" id="filter" placeholder="filter by activity" type="search">
+    <input autofocus="true" id="filter" placeholder="filter by activity" type="search">
     <!--                 <section id='view-after-punchcard-list' role="region" data-state="active" class="view view-noscroll">
 <link rel="import" href="new_entry.html">
 <link rel="import" href="options.html">
@@ -151,21 +151,21 @@ own language (as long as you provide translations).
 </section> -->
     <script type="text/javascript" src="./service-worker.js" defer></script>
     <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('../service-worker.js', {
-    scope: '../'
-  }).then(function(registration){
-      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    }).catch(function(err){
-      console.log('ServiceWorker registration failed: ', err);
-    });
-    // See https://github.com/mozilla/serviceworker-cookbook/blob/master/message-relay/index.js
-    // Listen for any messages from the service worker.
-    // navigator.serviceWorker.addEventListener('message', function(event) {
-    //   window.alert(event.data.message);
-    // });
-  }
-</script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', function(event) {
+          window.alert(event.data.message);
+        });
+        navigator.serviceWorker.register('../service-worker.js', {
+          scope: '../'
+        }).then(function(registration){
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }).catch(function(err){
+          console.log('ServiceWorker registration failed: ', err);
+        });
+        // See https://github.com/mozilla/serviceworker-cookbook/blob/master/message-relay/index.js
+        // Listen for any messages from the service worker.
+      }
+    </script>
     <script type="text/javascript" data-main="../js/index.js" src="./bower_components/alameda/alameda.js" defer></script>
     <link rel="import" href="templates.html">
   </body>

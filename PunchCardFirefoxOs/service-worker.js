@@ -2,6 +2,15 @@ self.addEventListener('install', function(event){
   // console.log('Install');
   console.log(`Installing ${version}`);
   console.log('[ServiceWorker] Skip waiting on install');
+  self.clients.matchAll({
+    includeUncontrolled: true
+  }).then(function(clientList) {
+    clientList.map(function(client) {
+      client.postMessage({
+        message: `Installing ${version}\nSkip waiting on install`
+      });
+    });
+  });
   self.skipWaiting();
 });
 
@@ -16,9 +25,9 @@ self.addEventListener('activate', function(event) {
     includeUncontrolled: true
   }).then(function(clientList) {
     var urls = clientList.map(function(client) {
-      // client.postMessage({
-      //   message: `Claiming clients for version ${version}`
-      // });
+      client.postMessage({
+        message: `${version} matches client ${client.url}`
+      });
       return client.url;
     });
     console.log('[ServiceWorker] Matching clients:', urls.join(', '));
@@ -40,13 +49,22 @@ self.addEventListener('activate', function(event) {
       // match the workers scope and triggers an `oncontrollerchange` event for
       // the clients.
       console.log('[ServiceWorker] Claiming clients for version', version);
+      self.clients.matchAll({
+        includeUncontrolled: true
+      }).then(function(clientList) {
+        clientList.map(function(client) {
+          client.postMessage({
+            message: `Claiming clients for version ${version}`
+          });
+        });
+      });
       return self.clients.claim();
     }).catch(err => {
       console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
     }));
 });
 
-var version = 'punchcard-v25';
+var version = 'punchcard-v36';
 // var newCacheName = 'punchcard-cache-v14';
 // var oldCacheName = 'punchcard-cache-v13';
 // caches.delete(oldCacheName); // Delete the old one

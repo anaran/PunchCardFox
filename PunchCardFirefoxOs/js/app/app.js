@@ -604,12 +604,17 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   }
   var reloadApp = function(event) {
     event.preventDefault();
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistration().then(function(registration) {
-        registration.unregister();
-      });
-    }
-    document.location.reload('force');
+    // in linux nightly firefox there is no way to get at app after reloadApp
+    // when local python webserver is stopped or hosted app cannot be reached
+    // because network is turned off.
+    // nightly firefox for android just displays a footer overlay stating
+    // "showing offline version" and works fine after reloadApp!
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.getRegistration().then(function(registration) {
+    //     registration.unregister();
+    //   });
+    // }
+    document.location.reload(!'force');
   };
   var roloadItem = document.querySelector('a.reload');
   if (roloadItem) {
