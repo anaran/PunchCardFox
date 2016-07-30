@@ -152,13 +152,51 @@ own language (as long as you provide translations).
     <script type="text/javascript" src="./service-worker.js" defer></script>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.addEventListener('message', function(event) {
-          window.alert(event.data.message);
-        });
+        // navigator.serviceWorker.addEventListener('controllerchange', function(e) {
+        //   console.log('Change of navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
+        //   if (navigator.serviceWorker.controller) {
+        //     navigator.serviceWorker.addEventListener('message', function(e) {
+        //       if (e.data.reply && e.data.reply == 'version') {
+        //         document.querySelector('gaia-header>h1').textContent = e.data.message;
+        //       }
+        //       else {
+        //         window.alert(e.data.message);
+        //       }
+        //     });
+        //     navigator.serviceWorker.controller.postMessage({
+        //       request: 'version'
+        //     });
+        //   }
+        // });
         navigator.serviceWorker.register('../service-worker.js', {
           scope: '../'
         }).then(function(registration){
           console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          console.log('Register navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
+          navigator.serviceWorker.addEventListener('message', function(e) {
+            if (e.data.reply && e.data.reply == 'version') {
+              document.querySelector('gaia-header>h1').textContent = e.data.message;
+            }
+            else {
+              window.alert(e.data.message);
+            }
+          });
+          document.addEventListener('readystatechange', function (event) {
+            if (document.readyState == 'complete') {
+              console.log('Document Ready navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
+              if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                  request: 'version'
+                });
+              }
+            }
+          });
+          // return navigator.serviceWorker.ready;
+          // window.serviceWorker.onMessage = function(e) {
+          //   if (e.data.reply && e.data.reply == 'version') {
+          //     document.querySelector('gaia-header>h1').textContent = e.data.message;
+          //   }
+          // };
         }).catch(function(err){
           console.log('ServiceWorker registration failed: ', err);
         });

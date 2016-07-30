@@ -64,7 +64,7 @@ self.addEventListener('activate', function(event) {
     }));
 });
 
-var version = 'punchcard-v36';
+var version = 'punchcard-v38';
 // var newCacheName = 'punchcard-cache-v14';
 // var oldCacheName = 'punchcard-cache-v13';
 // caches.delete(oldCacheName); // Delete the old one
@@ -111,4 +111,16 @@ this.addEventListener('fetch', function(event) {
       });
     })
   );
+});
+
+self.addEventListener("message", function(e) {
+  // e.source is a client object
+  switch (e.data.request) {
+    case 'version': {
+      e.source.postMessage({
+        reply: 'version',
+        message: version
+      });
+    }
+  }
 });
