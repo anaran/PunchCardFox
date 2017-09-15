@@ -63,7 +63,7 @@ try {
     });
     var setDateFromStringOrNumber = function (ticker, elementUpdater) {
       return function (event) {
-        if (event.keyCode == KeyEvent.DOM_VK_RETURN) {
+        if (event.key == 'Enter') {
           event.preventDefault();
           ticker();
           var newDateTime;
@@ -507,7 +507,7 @@ try {
           return true;
         }}, this);
       if (!found) {
-        infojs(callback.toSource() + ' was never registered', entries);
+        infojs(callback.toString() + ' was never registered', entries);
       }
       return found;
     };
