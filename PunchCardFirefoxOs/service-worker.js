@@ -64,7 +64,7 @@ self.addEventListener('activate', function(event) {
     }));
 });
 
-var version = 'punchcard-v39';
+var version = 'punchcard-v40';
 // var newCacheName = 'punchcard-cache-v14';
 // var oldCacheName = 'punchcard-cache-v13';
 // caches.delete(oldCacheName); // Delete the old one

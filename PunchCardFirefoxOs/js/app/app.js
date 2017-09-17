@@ -966,7 +966,6 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               continue;
             }
             entry = utilsjs.addNewEntry(row.doc, entries, undefined, 0);
-            setAvailableRevisionCount(entry);
             if (isSearch) {
               if (matchLimit && (matches == matchLimit)) {
                 break;
@@ -985,6 +984,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           TIME && console.timeEnd('query');
           resultIndex += 1;
           updateScrollLinks();
+          Array.prototype.forEach.call(document.querySelectorAll('div.entry'), entry => setAvailableRevisionCount(entry));
           entries.classList.remove('updating');
         }).catch(function(err) {
           infojs(err, entries);
