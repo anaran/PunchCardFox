@@ -224,6 +224,31 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   if (endNowItem) {
     endNowItem.addEventListener('click', endNow);
   }
+  var endUndefined = function (event) {
+    event.preventDefault();
+    var id = getDataSetIdHideMenu(event);
+    db.get(id).then(function(otherDoc) {
+      var now = new Date;
+      let startText = otherDoc._id.substring(0,24);
+      otherDoc.end = now.toJSON();
+      return db.put(otherDoc).then(function(response) {
+        utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
+        setAvailableRevisionCount(document.getElementById(id));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
+        // saveLink.click();
+      }).catch(function(err) {
+        //errors
+        infojs(err, entries);
+      });
+    }).catch(function(err) {
+      //errors
+      infojs(err, entries);
+    });
+  };
+  var endUndefinedItem = document.querySelector('#end_now');
+  if (endUndefinedItem) {
+    endUndefinedItem.addEventListener('click', endUndefined);
+  }
   var setAvailableRevisionCount = function(entry) {
     // Possibly do estimate shortcut when accurate
     // revision reporting is disabled for performance reasons.
