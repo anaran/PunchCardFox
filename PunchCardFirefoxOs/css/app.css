@@ -92,6 +92,7 @@ pre.end {
 }
 
 pre.duration {
+  white-space: pre-wrap;
   width: 49%;
   /*   text-overflow: clip ellipsis; */
 }

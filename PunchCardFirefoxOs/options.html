@@ -8,34 +8,40 @@
     <input class="persistent" type="number" id="limit" data-l10n-id="limit">
     <input class="persistent" type="checkbox" id="descending" data-l10n-id="descending">
     <input class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id">
+    <input class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ...">
   </section>
   <section>
-    <button id="import" data-l10n-id="import">Import</button>
     <p>
-    </p>
-    <button id="export.db" data-l10n-id="export.db">Export</button>
-    <p>
-    </p>
-    <button id="export.options" data-l10n-id="export.options">Export</button>
-    <p>
-    </p>
-    <p>
-      <button id="login" data-l10n-id="login">Login</button>
-      <button id="logout" data-l10n-id="logout">Logout</button>
+      <input type="button" id="login" data-l10n-id="login" value="Login"/>
+      <input type="button" id="logout" data-l10n-id="logout" value="Logout"/>
     </p>
   </section>
   <section>
     <input class="persistent" type="text" id="protocol" data-l10n-id="protocol" value="https://">
     <input class="persistent" type="password" id="user" data-l10n-id="user" placeholder="user">
     <input type="password" id="pass" data-l10n-id="pass" placeholder="pass">
-    <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path">
-      <select id="sync_type">
+    <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path/">
+  <h1 data-l10n-id="options_db_title">Options Database</h1>
+      <select id="options_sync_type">
         <option>Replicate from</option>
         <option>Replicate to</option>
         <option selected>Sync with</option>
       </select>
-    <button id="start_replication" data-l10n-id="start">now</button>
-    <input type="checkbox" id="live" data-l10n-id="live">
+    <input class="persistent" type="text" id="options_db_name" placeholder="options db name">
+    <input type="button" id="options_start_replication" data-l10n-id="options_start_replication" value="now">
+    <input type="checkbox" id="options_live_sync">
+    <input type="button" id="options_stop_replication" data-l10n-id="options_stop_replication" value="Stop Replication">
+  <h1 data-l10n-id="punchcard_db_title">Punchcard Database</h1>
+      <select id="punchcard_sync_type">
+        <option>Replicate from</option>
+        <option>Replicate to</option>
+        <option selected>Sync with</option>
+      </select>
+    <input class="persistent" type="text" id="punchcard_db_name" data-l10n-id="db_name" placeholder="database name">
+    <input class="persistent" type="number" id="punchcard_doc_size" data-l10n-id="punchcard_doc_size" value="1000">
+    <input type="button" id="punchcard_start_replication" data-l10n-id="punchcard_start_replication" value="now">
+    <input type="checkbox" id="punchcard_live_sync">
+    <input type="button" id="punchcard_stop_replication" data-l10n-id="punchcard_stop_replication" value="Stop Replication">
     <p>
       <a href="#clear_replication_info" id="clear_replication_info">Clear info</a>
       <select id="verbosity">
@@ -46,6 +52,5 @@
     </p>
     <p id="replication_info">
     </p>
-    <button id="stop_replication" data-l10n-id="stop">Stop Replication</button>
   </section>
 </section>

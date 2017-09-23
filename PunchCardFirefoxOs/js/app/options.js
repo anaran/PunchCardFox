@@ -1,6 +1,10 @@
 'use strict';
 // try {
+let times = [];
+let DEBUG = false;
+times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 define(['app/info', 'app/utils'], function (infojs, utilsjs) {
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
@@ -11,19 +15,24 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   // window.addEventListener('DOMContentLoaded', function() {
   // We'll ask the browser to use strict code to help us catch errors earlier.
   // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
+  // typeof document != 'undefined' && document.addEventListener('readystatechange', function (event) {
+  //   // DEBUG_ADDON && console.log('document.readyState', document.readyState);
+  //   if (document.readyState == 'complete') {
   var addReadOnlyInfo = infojs;
   var infoNode = document.getElementById('replication_info');
-  var XHR_TIMEOUT_MS = 30000;
+  var XHR_TIMEOUT_MS = 65000;
   var cookie;
   var setCookie;
-  var db = new PouchDB('punchcard3');
   // No need to keep a lot of history for user options.
   var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
+  var punchcardDB = new PouchDB('punchcard');
   var persistentNodeList = document.querySelectorAll('.persistent');
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   Array.prototype.forEach.call(persistentNodeList, function (element) {
     optionsDB.get(element.id, {
       conflicts: true
     }).then(function(otherDoc) {
+      times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
       if (otherDoc._conflicts) {
         addReadOnlyInfo({ conflicts: otherDoc._conflicts }, infoNode);
         // FIXME: just delete conflict for now for options.
@@ -34,10 +43,12 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
             _rev: conflict,
             _deleted: true
           }).then(function(response) {
+            times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
             console.log('conflict deleted', response);
             // document.location.reload('force');
             // saveLink.click();
           }).catch(function(err) {
+            times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
             //errors
             console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
@@ -128,284 +139,241 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //     // DEBUG && console.log(doc);
   //   });
   // });
-  var exporter = function(db) {
-    return function (event) {
-      db.allDocs({
-        include_docs: true/*, 
-  attachments: true*/
-      }).then(function (result) {
-        // handle result
-        var div = document.createElement('div');
-        var download = document.createElement('a');
-        // Map to JSON which can be directly loaded into new datadase using
-        // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
-        // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
-        var docs = {
-          'docs': result.rows.map(function (row) {
-            // NOTE Causes "error":"conflict","reason":"Document update conflict."
-            // on POST _bulk_docs to new database
-            // Above curl command works fine without the _rev field.
-            delete row.doc._rev;
-            return row.doc;
-          })
-        };
-        var blob = new window.Blob([JSON.stringify(docs, null, 2)], {
-          type: 'text/plain; charset=utf-8'
-        });
-        download.href = window.URL.createObjectURL(blob);
-        download.download = db._db_name + '-' + result.total_rows + '-' + Date.now() + '.txt';
-        download.textContent = 'Download exported database ' + db._db_name;
-        div.appendChild(download);
-        var deleteButton = document.createElement('input');
-        deleteButton.type = 'button';
-        deleteButton.value = 'Delete databae ' + db._db_name;
-        deleteButton.addEventListener('click', function (event) {
-          db.destroy().then(function (response) {
-            console.log('deleted database', db._db_name);
-          }).catch(function (err) {
-            console.log(err);
-          });
-        });
-        div.appendChild(deleteButton);
-        event.target.nextElementSibling.appendChild(div);
-      }).catch(function (err) {
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-      });
-    };
-  };
-  var exportDbButton = document.getElementById('export.db');
-  exportDbButton.addEventListener('click', exporter(db));
-  var exportOptionsButton = document.getElementById('export.options');
-  exportOptionsButton.addEventListener('click', exporter(optionsDB));
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var infoNode = document.getElementById('replication_info');
   var clearNode = document.getElementById('clear_replication_info');
   clearNode.addEventListener('click', function (event) {
     // NOTE Do not go to link, which is somewhat disruptive.
     event.preventDefault();
-    infoNode.textContent = '';
-  });
-  var startButton = document.getElementById('start_replication');
-  var stopButton = document.getElementById('stop_replication');
-  var syncType = document.getElementById('sync_type');
-  startButton.addEventListener('click', function (event) {
-    var destination = document.getElementById('protocol').value +
-        document.getElementById('hostportpath').value;
-    var myXHR = function () {
-      var request;
-      if (false && /* false && */window.location.protocol == "app:") {
-        request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
-      }
-      else {
-        request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
-        // request = new XMLHttpRequest();
-      }
-      return request;
-    }
-    var opts = {
-      ajax: {
-        xhr: myXHR,
-        // headers: { 'Cookie': cookie },
-        timeout: 30000
-      }
-    };
-    var remoteOptionsDB = new PouchDB(destination + optionsDB._db_name, opts);
-    var remoteDB = new PouchDB(destination + db._db_name, opts);
-    var verbositySelect = document.getElementById('verbosity');
-    var liveSyncing = document.getElementById('live');
-    var syncOptions = {
-      live: !!liveSyncing.checked,
-      retry: true,
-      // return_docs: false
-      // back_off_function: function (delay) {
-      //   if (delay === 0) {
-      //     return 1000;
-      //   }
-      //   return delay * 3;
-      // }
-    };
-    // NOTE: Don't share variables in asynchronuous code!
-    // myInfo = {};
-    var myOptionsInfo = {};
-    var syncMethod;
-    var dbSync;
-    var optionsSync;
-    // FIXME Default to Replicate from after app is installed.
-    // sync is very slow when the local database is empty.
-    if (true) {
-      switch (syncType.value) {
-        case 'Replicate from': {
-          optionsSync = optionsDB.replicate.from(remoteOptionsDB, syncOptions);
-          break;
-        }
-        case 'Replicate to': {
-          optionsSync = optionsDB.replicate.to(remoteOptionsDB, syncOptions);
-          break;
-        }
-        case 'Sync with': {
-          optionsSync = optionsDB.sync(remoteOptionsDB, syncOptions);
-          break;
-        }
-        default:
-          addReadOnlyInfo({ 'unknown sync type': syncType.value }, infoNode);
-      }
-      optionsSync.on('change', function (info) {
-        if (verbositySelect.value != 'verbose') {
-          if (info.change &&  info.change.docs) {
-            info.change.docs = ["..."];
-          } 
-          if (info.docs) {
-            info.docs = ["..."];
-          } 
-        }
-        if (verbositySelect.value != 'silent') {
-          myOptionsInfo[optionsDB._db_name] = info;
-          addReadOnlyInfo(myOptionsInfo, infoNode);
-        }
-      })
-        .on('paused', function () {
-        // replication paused (e.g. user went offline)
-        if (verbositySelect.value != 'silent') {
-          myOptionsInfo[optionsDB._db_name] = "replication paused (e.g. user went offline)";
-          addReadOnlyInfo(myOptionsInfo, infoNode);
-        }
-      })
-        .on('active', function () {
-        // replicate resumed (e.g. user went back online)
-        if (verbositySelect.value != 'silent') {
-          myOptionsInfo[optionsDB._db_name] = "replicate resumed (e.g. user went back online)";
-          addReadOnlyInfo(myOptionsInfo, infoNode);
-        }
-      })
-        .on('denied', function (info) {
-        // a document failed to replicate, e.g. due to permissions
-        if (verbositySelect.value != 'silent') {
-          myOptionsInfo[optionsDB._db_name] = info;
-          addReadOnlyInfo(myOptionsInfo, infoNode);
-        }
-      })
-        .on('complete', function (info) {
-        if (verbositySelect.value != 'silent') {
-          myOptionsInfo[optionsDB._db_name] = info;
-          addReadOnlyInfo(myOptionsInfo, infoNode);
-          remoteOptionsDB.info().then(function (info) {
-            addReadOnlyInfo(info, infoNode);
-          }).catch(function (err) {
-            addReadOnlyInfo(err, infoNode);
-          });
-        }
-        startButton.removeAttribute('disabled');
-        stopButton.setAttribute('disabled', true);
-      })
-        .on('uptodate', function (info) {
-        myOptionsInfo[optionsDB._db_name] = info;
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-      })
-        .on('error', function (err) {
-        myOptionsInfo[optionsDB._db_name] = err;
-        addReadOnlyInfo(myOptionsInfo, infoNode);
-        startButton.removeAttribute('disabled');
-        stopButton.setAttribute('disabled', true);
-        // console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+    if (!infoNode.textContent.trim()) {
+      times.reduce((prevValue, currValue, currIndex, object) => {
+        addReadOnlyInfo(
+          `${(currValue[1] - prevValue[1])/1000} seconds spent between ${prevValue[0]} and ${currValue[0]}`,
+          infoNode)
+        return currValue;
       });
     }
-    if (true) {
-      switch (syncType.value) {
-        case 'Replicate from': {
-          dbSync = db.replicate.from(remoteDB, syncOptions);
-          break;
-        }
-        case 'Replicate to': {
-          dbSync = db.replicate.to(remoteDB, syncOptions);
-          break;
-        }
-        case 'Sync with': {
-          dbSync = db.sync(remoteDB, syncOptions);
-          break;
-        }
-        default:
-          addReadOnlyInfo({ 'unknown sync type': syncType.value }, infoNode);
-      }
-      var myInfo = {};
-      dbSync.on('change', function (info) {
-        if (verbositySelect.value != 'verbose') {
-          if (info.change &&  info.change.docs) {
-            info.change.docs = ["..."];
-          } 
-          if (info.docs) {
-            info.docs = ["..."];
-          } 
-        }
-        if (verbositySelect.value != 'silent') {
-          myInfo[db._db_name] = info;
-          addReadOnlyInfo(myInfo, infoNode);
-        }
-      })
-        .on('paused', function () {
-        // replication paused (e.g. user went offline)
-        if (verbositySelect.value != 'silent') {
-          myInfo[db._db_name] = "replication paused (e.g. user went offline)";
-          addReadOnlyInfo(myInfo, infoNode);
-        }
-      })
-        .on('active', function () {
-        // replicate resumed (e.g. user went back online)
-        if (verbositySelect.value != 'silent') {
-          myInfo[db._db_name] = "replicate resumed (e.g. user went back online)";
-          addReadOnlyInfo(myInfo, infoNode);
-        }
-      })
-        .on('denied', function (info) {
-        // a document failed to replicate, e.g. due to permissions
-        if (verbositySelect.value != 'silent') {
-          myInfo[db._db_name] = info;
-          addReadOnlyInfo(myInfo, infoNode);
-        }
-      })
-        .on('complete', function (info) {
-        if (verbositySelect.value != 'silent') {
-          myInfo[db._db_name] = info;
-          addReadOnlyInfo(myInfo, infoNode);
-          remoteDB.info().then(function (info) {
-            addReadOnlyInfo(info, infoNode);
-          }).catch(function (err) {
-            addReadOnlyInfo(err, infoNode);
-          });
-        }
-        startButton.removeAttribute('disabled');
-        stopButton.setAttribute('disabled', true);
-      })
-        .on('uptodate', function (info) {
-        myInfo[db._db_name] = info;
-        addReadOnlyInfo(myInfo, infoNode);
-      })
-        .on('error', function (err) {
-        myInfo[db._db_name] = err;
-        addReadOnlyInfo(myInfo, infoNode);
-        startButton.removeAttribute('disabled');
-        stopButton.setAttribute('disabled', true);
+    else {
+      infoNode.textContent = '';
+      times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+      optionsDB.allDocs({
+        include_docs: false
+      }).then(function (result) {
+        times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+        result.rows && result.rows.forEach(function (row) {
+          if (!Array.prototype.map.call(persistentNodeList, function (element) {
+            return element.id
+          }).includes(row.key)) {
+            if (!row.key.startsWith("_design/")) {
+              optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
+                console.log('deleted no longer used', row.key, row.value.rev);
+              }).catch(function(err) {
+                console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+              });
+            }
+          }
+        });
+      }).catch(function(err) {
+        times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+        //errors
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
     }
-    startButton.setAttribute('disabled', true);
-    stopButton.removeAttribute('disabled');
-    var cancelSync = function (event) {
-      startButton.removeAttribute('disabled');
-      stopButton.setAttribute('disabled', true);
-      this.removeEventListener('click', cancelSync);
-      optionsSync.cancel();
-      dbSync.cancel();
-    };
-    if (optionsSync && dbSync) {
-      stopButton.addEventListener('click', cancelSync);
-    }
   });
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+  var optionsStartButton = document.getElementById('options_start_replication');
+  var optionsStopButton = document.getElementById('options_stop_replication');
+  var punchcardStartButton = document.getElementById('punchcard_start_replication');
+  var punchcardStopButton = document.getElementById('punchcard_stop_replication');
+  var myXHR = function () {
+    var request;
+    if (false && /* false && */window.location.protocol == "app:") {
+      request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
+    }
+    else {
+      request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
+      // request = new XMLHttpRequest();
+    }
+    return request;
+  }
+  var opts = {
+    ajax: {
+      xhr: myXHR,
+      // headers: { 'Cookie': cookie },
+      timeout: XHR_TIMEOUT_MS
+    }
+  };
+  var syncOptions = {
+    // live: !!liveSyncing.checked,
+    retry: true,
+    timeout: XHR_TIMEOUT_MS,
+    // return_docs: false
+    // back_off_function: function (delay) {
+    //   if (delay === 0) {
+    //     return 1000;
+    //   }
+    //   return delay * 3;
+    // }
+  };
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+  let setupRemoteSync = function _setupRemoteSync(opt) {
+    opt.startButton.addEventListener('click', function (event) {
+      let dbSync;
+      var destination = document.getElementById(opt.protocolId).value +
+          document.getElementById(opt.hostportpathId).value;
+      var remoteDatabaseName = document.getElementById(opt.remoteDatabaseNameId).value;
+      let remoteDB = new PouchDB(destination + remoteDatabaseName, opt.remoteOptions);
+      let localDbName = opt.localDB._db_name;
+      let startButton = opt.startButton;
+      let stopButton = opt.stopButton;
+      let syncOptions = opt.syncOptions;
+      let pullOptions = syncOptions;
+      var syncType = document.getElementById(opt.syncTypeId).value;
+      var verbositySelect = document.getElementById(opt.verbositySelectId).value;
+      var liveSyncing = !!document.getElementById(opt.liveId).checked;
+      syncOptions.live = liveSyncing;
+      pullOptions.live = liveSyncing;
+      if ('activitySizeId' in opt) {
+        let activityMaxSyncLength = document.getElementById(opt.activitySizeId).value;
+        if (activityMaxSyncLength.length) {
+          pullOptions.filter = 'ok/filter_activity_length',
+            pullOptions.query_params = {
+            "activity_length": Number(activityMaxSyncLength)
+          }
+        }
+      }
+    times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+      if (true) {
+        switch (syncType) {
+          case 'Replicate from': {
+            dbSync = opt.localDB.replicate.from(remoteDB, pullOptions);
+            break;
+          }
+          case 'Replicate to': {
+            dbSync = opt.localDB.replicate.to(remoteDB, syncOptions);
+            break;
+          }
+          case 'Sync with': {
+            dbSync = opt.localDB.sync(remoteDB, pullOptions);
+            // dbSync = opt.localDB.sync(remoteDB, {
+            //   pull: pullOptions,
+            //   push: syncOptions
+            // });
+            break;
+          }
+          default:
+            addReadOnlyInfo({ 'unknown sync type': syncType }, infoNode);
+        }
+        var myInfo = {};
+        dbSync.on('change', function (info) {
+          if (verbositySelect != 'verbose') {
+            if (info.change && info.change.docs) {
+              info.change.docs = ["..."];
+            } 
+            if (info.docs) {
+              info.docs = ["..."];
+            } 
+          }
+          if (verbositySelect != 'silent') {
+            myInfo[localDbName] = info;
+            addReadOnlyInfo(myInfo, infoNode);
+          }
+        })
+          .on('paused', function () {
+          // replication paused (e.g. user went offline)
+          if (verbositySelect != 'silent') {
+            myInfo[localDbName] = "replication paused (e.g. user went offline)";
+            addReadOnlyInfo(myInfo, infoNode);
+          }
+        })
+          .on('active', function () {
+          // replicate resumed (e.g. user went back online)
+          if (verbositySelect != 'silent') {
+            myInfo[localDbName] = "replicate resumed (e.g. user went back online)";
+            addReadOnlyInfo(myInfo, infoNode);
+          }
+        })
+          .on('denied', function (info) {
+          // a document failed to replicate, e.g. due to permissions
+          if (verbositySelect != 'silent') {
+            myInfo[localDbName] = info;
+            addReadOnlyInfo(myInfo, infoNode);
+          }
+        })
+          .on('complete', function (info) {
+          if (verbositySelect != 'silent') {
+            myInfo[localDbName] = info;
+            addReadOnlyInfo(myInfo, infoNode);
+            remoteDB.info().then(function (info) {
+              addReadOnlyInfo(info, infoNode);
+            }).catch(function (err) {
+              addReadOnlyInfo(err, infoNode);
+            });
+          }
+          startButton.removeAttribute('disabled');
+          stopButton.setAttribute('disabled', true);
+        })
+          .on('uptodate', function (info) {
+          myInfo[localDbName] = info;
+          addReadOnlyInfo(myInfo, infoNode);
+        })
+          .on('error', function (err) {
+          myInfo[localDbName] = err;
+          addReadOnlyInfo(myInfo, infoNode);
+          startButton.removeAttribute('disabled');
+          stopButton.setAttribute('disabled', true);
+        });
+      }
+      startButton.setAttribute('disabled', true);
+      stopButton.removeAttribute('disabled');
+      var cancelSync = function (event) {
+        startButton.removeAttribute('disabled');
+        stopButton.setAttribute('disabled', true);
+        this.removeEventListener('click', cancelSync);
+        dbSync.cancel();
+      };
+      if (dbSync) {
+        stopButton.addEventListener('click', cancelSync);
+      }
+    });
+  };
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+  setupRemoteSync({
+    startButton: punchcardStartButton,
+    stopButton: punchcardStopButton,
+    localDB: punchcardDB,
+    syncOptions: syncOptions,
+    remoteOptions: opts,
+    syncTypeId: 'punchcard_sync_type',
+    protocolId: 'protocol',
+    hostportpathId: 'hostportpath',
+    remoteDatabaseNameId: 'punchcard_db_name',
+    verbositySelectId: 'verbosity',
+    liveId: 'punchcard_live_sync',
+    activitySizeId: 'punchcard_doc_size'
+  });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+  setupRemoteSync({
+    startButton: optionsStartButton,
+    stopButton: optionsStopButton,
+    localDB: optionsDB,
+    syncOptions: syncOptions,
+    remoteOptions: opts,
+    syncTypeId: 'options_sync_type',
+    protocolId: 'protocol',
+    hostportpathId: 'hostportpath',
+    remoteDatabaseNameId: 'options_db_name',
+    verbositySelectId: 'verbosity',
+    liveId: 'options_live_sync'
+  });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var include = document.getElementById('include');
   var exclude = document.getElementById('exclude');
   var includeCase = document.getElementById('include_case');
   var excludeCase = document.getElementById('exclude_case');
 
   include.addEventListener('keypress', function (event) {
-    if (event.keyCode == 13) {
+    if (event.key == 'Enter') {
       if (include.value.length < 3) {
         window.alert(include.value + ' is too short (< 3)');
         return;
@@ -415,7 +383,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // console.log(event.type, event);
   });
   exclude.addEventListener('keypress', function (event) {
-    if (event.keyCode == 13) {
+    if (event.key == 'Enter') {
       if (include.value.length < 3) {
         window.alert(include.value + ' is too short (< 3)');
         return;
@@ -432,7 +400,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   var searchMatchingActivities = function () {
     var includeRegExp = new RegExp(include.value, include_case.checked ? '' : 'i');
     var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
-    db.allDocs({ limit: 4500, include_docs: true, descending: true }, function(err, doc) {
+    punchcardDB.allDocs({ limit: 4500, include_docs: true, descending: true }, function(err, doc) {
       if (err) {
         console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       } else {
@@ -459,13 +427,13 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           repeat.addEventListener('click', function (event) {
             event.preventDefault();
             var entry = {
-              // _id: db.post(),
+              // _id: punchcardDB.post(),
               activity: activity.textContent,
               start: (new Date).toJSON(),
               end: (new Date).toJSON()
             };
             DEBUG && console.log(JSON.stringify(entry, null, 2));
-            db.post(entry).then(function(response) {
+            punchcardDB.post(entry).then(function(response) {
               document.querySelector('a.save').click();
             }).catch(function(err) {
               //errors
@@ -481,7 +449,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           // activity.readOnly = true;
           // start.textContent = (new Date(row.doc.start)).toLocaleString();
           // end.textContent = (new Date(row.doc.end)).toLocaleString();
-          start.textContent = utilsjs.formatStartDate(new Date(row.doc.start));
+          start.textContent = utilsjs.formatStartDate(new Date(row.doc._id.substring(0, 24)));
           // end.textContent = utilsjs.formatEndDate(new Date(row.doc.end));
           activity.textContent = row.doc.activity;
           start.contentEditable = true;
@@ -515,8 +483,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   };
   // ---
 
-  var login = document.querySelector('button#login');
-  var logout = document.querySelector('button#logout');
+  var login = document.querySelector('#login');
+  var logout = document.querySelector('#logout');
 
   // Forms will take the values in the input fields they contain
   // and send them to a server for further processing,
@@ -528,7 +496,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //
   // Then we search without leaving this page, just as we wanted.
   document.getElementById('pass').addEventListener('keypress', function (event) {
-    if (event.keyCode == 13) {
+    if (event.key == 'Enter') {
       var sessionUrl = document.getElementById('protocol').value +
           document.getElementById('hostportpath').value + '_session';
       if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
@@ -553,68 +521,69 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     }
   });
 
-  var search = function () {
-
-    // Are we searching already? Then stop that search
-    if(request && request.abort) {
-      request.abort();
-    }
-
-    // results.textContent = translate('searching');
-
-    // We will be using the 'hidden' attribute throughout the app rather than a
-    // 'hidden' CSS class because it enhances accessibility.
-    // See: http://www.whatwg.org/specs/web-apps/current-work/multipage/editing.html#the-hidden-attribute
-    results.hidden = false;
-    errorMsg.hidden = true;
-
-
-    var term = searchInput.value;
-    if(term.length === 0) {
-      term = searchInput.placeholder;
-    }
-
-    var url = term;
-    jsonFrame.src = url;
-    try {
-      if (!cookie) {
-        window.alert('Please press Login');
-        return;
-      }
-      // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
-      // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
-      // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-      request = new XMLHttpRequest({ mozSystem: false, mozAnon: true });
-      // request.overrideMimeType("application/json");
-      request.open('GET', url, !!'async');
-      request.setRequestHeader('Cookie', cookie);
-      request.timeout = XHR_TIMEOUT_MS;
-      request.ontimeout = onRequestError;
-      request.onerror = onRequestError;
-      // request.addEventListener('error', onRequestError);
-      request.send();
-      request.onreadystatechange = function() {
-        if (this.readyState == request.DONE) {
-          // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-          // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-          // cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
-          // alert('request.responseText = ' + request.responseText);
-          // alert('request.response = ' + request.response);
-          if(request.response === null) {
-            // showError(translate('searching_error'));
-            showError('searching_error');
-            return;
-          }
-          jsonText.textContent = request.response;
-          reportError(jsonText);
-        }
-      }
-    } catch (e) {
-      alert(e.message + '\n' + e.stack);
-      // alert(JSON.stringify(e, Object.getOwnPropertyNames(e), 2));
-    }
-  };
-
+  // var search = function () {
+  // 
+  //   // Are we searching already? Then stop that search
+  //   if(request && request.abort) {
+  //     request.abort();
+  //   }
+  // 
+  //   // results.textContent = translate('searching');
+  // 
+  //   // We will be using the 'hidden' attribute throughout the app rather than a
+  //   // 'hidden' CSS class because it enhances accessibility.
+  //   // See: http://www.whatwg.org/specs/web-apps/current-work/multipage/editing.html#the-hidden-attribute
+  //   results.hidden = false;
+  //   errorMsg.hidden = true;
+  // 
+  // 
+  //   var term = searchInput.value;
+  //   if(term.length === 0) {
+  //     term = searchInput.placeholder;
+  //   }
+  // 
+  //   var url = term;
+  //   jsonFrame.src = url;
+  //   try {
+  //     if (!cookie) {
+  //       window.alert('Please press Login');
+  //       return;
+  //     }
+  //     // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
+  //     // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
+  //     // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
+  //     request = new XMLHttpRequest({ mozSystem: false, mozAnon: true });
+  //     // request.overrideMimeType("application/json");
+  //     request.open('GET', url, !!'async');
+  //     request.setRequestHeader('Cookie', cookie);
+  //     request.timeout = XHR_TIMEOUT_MS;
+  //     request.ontimeout = onRequestError;
+  //     request.onerror = onRequestError;
+  //     // request.addEventListener('error', onRequestError);
+  //     request.send();
+  //     request.onreadystatechange = function() {
+  //       if (this.readyState == request.DONE) {
+  //         // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
+  //         // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
+  //         // cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
+  //         // alert('request.responseText = ' + request.responseText);
+  //         // alert('request.response = ' + request.response);
+  //         if(request.response === null) {
+  //           // showError(translate('searching_error'));
+  //           showError('searching_error');
+  //           return;
+  //         }
+  //         jsonText.textContent = request.response;
+  //         reportError(jsonText);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     addReadOnlyInfo(e, infoNode);
+  //   }
+  // };
+  //   }
+  // });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var sessionLogin = function (url, username, password) {
     // Returns AuthSession header in Firefox OS App with systemXHR permission
     var request;
@@ -697,7 +666,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // FIXME: async!
     // return cookie;
   };
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var sessionLogout = function (url) {
     var request;
     if (false && /* false && */window.location.protocol == "app:") {
@@ -742,7 +711,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // FIXME: async!
     // return false;
   };
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var onRequestError = function (event) {
     var errorMessage = JSON.stringify(event, [ 'type', 'lengthComputable', 'loaded', 'total' ], 2);
     if (event.type == 'error') {
@@ -759,8 +728,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // errorMsg.hidden = false;
     // results.hidden = true;
   };
-
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var start = function () {
 
     var message = document.getElementById('message');
@@ -771,6 +739,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     message.textContent = 'message';
 
   };
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+  // document.body.style.display = 'none';
   return {
     login: sessionLogin,
     logout: sessionLogout

@@ -1,6 +1,6 @@
 {
-  "version": "0.9.2",
-  "name": "pea",
+  "version": "1.0.0",
+  "name": "Punchcard",
   "description": "A template with the bare minimum structure",
   "launch_path": "/build/index.html",
   "origin": "app://8297261d-622a-45eb-ac7e-9e81cb1da94a",

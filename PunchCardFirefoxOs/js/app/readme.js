@@ -29,7 +29,7 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
           + '</h'
           + level
           + '>\n'
-          + '<a href="#table-of-contents">Table of Contents</a>\n';
+          + '<a href="#table-of-contents">Index</a>\n';
         };
         return renderer;
       })();
@@ -56,15 +56,18 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
         var toggleEdit = function _toggleEdit(event) {
           event.preventDefault();
           event.stopPropagation();
+          let readmeClose = document.getElementById('readme_close');
           if (edit.style.display == 'none') {
             edit.style.display = 'block';
             render.style.display = 'none';
             event.target.style.opacity = '0.3';
+            readmeClose.style.opacity = '1.0';
           }
           else {
             edit.style.display = 'none';
             render.style.display = 'block';
             event.target.style.opacity = '1.0';
+            readmeClose.style.opacity = '0.3';
             var blob = new window.Blob([edit.textContent], {
               type: 'text/plain; charset=utf-8'
             });
@@ -119,12 +122,13 @@ define(['../../bower_components/marked/lib/marked'], function (marked) {
             }
             if ('use marked again after experimenting with Remarkable') {
               var html = marked(request.response);
-              var tocHTML = '<h1 id="table-of-contents">Table of Contents</h1>\n<ul>';
+              let tocHTML = '<h1 id="table-of-contents">Index</h1>\n<ul>\n';
+              tocHTML += '<li><a href="#readme_edit_toggle">Top</a></li>\n';
               toc.forEach(function (entry) {
-                tocHTML += '<li><a href="#'+entry.anchor+'">'+entry.text+'<a></li>\n';
+                tocHTML += '<li><a href="#'+entry.anchor+'">'+entry.text+'</a></li>\n';
               });
               tocHTML += '</ul>\n';
-              render.innerHTML = tocHTML + html;
+              render.innerHTML = html + tocHTML;
               DEBUG && window.alert(tocHTML);
               DEBUG && window.alert(html);
               DEBUG && window.alert(JSON.stringify(toc, null, 2));

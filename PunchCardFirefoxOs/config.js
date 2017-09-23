@@ -5,11 +5,11 @@
     // stress, as it may take a while for the device to get around to loading
     // things email needs for background tasks like periodic sync.
     waitSeconds: 7,
-    baseUrl: '/js',
+    baseUrl: './js',
     paths: {
     //   l10nbase: '../shared/js/l10n',
     //   l10ndate: '../shared/js/l10n_date',
-    info: '/js/info'
+    info: './js/info'
     // tmpl: '../bower_components/requirejs-tmpl/tmpl',
     // "gaia-header": '../bower_components/gaia-header/gaia-header'
     // element: '/js/element',

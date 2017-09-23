@@ -10,10 +10,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var DEBUG = false;
   var TIME = false;
   var resultIndex = 1;
-  // require('getElementPath');
-  // window.alert(gep.getElementPath(event.target));
-  // var db = new PouchDB('apa-test-2');
-  var db = new PouchDB('punchcard3');
+  var db;
   // var entries = document.getElementById('entries');
   // var otherView = document.querySelector('section#view-after-punchcard-list');
   var scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
@@ -21,7 +18,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   var endMenu = document.getElementById('end_menu');
   var revisionsMenu = document.getElementById('revisions_menu');
   var activityMenu = document.getElementById('activity_menu');
-  var request = navigator.mozApps.getSelf();
+  // var request = navigator.mozApps.getSelf();
   var stringToRegexp = function(str) {
     var captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
     // Default to ignore case.
@@ -56,14 +53,14 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   filter.addEventListener('input', updateFilter);
   filter.addEventListener('click', updateFilter);
-  request.onsuccess = function() {
-    DEBUG && console.log(JSON.stringify(request.result,
-                                        Object.getOwnPropertyNames(request.result), 2));
-  };
-  request.onerror = function() {
-    DEBUG && console.log(request.result,
-                         Object.getOwnPropertyNames(request.error.name), 2);
-  };
+  // request.onsuccess = function() {
+  //   DEBUG && console.log(JSON.stringify(request.result,
+  //                                       Object.getOwnPropertyNames(request.result), 2));
+  // };
+  // request.onerror = function() {
+  //   DEBUG && console.log(request.result,
+  //                        Object.getOwnPropertyNames(request.error.name), 2);
+  // };
   scrollView.addEventListener('scroll', function (event) {
     [
       startMenu,
@@ -104,6 +101,12 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       if (endMenu.style.display == 'none') {
         positionMenu(endMenu);
         endMenu.dataset.id = event.target.parentElement.id;
+        if (event.target.parentElement.querySelector('pre.end').textContent == ' ') {
+          document.getElementById('end_undefined').setAttribute('disabled', true);
+        }
+        else {
+          document.getElementById('end_undefined').removeAttribute('disabled');
+        }
       }
       else {
         endMenu.style = 'display: none;';
@@ -158,20 +161,42 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     event.preventDefault();
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
-      var now = new Date;
-      otherDoc.start = now.toJSON();
-      return db.put(otherDoc).then(function(response) {
-        utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(now));
-        setAvailableRevisionCount(document.getElementById(id));
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(now, new Date(otherDoc.end)));
-        // saveLink.click();
-      }).catch(function(err) {
-        //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-      });
+      var startDate = new Date;
+      var startText = startDate.toJSON();
+      let oldStartText = otherDoc._id.substring(0, 24);
+      var changedStart = !(oldStartText == startText);
+      if (changedStart) {
+        let newDoc = {};
+        otherDoc._deleted = true;
+        db.put(otherDoc).then(function(response) {
+          document.getElementById(response.id).classList.add('deleted');
+        }).catch(function(err) {
+          infojs(err, entries);
+        });
+        newDoc = {
+          _id: startText + Math.random().toString(16).substring(3, 15),
+          activity: otherDoc.activity
+        };
+        if ('end' in otherDoc) {
+          newDoc.end = otherDoc.end;
+        }
+        db.put(newDoc).then(function(response) {
+          var beforeThisElement = document.getElementById(id);
+          var newEntry = utilsjs.addNewEntry(newDoc, beforeThisElement.parentElement, beforeThisElement);
+          setAvailableRevisionCount(document.getElementById(response.id));
+          newEntry.scrollIntoView();
+          newEntry.querySelector('pre.activity').classList.add('changed');
+          newEntry.querySelector('pre.start').classList.add('changed');
+          newEntry.querySelector('pre.end').classList.add('changed');
+          newEntry.querySelector('pre.revisions').classList.add('changed');
+        }).catch(function(err) {
+          //errors
+          infojs(err, entries);
+        });
+      }
     }).catch(function(err) {
       //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs(err, entries);
     });
     // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
     // document.location.reload('force');
@@ -185,35 +210,63 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var now = new Date;
+      let startText = otherDoc._id.substring(0,24);
       otherDoc.end = now.toJSON();
       return db.put(otherDoc).then(function(response) {
         utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
         setAvailableRevisionCount(document.getElementById(id));
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(otherDoc.start), now));
+        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs(err, entries);
       });
     }).catch(function(err) {
       //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs(err, entries);
     });
   };
   var endNowItem = document.querySelector('#end_now');
   if (endNowItem) {
     endNowItem.addEventListener('click', endNow);
   }
+  var endUndefined = function (event) {
+    event.preventDefault();
+    var id = getDataSetIdHideMenu(event);
+    db.get(id).then(function(otherDoc) {
+      delete otherDoc.end;
+      return db.put(otherDoc).then(function(response) {
+        utilsjs.updateEntriesElement(id, 'pre.end', ' ');
+        setAvailableRevisionCount(document.getElementById(id));
+        utilsjs.updateEntriesElement(id, 'pre.duration', ' ');
+        // saveLink.click();
+      }).catch(function(err) {
+        //errors
+        infojs(err, entries);
+      });
+    }).catch(function(err) {
+      //errors
+      infojs(err, entries);
+    });
+  };
+  var endUndefinedItem = document.querySelector('#end_undefined');
+  if (endUndefinedItem) {
+    endUndefinedItem.addEventListener('click', endUndefined);
+  }
   var setAvailableRevisionCount = function(entry) {
     // Possibly do estimate shortcut when accurate
     // revision reporting is disabled for performance reasons.
     // It takes a while when displaying 1000 entries.
     var revisions = entry.querySelector('pre.revisions');
+    // Revision prefix does not account for unavailable revs (e.g missing).
     if (false) {
       revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
     }
     else {
-      db.get(entry.id, {
+      var parts = entry.id.split(/_/);
+      var id = parts[0];
+      var rev = parts[1];
+      db.get(id, {
         // Defaults to winning revision
         // rev: doc._rev,
         revs_info: true
@@ -226,9 +279,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         })
         revisions.textContent = (availableRevisions ? availableRevisions.length : 0) + ' revs';
       }).catch(function (err) {
-        infojs({
-          get_error: err
-        }, entries);
+        // var e = new Error("db.get in setAvailableRevisionCount");
+        // infojs({
+        //   get_error: JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
+        // }, entries);
+        infojs(err, entries);
       });
     }
     // getIt.then(function (result) {
@@ -239,25 +294,33 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   }
   var showRevisions = function (event) {
     event.preventDefault();
-    var parts = getDataSetIdHideMenu(event).split(/\./);
+    // Keep this _ separator in sync with function addNewEntry in utils.js
+    let elementId = getDataSetIdHideMenu(event);
+    var parts = elementId.split(/_/);
     var id = parts[0];
     var rev = parts[1];
-    console.log(id, rev);
-    if (!document.getElementById(id).classList.contains('available')) {
-      db.get(id, {
+    DEBUG && console.log(id, rev);
+    if (!document.getElementById(elementId).classList.contains('available')) {
+      let options = {
         // Defaults to winning revision
         // rev: doc._rev,
-        revs_info: true
         // open_revs: "all"
         // conflicts: true
-      }).then(function (otherDoc) {
+        revs_info: true
+      };
+      if (rev) {
+        options.rev = rev;
+      }
+      else {
+      }
+      db.get(id, options).then(function (otherDoc) {
         console.log(otherDoc);
         var currentRev = otherDoc._rev;
         otherDoc._revs_info.filter(function (rev) {
           return rev.status == 'available' && rev.rev != currentRev;
         }).forEach(function (available, index, obj) {
           db.get(id, { rev: available.rev }).then(function (availableDoc) {
-            console.log(availableDoc);
+            DEBUG && console.log(availableDoc);
             var entry = {
               _rev: availableDoc._rev,
               _id: availableDoc._id,
@@ -265,20 +328,23 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               start: availableDoc.start,
               end: availableDoc.end
             };
-            var beforeThisElement = document.getElementById(id);
+            var beforeThisElement = document.getElementById(elementId);
             var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
                                                beforeThisElement, 'addRevisionToElementId');
             newEntry.querySelector('pre.revisions').textContent = (index + 1) + ' of ' + obj.length + ' revs';
             // NOTE addRevisionToElementId argument makes this more obvious.
             // newEntry.id = entry._id + '.' + entry._rev;
             newEntry.scrollIntoView();
-            newEntry.classList.add('available');
+            if (availableDoc._deleted) {
+              newEntry.classList.add('deleted');
+            }
+            else {
+              newEntry.classList.add('available');
+            }
           });
         });
       }).catch(function (err) {
-        infojs({
-          get_error: err
-        }, entries);
+        infojs(err, entries);
       });
     }
   };
@@ -286,41 +352,63 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   if (showRevisionsItem) {
     showRevisionsItem.addEventListener('click', showRevisions);
   }
-  var addAsNewRevision = function (event) {
-    event.preventDefault();
-    var parts = getDataSetIdHideMenu(event).split(/\./);
-    var id = parts[0];
-    var rev = parts[1];
-    console.log(id, rev);
-    if (id && rev) {
-      db.get(id).then(function(currentDoc) {
-        db.get(id, {
-          rev: rev
-        }).then(function(otherDoc) {
-          DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
-          // Put a new doc based on the current revision using otherDoc content.
-          otherDoc._rev = currentDoc._rev
-          db.put(otherDoc).then(function(response) {
-            var start = new Date(otherDoc.start);
-            var end = new Date(otherDoc.end);
-            utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(start));
-            utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatStartDate(end));
-            utilsjs.updateEntriesElement(id, 'pre.activity', otherDoc.activity);
-            setAvailableRevisionCount(document.getElementById(id));
-            utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
-          }).catch(function(err) {
-            //errors
-            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-          });
-        }).catch(function(err) {
-          //errors
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-        });
+  let putNewRevision = (id, thisRevision, currentRevision) => {
+    db.get(id, {
+      rev: thisRevision
+    }).then(function(otherDoc) {
+      DEBUG && window.alert(JSON.stringify(otherDoc, null, 2));
+      let elementId = otherDoc._id;
+      // Put a new doc based on the current revision using otherDoc content.
+      // There is no currentRevision when the doc has since be deleted.
+      if (currentRevision) {
+        otherDoc._rev = currentRevision;
+      }
+      else {
+        elementId += '_' + thisRevision;
+      }
+      // We need to get rid of _deleted property, if this is a deleted version.
+      if (otherDoc._deleted) {
+        delete otherDoc._deleted;
+      }
+      db.put(otherDoc).then(function(response) {
+        document.getElementById(elementId).classList.remove('deleted');
+        var start = new Date(otherDoc._id.substring(0, 24));
+        utilsjs.updateEntriesElement(elementId, 'pre.start', utilsjs.formatStartDate(start));
+        if ('end' in otherDoc) {
+          let end = new Date(otherDoc.end);
+          utilsjs.updateEntriesElement(elementId, 'pre.end', utilsjs.formatStartDate(end));
+          utilsjs.updateEntriesElement(elementId, 'pre.duration', utilsjs.reportDateTimeDiff(start, end));
+        }
+        else {
+          // Element needs some content to receive click event to bring up endMenu.
+          utilsjs.updateEntriesElement(elementId, 'pre.end', ' ');
+        }
+        utilsjs.updateEntriesElement(elementId, 'pre.activity', otherDoc.activity);
+        setAvailableRevisionCount(document.getElementById(elementId));
       }).catch(function(err) {
         //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs(err, entries);
       });
-    }
+    }).catch(function(err) {
+      //errors
+      infojs(err, entries);
+    });
+  };
+  var addAsNewRevision = function (event) {
+    event.preventDefault();
+    // Keep this _ separator in sync with function addNewEntry in utils.js
+    let elementId = getDataSetIdHideMenu(event);
+    var parts = elementId.split(/_/);
+    var id = parts[0];
+    var rev = parts[1];
+    DEBUG && console.log(id, rev);
+    db.get(id).then(function(currentDoc) {
+      putNewRevision(id, rev, currentDoc._rev);
+    }).catch(function(err) {
+      // This is a deleted doc, use revision.
+      putNewRevision(id, rev);
+      // infojs(err, entries);
+    });
   };
   var addAsNewRevisionItem = document.querySelector('#add_as_new_revision');
   if (addAsNewRevisionItem) {
@@ -336,7 +424,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           newEntry.style.display = 'block';
           // TODO: Re-use of header icon for existing and new entries may be confusing.
 
-          ediNewItem.style.opacity = '0.3';
+          editNewItem.style.opacity = '0.3';
           var id = getDataSetIdHideMenu(event);
           newjs.init(id);
           var a = document.createElement('a');
@@ -362,16 +450,21 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           newEntry.style.display = 'block';
           // TODO: Re-use of header icon for existing and new entries may be confusing.
 
-          ediNewItem.style.opacity = '0.3';
+          editNewItem.style.opacity = '0.3';
           var id = getDataSetIdHideMenu(event);
           db.get(id).then(function(otherDoc) {
             var entry = {
-              // _id: db.post(),
+              // The random part is vital to always be unique,
+              // since the new entry/doc initailly has same start time,
+              // which is the initial part of the _id
+              _id: otherDoc._id.substring(0, 24) + Math.random().toString(16).substring(3, 15),
               activity: otherDoc.activity,
-              start: otherDoc.start,
-              end: otherDoc.end
             };
-            db.post(entry).then(function(response) {
+            // end may not be present in original document.
+            if ('end' in otherDoc) {
+              entry.end = otherDoc.end;
+            }
+            db.put(entry).then(function(response) {
               // This is a way to put new entry above others.
               // TODO: Find a cleaner design. entries has acccumulated various foreign elements
               // for the convenience of being nicely scrollable via scrollbar.
@@ -392,11 +485,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               a.click();
             }).catch(function(err) {
               //errors
-              console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+              infojs(err, entries);
             });
           }).catch(function(err) {
             //errors
-            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+            infojs(err, entries);
           });
         }
       }
@@ -464,26 +557,30 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             newEntry.scrollIntoView();
           }
           else {
+            // save returns a promise for the asynchronously executing editing UI.
             var res = newjs.save();
             DEBUG && console.log(res);
             res && res.then(function (result) {
-              if (result) {
-                // otherView.style.display = 'none';
+              // window.alert('Sucessfull save of\n' + JSON.stringify(result, null, 2));
+              // otherView.style.display = 'none';
+              newEntry.style.display = 'none';
+              event.target.style.opacity = '1.0';
+              document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView();
+            }).catch(function (err) {
+              infojs(err, entries);
+              if (window.confirm(err)) {
                 newEntry.style.display = 'none';
                 event.target.style.opacity = '1.0';
-                // document.location.reload('force');
               }
-            }).catch(function (err) {
-              window.alert('saving entry failed, please review values of start, end, activity.');
             });
           }
         }
       }
     });
   };
-  var ediNewItem = document.querySelector('a.edit');
-  if (ediNewItem) {
-    ediNewItem.addEventListener('click', toggleEdit);
+  var editNewItem = document.querySelector('a.edit');
+  if (editNewItem) {
+    editNewItem.addEventListener('click', toggleEdit, 'capture');
   }
   var toggleAbout = function(event) {
     event.preventDefault();
@@ -532,15 +629,25 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var aboutItem = document.querySelector('a.about');
   if (aboutItem) {
-    aboutItem.addEventListener('click', toggleAbout);
+    aboutItem.addEventListener('click', toggleAbout, 'capture');
   }
   var reloadApp = function(event) {
     event.preventDefault();
-    document.location.reload('force');
+    // in linux nightly firefox there is no way to get at app after reloadApp
+    // when local python webserver is stopped or hosted app cannot be reached
+    // because network is turned off.
+    // nightly firefox for android just displays a footer overlay stating
+    // "showing offline version" and works fine after reloadApp!
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.getRegistration().then(function(registration) {
+    //     registration.unregister();
+    //   });
+    // }
+    document.location.reload(!'force');
   };
   var roloadItem = document.querySelector('a.reload');
   if (roloadItem) {
-    roloadItem.addEventListener('click', reloadApp);
+    roloadItem.addEventListener('click', reloadApp, 'capture');
   }
   var search = function(event) {
     event.preventDefault();
@@ -548,7 +655,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var searchItem = document.querySelector('a.search');
   if (searchItem) {
-    searchItem.addEventListener('click', search);
+    searchItem.addEventListener('click', search, 'capture');
   }
 
   var toggleOptionDisplay = function(event) {
@@ -582,7 +689,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   };
   var optionsItem = document.querySelector('a.settings');
   if (optionsItem) {
-    optionsItem.addEventListener('click', toggleOptionDisplay);
+    optionsItem.addEventListener('click', toggleOptionDisplay, 'capture');
     // NOTE: Let's bring up a menu on click, if necessary, as is already done for #start_menu, etc.
     // optionsItem.addEventListener('contextmenu', function (event) {
     //   window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');
@@ -599,13 +706,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
       var entry = {
-        // _id: db.post(),
+        _id: (new Date()).toJSON() + Math.random().toString(16).substring(3, 15),
         activity: otherDoc.activity,
-        start: new Date,
-        end: new Date
       };
       DEBUG && window.alert(JSON.stringify(entry, null, 2));
-      db.post(entry).then(function(response) {
+      db.put(entry).then(function(response) {
         entry._id = response.id;
         // NOTE Don't pass rev if it is the current/new revision.
         // See showRevisions for its use in HTML id to identify
@@ -623,11 +728,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         // saveLink.click();
       }).catch(function(err) {
         //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs(err, entries);
       });
     }).catch(function(err) {
       //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs(err, entries);
     });
   };
   var repeatNowItem = document.querySelector('#repeat_now');
@@ -639,19 +744,30 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(doc) {
       if (window.confirm('Delete entry? ' + doc.activity)) {
-        // FIXME: .remove should be equivalent, according to
+        // db.remove is not equivalent to db.put with _deleted = true
+        // as might be assumed from
         // http://pouchdb.com/api.html#delete_document
+        // See
+        // http://pouchdb.com/api.html#filtered-replication
+        // and
+        // https://github.com/pouchdb/pouchdb/issues/4796
         if (true) {
           doc._deleted = true;
           return db.put(doc).then(function(response) {
             var deletedElement = document.getElementById(id);
+            // Keep this _ separator in sync with function addNewEntry in utils.js
+            deletedElement.id = response.id + '_' + response.rev;
             deletedElement.classList.add('deleted');
             // document.location.reload('force');
+          }).catch(function (err) {
+            infojs(err, entries);
           });
         }
         else {
           return db.remove(doc).then(function(response) {
             // document.location.reload('force');
+          }).catch(function (err) {
+            infojs(err, entries);
           });
         }
       }
@@ -679,7 +795,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     var optionsDB = new PouchDB('options');
     optionsDB.allDocs({
       include_docs: true/*,
-  attachments: true*/
+    attachments: true*/
     }).then(function (result) {
       if ('rows' in result) {
         DEBUG && console.log('reading all options for db for query configuration', result);
@@ -689,6 +805,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             options[option.doc._id] = option.doc.value;
           }
         });
+        db = new PouchDB('punchcard');
         var content = document.getElementById('entries_template').content;
         var entries = document.importNode(content, "deep").firstElementChild;
         var previousEntries = scrollView.querySelector('div.entries');
@@ -716,7 +833,9 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         var regexp = stringToRegexp(options.deleted_id);
         if (options.deleted_id.length && regexp) {
           queryInfoElement.textContent = "\nSearch for deleted activity matching " + regexp.toString(); + "\n";
-          db.changes({ include_docs: true, /*style: 'all_docs', */since: 0 }).on('delete', function(info) {
+          var changesSinceElement = document.getElementById('changes_since_sequence');
+          var changesSinceSequence = options.changes_since_sequence.length ? Number(options.changes_since_sequence) : 0;
+          db.changes({ include_docs: true, /*style: 'all_docs', */since: changesSinceSequence }).on('delete', function(info) {
             // infojs({delete: info}, entries);
             // db.allDocs({
             //   include_docs: true,
@@ -733,7 +852,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             }).then(function (otherDoc) {
               if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
                 // infojs({get: otherDoc}, entries);
-                var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries);
+                // Adding revision to id allows us to add document back
+                var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
                 entry.classList.add('deleted');
               }
               false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
@@ -749,11 +869,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
                   }
                   infojs({ 'rev': otherDoc }, entries);
                 }).catch(function (err) {
-                  infojs({rev_error: err}, entries);
+                  infojs(err, entries);
                 });
               });
             }).catch(function (err) {
-              infojs({get_error:err}, entries);
+              infojs(err, entries);
             });
             //   if (info.seq == 894) {
             //     info.doc._deleted = false;
@@ -764,6 +884,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             //     });
             //   }
             // changes() was canceled
+          }).on('change', function(info) {
+            var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
           }).on('error', function (err) {
             DEBUG && console.log(err);
             infojs({delete_error: err}, entries);
@@ -802,17 +924,41 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
         var matchLimit = options.match_limit.length ? Number(options.match_limit) : 50;
         var dec = !!options.descending;
         var opts = { include_docs: true, descending: dec, limit: limit };
+        if (document.querySelector('#new_entry').style.display != 'none') {
+          var start = document.querySelector('#start');
+          var end = document.querySelector('#end');
+          if (start && end) {
+            var startDate = new Date(start.value).toJSON();
+            var endDate = new Date(end.value).toJSON();
+            if (startDate) {
+              if (dec) {
+                opts.endkey = startDate;
+              }
+              else {
+                opts.startkey = startDate;
+              }
+            }
+            if (endDate) {
+              if (dec) {
+                opts.startkey = endDate;
+              }
+              else {
+                opts.endkey = endDate;
+              }
+            }
+          }
+        }
         // startkey: "2015-02",
         // endkey: "2015-03",
         // var queryInfoElement = document.getElementById('query_search_info');
         var isSearch = (options.include.length || options.exclude.length);
-        queryInfoElement.textContent = (isSearch ? 'search' : 'query') + ' in progress...';
+        queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
         var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
         var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
         var query;
-        if (options.deleted_id.length) {
-          return;
-        }
+        // if (options.deleted_id.length) {
+        //   return;
+        // }
         if (isSearch) {
           queryInfoElement.textContent += '\nSearch limited to ' + matchLimit + ' matches of "' + includeRegExp +
             '"' + (excludeRegExp ? ' (but not "' + excludeRegExp + '")' : '') +
@@ -825,7 +971,8 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           queryInfoElement.textContent += '\nQuery limited to ' + limit + ' entries found ';
           opts.reduce = false;
           TIME && console.time('query by_start');
-          query = db.query('foolin/by_start', opts);
+          query = db.allDocs(opts);
+          // query = db.query('foolin/by_start', opts);
           TIME && console.timeEnd('query by_start');
         }
         // window.requestAnimationFrame(function (timestamp) {
@@ -848,7 +995,6 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
               continue;
             }
             entry = utilsjs.addNewEntry(row.doc, entries, undefined, 0);
-            setAvailableRevisionCount(entry);
             if (isSearch) {
               if (matchLimit && (matches == matchLimit)) {
                 break;
@@ -867,14 +1013,15 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
           TIME && console.timeEnd('query');
           resultIndex += 1;
           updateScrollLinks();
+          Array.prototype.forEach.call(document.querySelectorAll('div.entry'), entry => setAvailableRevisionCount(entry));
           entries.classList.remove('updating');
         }).catch(function(err) {
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+          infojs(err, entries);
         });
         // });
       }
     }).catch(function (err) {
-      DEBUG && console.log(err);
+      infojs(err, entries);
     });
   };
   var updateScrollLinks = function() {
@@ -909,7 +1056,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
             }
             else {
               db.get(entryNodes[scrollIndex].id).then(function(doc) {
-                link.textContent = (new Date(doc.start || doc.clockin_ms)).toDateString() + result;
+                link.textContent = (new Date(doc._id.substring(0, 24))).toDateString() + result;
                 link.href = '#' + doc._id;
                 link.style.visibility = 'visible';
                 DEBUG && console.log({ last: last });
@@ -936,7 +1083,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       resultsLink.appendChild(link);
     });
   };
-  runQuery();
+  // runQuery();
   // function start() {
   //
   //   var message = document.getElementById('message');
