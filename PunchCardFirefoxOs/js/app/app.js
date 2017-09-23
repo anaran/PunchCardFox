@@ -101,6 +101,12 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       if (endMenu.style.display == 'none') {
         positionMenu(endMenu);
         endMenu.dataset.id = event.target.parentElement.id;
+        if (event.target.parentElement.querySelector('pre.end').textContent == ' ') {
+          document.getElementById('end_undefined').setAttribute('disabled', true);
+        }
+        else {
+          document.getElementById('end_undefined').removeAttribute('disabled');
+        }
       }
       else {
         endMenu.style = 'display: none;';
@@ -228,13 +234,11 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     event.preventDefault();
     var id = getDataSetIdHideMenu(event);
     db.get(id).then(function(otherDoc) {
-      var now = new Date;
-      let startText = otherDoc._id.substring(0,24);
-      otherDoc.end = now.toJSON();
+      delete otherDoc.end;
       return db.put(otherDoc).then(function(response) {
-        utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
+        utilsjs.updateEntriesElement(id, 'pre.end', ' ');
         setAvailableRevisionCount(document.getElementById(id));
-        utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
+        utilsjs.updateEntriesElement(id, 'pre.duration', ' ');
         // saveLink.click();
       }).catch(function(err) {
         //errors
@@ -245,7 +249,7 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       infojs(err, entries);
     });
   };
-  var endUndefinedItem = document.querySelector('#end_now');
+  var endUndefinedItem = document.querySelector('#end_undefined');
   if (endUndefinedItem) {
     endUndefinedItem.addEventListener('click', endUndefined);
   }

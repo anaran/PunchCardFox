@@ -1,6 +1,6 @@
 'use strict';
 
-define(function (require) {
+define(['../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs'], function (pad) {
   let proto = Object.create(HTMLDivElement.prototype);
   proto.template = `
 <section>

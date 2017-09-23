@@ -1,6 +1,10 @@
 'use strict';
 // try {
+let times = [];
+let DEBUG = false;
+times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 define(['app/info', 'app/utils'], function (infojs, utilsjs) {
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
@@ -21,11 +25,14 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   var setCookie;
   // No need to keep a lot of history for user options.
   var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
+  var punchcardDB = new PouchDB('punchcard');
   var persistentNodeList = document.querySelectorAll('.persistent');
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   Array.prototype.forEach.call(persistentNodeList, function (element) {
     optionsDB.get(element.id, {
       conflicts: true
     }).then(function(otherDoc) {
+      times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
       if (otherDoc._conflicts) {
         addReadOnlyInfo({ conflicts: otherDoc._conflicts }, infoNode);
         // FIXME: just delete conflict for now for options.
@@ -36,10 +43,12 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
             _rev: conflict,
             _deleted: true
           }).then(function(response) {
+            times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
             console.log('conflict deleted', response);
             // document.location.reload('force');
             // saveLink.click();
           }).catch(function(err) {
+            times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
             //errors
             console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
@@ -130,18 +139,52 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //     // DEBUG && console.log(doc);
   //   });
   // });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var infoNode = document.getElementById('replication_info');
   var clearNode = document.getElementById('clear_replication_info');
   clearNode.addEventListener('click', function (event) {
     // NOTE Do not go to link, which is somewhat disruptive.
     event.preventDefault();
-    infoNode.textContent = '';
+    if (!infoNode.textContent.trim()) {
+      times.reduce((prevValue, currValue, currIndex, object) => {
+        addReadOnlyInfo(
+          `${(currValue[1] - prevValue[1])/1000} seconds spent between ${prevValue[0]} and ${currValue[0]}`,
+          infoNode)
+        return currValue;
+      });
+    }
+    else {
+      infoNode.textContent = '';
+      times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+      optionsDB.allDocs({
+        include_docs: false
+      }).then(function (result) {
+        times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+        result.rows && result.rows.forEach(function (row) {
+          if (!Array.prototype.map.call(persistentNodeList, function (element) {
+            return element.id
+          }).includes(row.key)) {
+            if (!row.key.startsWith("_design/")) {
+              optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
+                console.log('deleted no longer used', row.key, row.value.rev);
+              }).catch(function(err) {
+                console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+              });
+            }
+          }
+        });
+      }).catch(function(err) {
+        times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+        //errors
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      });
+    }
   });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var optionsStartButton = document.getElementById('options_start_replication');
   var optionsStopButton = document.getElementById('options_stop_replication');
   var punchcardStartButton = document.getElementById('punchcard_start_replication');
   var punchcardStopButton = document.getElementById('punchcard_stop_replication');
-  var punchcardDB = new PouchDB('punchcard');
   var myXHR = function () {
     var request;
     if (false && /* false && */window.location.protocol == "app:") {
@@ -172,6 +215,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     //   return delay * 3;
     // }
   };
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   let setupRemoteSync = function _setupRemoteSync(opt) {
     opt.startButton.addEventListener('click', function (event) {
       let dbSync;
@@ -198,6 +242,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           }
         }
       }
+    times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
       if (true) {
         switch (syncType) {
           case 'Replicate from': {
@@ -292,6 +337,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
       }
     });
   };
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   setupRemoteSync({
     startButton: punchcardStartButton,
     stopButton: punchcardStopButton,
@@ -306,6 +352,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     liveId: 'punchcard_live_sync',
     activitySizeId: 'punchcard_doc_size'
   });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   setupRemoteSync({
     startButton: optionsStartButton,
     stopButton: optionsStopButton,
@@ -318,15 +365,15 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     remoteDatabaseNameId: 'options_db_name',
     verbositySelectId: 'verbosity',
     liveId: 'options_live_sync'
-
   });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var include = document.getElementById('include');
   var exclude = document.getElementById('exclude');
   var includeCase = document.getElementById('include_case');
   var excludeCase = document.getElementById('exclude_case');
 
   include.addEventListener('keypress', function (event) {
-    if (event.keyCode == 13) {
+    if (event.key == 'Enter') {
       if (include.value.length < 3) {
         window.alert(include.value + ' is too short (< 3)');
         return;
@@ -336,7 +383,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // console.log(event.type, event);
   });
   exclude.addEventListener('keypress', function (event) {
-    if (event.keyCode == 13) {
+    if (event.key == 'Enter') {
       if (include.value.length < 3) {
         window.alert(include.value + ' is too short (< 3)');
         return;
@@ -402,7 +449,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
           // activity.readOnly = true;
           // start.textContent = (new Date(row.doc.start)).toLocaleString();
           // end.textContent = (new Date(row.doc.end)).toLocaleString();
-          start.textContent = utilsjs.formatStartDate(new Date(row.doc.start));
+          start.textContent = utilsjs.formatStartDate(new Date(row.doc._id.substring(0, 24)));
           // end.textContent = utilsjs.formatEndDate(new Date(row.doc.end));
           activity.textContent = row.doc.activity;
           start.contentEditable = true;
@@ -449,7 +496,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   //
   // Then we search without leaving this page, just as we wanted.
   document.getElementById('pass').addEventListener('keypress', function (event) {
-    if (event.keyCode == 13) {
+    if (event.key == 'Enter') {
       var sessionUrl = document.getElementById('protocol').value +
           document.getElementById('hostportpath').value + '_session';
       if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
@@ -536,6 +583,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
   // };
   //   }
   // });
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var sessionLogin = function (url, username, password) {
     // Returns AuthSession header in Firefox OS App with systemXHR permission
     var request;
@@ -618,7 +666,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // FIXME: async!
     // return cookie;
   };
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var sessionLogout = function (url) {
     var request;
     if (false && /* false && */window.location.protocol == "app:") {
@@ -663,7 +711,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // FIXME: async!
     // return false;
   };
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var onRequestError = function (event) {
     var errorMessage = JSON.stringify(event, [ 'type', 'lengthComputable', 'loaded', 'total' ], 2);
     if (event.type == 'error') {
@@ -680,8 +728,7 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     // errorMsg.hidden = false;
     // results.hidden = true;
   };
-
-
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
   var start = function () {
 
     var message = document.getElementById('message');
@@ -692,6 +739,8 @@ define(['app/info', 'app/utils'], function (infojs, utilsjs) {
     message.textContent = 'message';
 
   };
+  times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+  // document.body.style.display = 'none';
   return {
     login: sessionLogin,
     logout: sessionLogout

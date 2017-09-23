@@ -87,7 +87,7 @@ define(['app/info', 'app/readme', 'app/pouchdb-ui'], function(infojs, readmejs, 
               let pui = new pouchdbuijs.PouchdbUI();
               let dbUI = databasesInfoNode.appendChild(pui);
               dbUI.setAttribute('db_name', db);
-              dbUI.setAttribute('bad_db_name', db);
+              // dbUI.setAttribute('bad_db_name', db);
             });
           }
         }).catch(function (err) {
