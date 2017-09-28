@@ -1,17 +1,16 @@
 'use strict';
 
-var version = 'punchcard-v42';
+// Using 'let' I got Uncaught SyntaxError: Identifier 'version' has already been declared
+var version = 'TBD';
 // import { version } from './sw-version.js';
 
 console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
 
-let update_app = true;
+let update_app = false;
 
 self.addEventListener('install', function(event) {
-  if (update_app) {
-    console.log('[ServiceWorker] Skip waiting on install');
-    self.skipWaiting();
-  }
+  console.log('[ServiceWorker] Skip waiting on install');
+  self.skipWaiting();
 });
 
 // NOTE: activate listener taken from
@@ -22,53 +21,24 @@ self.addEventListener('install', function(event) {
 self.addEventListener('activate', function(event) {
   // Just for debugging, list all controlled clients.
   console.log ('activate');
-  if (update_app) {
-    self.clients.matchAll({
-      includeUncontrolled: true
-    }).then(function(clientList) {
-      var urls = clientList.map(function(client) {
-        client.postMessage({
-          request: 'version',
-          message: version
-        });
-        return client.url;
-      });
-      console.log('[ServiceWorker] Matching clients:', urls.join(', '));
-    }).catch(err => console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
-    event.waitUntil(
-      // Delete old cache entries that don't match the current version.
-      caches.keys().then(function(cacheNames) {
-        return Promise.all(
-          cacheNames.map(function(cacheName) {
-            if (cacheName !== version) {
-              console.log('[ServiceWorker] Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }).then(function() {
-        // `claim()` sets this worker as the active worker for all clients that
-        // match the workers scope and triggers an `oncontrollerchange` event for
-        // the clients.
-        console.log('[ServiceWorker] Claiming clients for version', version);
-        self.clients.matchAll({
-          includeUncontrolled: true
-        }).then(function(clientList) {
-          clientList.map(function(client) {
-            client.postMessage({
-              message: `Claiming clients for version ${version}`
-            });
+  event.waitUntil(
+    self.caches.keys().then(key => {
+      console.log(key, key.length, key[key.length-1]);
+      version = key[key.length-1];
+      self.clients.matchAll({
+        includeUncontrolled: true
+      }).then(function(clientList) {
+        var urls = clientList.map(function(client) {
+          client.postMessage({
+            request: 'version',
+            message: version
           });
+          return client.url;
         });
-        return self.clients.claim();
-      }).catch(err => {
-        console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
-      }));
-  }
-  else {
-    console.log(`[ServiceWorker] you declined installation of ${version}`);
-    event.waitUntil(self.skipWaiting());
-  }
+        console.log('[ServiceWorker] Matching clients:', urls.join(', '));
+      }).catch(err => console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
+      console.log(`[ServiceWorker] just setting version to last cache key ${version}`);
+    }));
 });
 
 // caches.delete(oldCacheName); // Delete the old one
