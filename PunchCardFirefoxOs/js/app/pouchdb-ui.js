@@ -1,8 +1,15 @@
 'use strict';
 
-define(['../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs'], function (pad) {
-  let proto = Object.create(HTMLDivElement.prototype);
-  proto.template = `
+import '../../bower_components/pouchdb/dist/pouchdb.min.js';
+import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
+
+class PouchdbUI extends HTMLElement {
+  constructor() {
+    // Trying to extent HTMLPreElement I get:
+    // VM1330:1 Uncaught TypeError: Illegal constructor
+    super();
+    this.shadow = this.attachShadow({ mode: 'open' });
+    this.shadow.innerHTML = `
 <section>
   <h1></h1>
   <!-- input of type file is too ugly to display.
@@ -46,48 +53,50 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
   }
 </style>
 `;
-  let checkFileCount = function(files) {
-    if (files.length === 0) {
-      alert('Please pick some .txt file for import, e.g. a previously exported db.');
-      return false;
-    } else {
-      return true;
-    }
-  };
-  let errorHandler = function (domError) {
-    alert(domError);
   }
-  let readFileUpdateUI = function(file, dbObj) {
-    let db = dbObj;
-    let fileName = file.name;
-    return new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      var filesLoaded = 0;
-      reader.onerror = errorHandler;
-      reader.onload = function(readEvent) {
-        try {
-          filesLoaded++;
-          console.timeEnd('read of ' + file.name);
-          var result = readEvent.target.result;
-          // console.log(result);
-          console.time(`db.bulkDocs of ${db._db_name}`);
-          db.bulkDocs(JSON.parse(result)).then(function (result) {
-            console.timeEnd(`db.bulkDocs of ${db._db_name}`);
-            resolve({ result: result, file: fileName });
-            // handle result
-          }).catch(function (err) {
+  connectedCallback() {
+    let checkFileCount = function(files) {
+      if (files.length === 0) {
+        alert('Please pick some .txt file for import, e.g. a previously exported db.');
+        return false;
+      } else {
+        return true;
+      }
+    };
+    let errorHandler = function (domError) {
+      alert(domError);
+    }
+    let readFileUpdateUI = function(file, dbObj) {
+      let db = dbObj;
+      let fileName = file.name;
+      return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        var filesLoaded = 0;
+        reader.onerror = errorHandler;
+        reader.onload = function(readEvent) {
+          try {
+            filesLoaded++;
+            console.timeEnd('read of ' + file.name);
+            var result = readEvent.target.result;
+            // console.log(result);
+            console.time(`db.bulkDocs of ${db._db_name}`);
+            db.bulkDocs(JSON.parse(result)).then(function (result) {
+              console.timeEnd(`db.bulkDocs of ${db._db_name}`);
+              resolve({ result: result, file: fileName });
+              // handle result
+            }).catch(function (err) {
+              reject(err);
+            });
+          }
+          catch (err) {
             reject(err);
-          });
-        }
-        catch (err) {
-          reject(err);
-        }
-      };
-      console.time('read of ' + file.name);
-      reader.readAsText(file);
-    });
-  };
-  proto.createdCallback = function() {
+          }
+        };
+        console.time('read of ' + file.name);
+        reader.readAsText(file);
+      });
+    };
+    // proto.createdCallback = function() {
     // console.log('proto', Object.getPrototypeOf(this));
     // let two = document.createElement('span');
     // two.setAttribute('slot', 'two');
@@ -123,124 +132,121 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
       download.textContent = text;
       element.appendChild(div);
     };
-    let shadow = this.createShadowRoot();
-    if (this.template) {
-      let te = document.createElement('template');
-      te.innerHTML = this.template;
-      shadow.appendChild(document.importNode(te.content, true));
-      this.headline = shadow.querySelector('h1');
-      this.importButton = shadow.querySelector('#import_db');
-      this.importFile = shadow.querySelector('#import_file');
-      this.importFile.addEventListener('change', event => {
-        console.log(event.target.files);
-        if (checkFileCount(event.target.files)) {
-          // TODO files are added to head of the list, so we have to process in reverse order.
-          console.log("Loading files, please wait...");
-          for (var i = 0, len = event.target.files.length; i < len; i++) {
-            readFileUpdateUI(event.target.files[i], this.db).then(result => {
-              let importFile = result.file;
-              if (result.result instanceof Array) {
-                let okCount = result.result.reduce((previousValue, currentValue, currentIndex, array) => {
-                  if ('ok' in currentValue && currentValue.ok) {
-                    return previousValue + 1;
-                  }
-                  else {
-                    return previousValue;
-                  }
-                }, 0);
-                let errorCount = result.result.reduce((previousValue, currentValue, currentIndex, array) => {
-                  if ('error' in currentValue && currentValue.error) {
-                    return previousValue + 1;
-                  }
-                  else {
-                    return previousValue;
-                  }
-                }, 0);
-                addInfo(shadow.children[0], `Imported ${okCount} documents, got errors on ${errorCount}`);
-                if (result.result.some((value, index) => {
-                  if ('error' in value && value.error) {
-                    return true;
-                  }
-                })) {
-                  addDownloadLink(shadow.children[0], result.result,
-                                  'Download import response', `errors-${importFile}`);
+    this.headline = this.shadow.querySelector('h1');
+    this.importButton = this.shadow.querySelector('#import_db');
+    this.importFile = this.shadow.querySelector('#import_file');
+    this.importFile.addEventListener('change', event => {
+      console.log(event.target.files);
+      if (checkFileCount(event.target.files)) {
+        // TODO files are added to head of the list, so we have to process in reverse order.
+        console.log("Loading files, please wait...");
+        for (var i = 0, len = event.target.files.length; i < len; i++) {
+          readFileUpdateUI(event.target.files[i], this.db).then(result => {
+            let importFile = result.file;
+            if (result.result instanceof Array) {
+              let okCount = result.result.reduce((previousValue, currentValue, currentIndex, array) => {
+                if ('ok' in currentValue && currentValue.ok) {
+                  return previousValue + 1;
                 }
+                else {
+                  return previousValue;
+                }
+              }, 0);
+              let errorCount = result.result.reduce((previousValue, currentValue, currentIndex, array) => {
+                if ('error' in currentValue && currentValue.error) {
+                  return previousValue + 1;
+                }
+                else {
+                  return previousValue;
+                }
+              }, 0);
+              addInfo(this.shadow.children[0], `Imported ${okCount} documents, got errors on ${errorCount}`);
+              if (result.result.some((value, index) => {
+                if ('error' in value && value.error) {
+                  return true;
+                }
+              })) {
+                addDownloadLink(this.shadow.children[0], result.result,
+                                'Download import response', `errors-${importFile}`);
               }
-            }).catch(err => {
-              addInfo(shadow.children[0], `failed to import ${importFile}`);
-            });
-          }
-        }
-      }, false);
-      this.importButton.addEventListener('click', event => {
-        event.preventDefault();
-        console.log(event, this);
-        this.importFile.click();
-      });
-      this.exportButton = shadow.querySelector('#export_db');
-      this.exportButton.addEventListener('click', event => {
-        console.log(event, this);
-        console.time(`db.allDocs of ${this.db._db_name}`);
-        this.db.allDocs({
-          include_docs: true/*, 
-  attachments: true*/
-        }).then(result => {
-          // handle result
-          let exportDate = new Date();
-          console.timeEnd(`db.allDocs of ${this.db._db_name}`);
-          // Map to JSON which can be directly loaded into new database using
-          // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
-          // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
-          var docs = {
-            'docs': result.rows.map(function (row) {
-              // NOTE Causes "error":"conflict","reason":"Document update conflict."
-              // on second time POST _bulk_docs to database.
-              // delete row.doc._rev;
-              return row.doc;
-            })
-          };
-          console.time(`window.Blob, URL of ${this.db._db_name}`);
-          addDownloadLink(shadow.children[0], docs,
-                          `Download all ${result.total_rows} doc exported at ${exportDate.toLocaleString()}`,
-                          `${this.db._db_name}-${result.total_rows}-${exportDate.getTime()}.txt`);
-        }).catch(function (err) {
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-        });
-        // this.parentElement.removeChild(this);
-      });
-      this.deleteButton = shadow.querySelector('#delete_db');
-      this.deleteButton.addEventListener('click', event => {
-        console.log(event, this);
-        if ('db' in this &&
-            this.db instanceof PouchDB &&
-            window.confirm('Make sure you have downloaded all docs, else they will be lost forever')) {
-          this.db.destroy().then(response => {
-            console.log('deleted database', this.db._db_name);
-          }).catch(function (err) {
-            console.log(err);
+            }
+          }).catch(err => {
+            addInfo(this.shadow.children[0], `failed to import ${importFile}`);
           });
         }
+      }
+    }, false);
+    this.importButton.addEventListener('click', event => {
+      event.preventDefault();
+      console.log(event, this);
+      this.importFile.click();
+    });
+    this.exportButton = this.shadow.querySelector('#export_db');
+    this.exportButton.addEventListener('click', event => {
+      console.log(event, this);
+      console.time(`db.allDocs of ${this.db._db_name}`);
+      this.db.allDocs({
+        include_docs: true/*, 
+                            attachments: true*/
+      }).then(result => {
+        // handle result
+        let exportDate = new Date();
+        console.timeEnd(`db.allDocs of ${this.db._db_name}`);
+        // Map to JSON which can be directly loaded into new database using
+        // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
+        // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
+        var docs = {
+          'docs': result.rows.map(function (row) {
+            // NOTE Causes "error":"conflict","reason":"Document update conflict."
+            // on second time POST _bulk_docs to database.
+            // delete row.doc._rev;
+            return row.doc;
+          })
+        };
+        console.time(`window.Blob, URL of ${this.db._db_name}`);
+        addDownloadLink(this.shadow.children[0], docs,
+                        `Download all ${result.total_rows} doc exported at ${exportDate.toLocaleString()}`,
+                        `${this.db._db_name}-${result.total_rows}-${exportDate.getTime()}.txt`);
+      }).catch(function (err) {
+        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
-      this.linkTemplate = shadow.querySelector('#template_link');
-      this.infoTemplate = shadow.querySelector('#template_info');
-    }
-  };
-  proto.attributeChangedCallback = function(name, oldValue, newValue, namespace) {
+      // this.parentElement.removeChild(this);
+    });
+    this.deleteButton = this.shadow.querySelector('#delete_db');
+    this.deleteButton.addEventListener('click', event => {
+      console.log(event, this);
+      if ('db' in this &&
+          this.db instanceof PouchDB &&
+          window.confirm('Make sure you have downloaded all docs, else they will be lost forever')) {
+        this.db.destroy().then(response => {
+          console.log('deleted database', this.db._db_name);
+        }).catch(function (err) {
+          console.log(err);
+        });
+      }
+    });
+    this.linkTemplate = this.shadow.querySelector('#template_link');
+    this.infoTemplate = this.shadow.querySelector('#template_info');
+  }
+  static get observedAttributes() {return ['db_name']; }
+  attributeChangedCallback(name, oldValue, newValue, namespace) {
     switch (name) {
-      case 'db_name': {
-        this.headline.textContent = `Datebase ${newValue}`;
-        this.db = new PouchDB(newValue);
-        break;
-      }
-      default: {
-        console.error(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
-      }
+    case 'db_name': {
+      this.headline.textContent = `Datebase ${newValue}`;
+      this.db = new PouchDB(newValue);
+      break;
     }
-  };
-  let PouchdbUI = document.registerElement('pouchdb-ui', {
-    prototype: proto,
-  });
-  return {
-    PouchdbUI: PouchdbUI
-  };
-});
+    default: {
+      console.error(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
+    }
+    }
+  }
+}
+
+if (!customElements.get('pouchdb-ui')) {
+  customElements.define('pouchdb-ui', PouchdbUI);
+}
+
+export default {
+  PouchdbUI
+};

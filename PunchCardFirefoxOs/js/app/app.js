@@ -1,5 +1,11 @@
-;'use strict';
-define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) {
+'use strict';
+
+import { infojs } from './info.js';
+import './about.js';
+import utilsjs from './utils.js';
+import newjs from './new.js';
+import optionsjs from './options.js';
+
   // DOMContentLoaded is fired once the document has been loaded and parsed,
   // but without waiting for other external resources to load (css/images/etc)
   // That makes the app more responsive and perceived as faster.
@@ -394,107 +400,103 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       infojs(err, entries);
     });
   };
-  var addAsNewRevision = function (event) {
-    event.preventDefault();
-    // Keep this _ separator in sync with function addNewEntry in utils.js
-    let elementId = getDataSetIdHideMenu(event);
-    var parts = elementId.split(/_/);
-    var id = parts[0];
-    var rev = parts[1];
-    DEBUG && console.log(id, rev);
-    db.get(id).then(function(currentDoc) {
-      putNewRevision(id, rev, currentDoc._rev);
-    }).catch(function(err) {
-      // This is a deleted doc, use revision.
-      putNewRevision(id, rev);
-      // infojs(err, entries);
-    });
-  };
-  var addAsNewRevisionItem = document.querySelector('#add_as_new_revision');
-  if (addAsNewRevisionItem) {
-    addAsNewRevisionItem.addEventListener('click', addAsNewRevision);
-  }
-  var edit = function (event) {
-    event.preventDefault();
-    var newEntry = document.querySelector('#new_entry');
-    require(['./new'], function (newjs) {
-      if (newEntry && newjs) {
-        // newEntry.style.display = 'none';
-        if (newEntry.style.display == 'none') {
-          newEntry.style.display = 'block';
-          // TODO: Re-use of header icon for existing and new entries may be confusing.
+var addAsNewRevision = function (event) {
+  event.preventDefault();
+  // Keep this _ separator in sync with function addNewEntry in utils.js
+  let elementId = getDataSetIdHideMenu(event);
+  var parts = elementId.split(/_/);
+  var id = parts[0];
+  var rev = parts[1];
+  DEBUG && console.log(id, rev);
+  db.get(id).then(function(currentDoc) {
+    putNewRevision(id, rev, currentDoc._rev);
+  }).catch(function(err) {
+    // This is a deleted doc, use revision.
+    putNewRevision(id, rev);
+    // infojs(err, entries);
+  });
+};
+var addAsNewRevisionItem = document.querySelector('#add_as_new_revision');
+if (addAsNewRevisionItem) {
+  addAsNewRevisionItem.addEventListener('click', addAsNewRevision);
+}
+var edit = function (event) {
+  event.preventDefault();
+  var newEntry = document.querySelector('#new_entry');
+  if (newEntry && newjs) {
+    // newEntry.style.display = 'none';
+    if (newEntry.style.display == 'none') {
+      newEntry.style.display = 'block';
+      // TODO: Re-use of header icon for existing and new entries may be confusing.
 
-          editNewItem.style.opacity = '0.3';
-          var id = getDataSetIdHideMenu(event);
-          newjs.init(id);
+      editNewItem.style.opacity = '0.3';
+      var id = getDataSetIdHideMenu(event);
+      newjs.init(id);
+      var a = document.createElement('a');
+      // a.href = '/build/new.html#' + id;
+      a.href = '#new_entry'/* + id*/;
+      document.body.appendChild(a);
+      a.click();
+    }
+  }
+};
+var editItem = document.querySelector('#edit');
+if (editItem) {
+  editItem.addEventListener('click', edit);
+}
+var editNewCopy = function (event) {
+  event.preventDefault();
+  var newEntry = document.querySelector('#new_entry');
+  if (newEntry && newjs) {
+    // newEntry.style.display = 'none';
+    if (newEntry.style.display == 'none') {
+      newEntry.style.display = 'block';
+      // TODO: Re-use of header icon for existing and new entries may be confusing.
+
+      editNewItem.style.opacity = '0.3';
+      var id = getDataSetIdHideMenu(event);
+      db.get(id).then(function(otherDoc) {
+        var entry = {
+          // The random part is vital to always be unique,
+          // since the new entry/doc initailly has same start time,
+          // which is the initial part of the _id
+          _id: otherDoc._id.substring(0, 24) + Math.random().toString(16).substring(3, 15),
+          activity: otherDoc.activity,
+        };
+        // end may not be present in original document.
+        if ('end' in otherDoc) {
+          entry.end = otherDoc.end;
+        }
+        db.put(entry).then(function(response) {
+          // This is a way to put new entry above others.
+          // TODO: Find a cleaner design. entries has acccumulated various foreign elements
+          // for the convenience of being nicely scrollable via scrollbar.
+          // NOTE: Don't forget to add newlyobtained id!
+          entry._id = response.id;
+          var beforeThisElement = document.getElementById(id);
+          var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+          newEntry.scrollIntoView();
+          newEntry.querySelector('pre.activity').classList.add('changed');
+          newEntry.querySelector('pre.start').classList.add('changed');
+          newEntry.querySelector('pre.end').classList.add('changed');
+          newEntry.querySelector('pre.revisions').classList.add('changed');
+          newjs.init(response.id);
           var a = document.createElement('a');
           // a.href = '/build/new.html#' + id;
           a.href = '#new_entry'/* + id*/;
           document.body.appendChild(a);
           a.click();
-        }
-      }
-    });
-  };
-  var editItem = document.querySelector('#edit');
-  if (editItem) {
-    editItem.addEventListener('click', edit);
+        }).catch(function(err) {
+          //errors
+          infojs(err, entries);
+        });
+      }).catch(function(err) {
+        //errors
+        infojs(err, entries);
+      });
+    }
   }
-  var editNewCopy = function (event) {
-    event.preventDefault();
-    var newEntry = document.querySelector('#new_entry');
-    require(['./new'], function (newjs) {
-      if (newEntry && newjs) {
-        // newEntry.style.display = 'none';
-        if (newEntry.style.display == 'none') {
-          newEntry.style.display = 'block';
-          // TODO: Re-use of header icon for existing and new entries may be confusing.
-
-          editNewItem.style.opacity = '0.3';
-          var id = getDataSetIdHideMenu(event);
-          db.get(id).then(function(otherDoc) {
-            var entry = {
-              // The random part is vital to always be unique,
-              // since the new entry/doc initailly has same start time,
-              // which is the initial part of the _id
-              _id: otherDoc._id.substring(0, 24) + Math.random().toString(16).substring(3, 15),
-              activity: otherDoc.activity,
-            };
-            // end may not be present in original document.
-            if ('end' in otherDoc) {
-              entry.end = otherDoc.end;
-            }
-            db.put(entry).then(function(response) {
-              // This is a way to put new entry above others.
-              // TODO: Find a cleaner design. entries has acccumulated various foreign elements
-              // for the convenience of being nicely scrollable via scrollbar.
-              // NOTE: Don't forget to add newlyobtained id!
-              entry._id = response.id;
-              var beforeThisElement = document.getElementById(id);
-              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
-              newEntry.scrollIntoView();
-              newEntry.querySelector('pre.activity').classList.add('changed');
-              newEntry.querySelector('pre.start').classList.add('changed');
-              newEntry.querySelector('pre.end').classList.add('changed');
-              newEntry.querySelector('pre.revisions').classList.add('changed');
-              newjs.init(response.id);
-              var a = document.createElement('a');
-              // a.href = '/build/new.html#' + id;
-              a.href = '#new_entry'/* + id*/;
-              document.body.appendChild(a);
-              a.click();
-            }).catch(function(err) {
-              //errors
-              infojs(err, entries);
-            });
-          }).catch(function(err) {
-            //errors
-            infojs(err, entries);
-          });
-        }
-      }
-    });
-  };
+};
   var editNewCopyItem = document.querySelector('#edit_new_copy');
   if (editNewCopyItem) {
     editNewCopyItem.addEventListener('click', editNewCopy);
@@ -535,98 +537,92 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
   if (titleItem) {
     titleItem.addEventListener('click', toggleFilter);
   }
-  var toggleEdit = function(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    require(['./new'], function (newjs) {
-      var newEntry = document.querySelector('#new_entry');
-      if (newjs) {
-        if (newEntry) {
-          if (newEntry.style.display == 'none') {
-            // otherView.style.display = 'block';
-            newEntry.style.display = 'block';
-            event.target.style.opacity = '0.3';
-            var id = event.target.parentElement.parentElement.dataset.id;
-            var a = document.createElement('a');
-            // a.href = '/build/new.html#' + id;
-            a.href = '#new_entry'/* + id*/;
-            document.body.appendChild(a);
-            a.click();
-            // Start editing a new entry, start and end times ticking.
-            newjs.init(undefined);
-            newEntry.scrollIntoView();
-          }
-          else {
-            // save returns a promise for the asynchronously executing editing UI.
-            var res = newjs.save();
-            DEBUG && console.log(res);
-            res && res.then(function (result) {
-              // window.alert('Sucessfull save of\n' + JSON.stringify(result, null, 2));
-              // otherView.style.display = 'none';
-              newEntry.style.display = 'none';
-              event.target.style.opacity = '1.0';
-              document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView();
-            }).catch(function (err) {
-              infojs(err, entries);
-              if (window.confirm(err)) {
-                newEntry.style.display = 'none';
-                event.target.style.opacity = '1.0';
-              }
-            });
-          }
-        }
+var toggleEdit = function(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  var newEntry = document.querySelector('#new_entry');
+  if (newjs) {
+    if (newEntry) {
+      if (newEntry.style.display == 'none') {
+        // otherView.style.display = 'block';
+        newEntry.style.display = 'block';
+        event.target.style.opacity = '0.3';
+        var id = event.target.parentElement.parentElement.dataset.id;
+        var a = document.createElement('a');
+        // a.href = '/build/new.html#' + id;
+        a.href = '#new_entry'/* + id*/;
+        document.body.appendChild(a);
+        a.click();
+        // Start editing a new entry, start and end times ticking.
+        newjs.init(undefined);
+        newEntry.scrollIntoView();
       }
-    });
-  };
-  var editNewItem = document.querySelector('a.edit');
-  if (editNewItem) {
+      else {
+        // save returns a promise for the asynchronously executing editing UI.
+        var res = newjs.save();
+        DEBUG && console.log(res);
+        res && res.then(function (result) {
+          // window.alert('Sucessfull save of\n' + JSON.stringify(result, null, 2));
+          // otherView.style.display = 'none';
+          newEntry.style.display = 'none';
+          event.target.style.opacity = '1.0';
+          document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView();
+        }).catch(function (err) {
+          infojs(err, entries);
+          if (window.confirm(err)) {
+            newEntry.style.display = 'none';
+            event.target.style.opacity = '1.0';
+          }
+        });
+      }
+    }
+  }
+};
+var editNewItem = document.querySelector('a.edit');
+if (editNewItem) {
     editNewItem.addEventListener('click', toggleEdit, 'capture');
   }
-  var toggleAbout = function(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    var aboutElement = document.querySelector('#about');
-    // aboutElement.style.display = 'none';
-    require(['./about'], function (aboutjs) {
-      if (aboutjs) {
-        if (aboutElement) {
-          if (aboutElement.style.display == 'none') {
-            // otherView.style.display = 'block';
-            aboutElement.style.display = 'block';
-            event.target.style.opacity = '0.3';
-            // Let user peruse about information...
-            aboutElement.scrollIntoView();
-          }
-          else {
-            // reload document location.
-            // otherView.style.display = 'none';
-            aboutElement.style.display = 'none';
-            event.target.style.opacity = '1.0';
+var toggleAbout = function(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  var aboutElement = document.querySelector('#about');
+  // aboutElement.style.display = 'none';
+  if (aboutElement) {
+    if (aboutElement.style.display == 'none') {
+      // otherView.style.display = 'block';
+      aboutElement.style.display = 'block';
+      event.target.style.opacity = '0.3';
+      // Let user peruse about information...
+      aboutElement.scrollIntoView();
+    }
+    else {
+      // reload document location.
+      // otherView.style.display = 'none';
+      aboutElement.style.display = 'none';
+      event.target.style.opacity = '1.0';
 
-            // TODO: how to best save options without having to actively blur last edit?
-            // var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
-            // optionsDB.get(event.target.id).then(function(otherDoc) {
-            //   otherDoc.value = value;
-            //   return optionsDB.put(otherDoc).then(function(response) {
-            //     // document.location.reload('force');
-            //     // saveLink.click();
-            //   }).catch(function(err) {
-            //     //errors
-            //     window.alert(err);
-            //   });
-            // }).catch(function(err) {
-            //   //errors
-            //   window.alert(err.message + '\n' + err.stack);
-            //   return optionsDB.put({ _id: event.target.id, value: value });
-            // });
+      // TODO: how to best save options without having to actively blur last edit?
+      // var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
+      // optionsDB.get(event.target.id).then(function(otherDoc) {
+      //   otherDoc.value = value;
+      //   return optionsDB.put(otherDoc).then(function(response) {
+      //     // document.location.reload('force');
+      //     // saveLink.click();
+      //   }).catch(function(err) {
+      //     //errors
+      //     window.alert(err);
+      //   });
+      // }).catch(function(err) {
+      //   //errors
+      //   window.alert(err.message + '\n' + err.stack);
+      //   return optionsDB.put({ _id: event.target.id, value: value });
+      // });
 
 
-            // document.location.reload('force');
-          }
-        }
-      }
-    });
-  };
+      // document.location.reload('force');
+    }
+  }
+};
   var aboutItem = document.querySelector('a.about');
   if (aboutItem) {
     aboutItem.addEventListener('click', toggleAbout, 'capture');
@@ -658,35 +654,31 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
     searchItem.addEventListener('click', search, 'capture');
   }
 
-  var toggleOptionDisplay = function(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    var optionsElement = document.querySelector('#options');
-    // optionsElement.style.display = 'none';
-    require(['./options'], function (optionjs) {
-      if (optionjs) {
-        if (optionsElement) {
-          if (optionsElement.style.display == 'none') {
-            // otherView.style.display = 'block';
-            optionsElement.style.display = 'block';
-            event.target.style.opacity = '0.3';
-            // Let user change options...
-            optionsElement.scrollIntoView();
-          }
-          else {
-            // reload document location.
-            // otherView.style.display = 'none';
-            optionsElement.style.display = 'none';
-            event.target.style.opacity = '1.0';
-            // document.location.reload('force');
-            // DEBUG && console.log('doing document.location.reload();');
-            // document.location.reload();
-            runQuery();
-          }
-        }
-      }
-    });
-  };
+var toggleOptionDisplay = function(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  var optionsElement = document.querySelector('#options');
+  // optionsElement.style.display = 'none';
+  if (optionsElement) {
+    if (optionsElement.style.display == 'none') {
+      // otherView.style.display = 'block';
+      optionsElement.style.display = 'block';
+      event.target.style.opacity = '0.3';
+      // Let user change options...
+      optionsElement.scrollIntoView();
+    }
+    else {
+      // reload document location.
+      // otherView.style.display = 'none';
+      optionsElement.style.display = 'none';
+      event.target.style.opacity = '1.0';
+      // document.location.reload('force');
+      // DEBUG && console.log('doing document.location.reload();');
+      // document.location.reload();
+      runQuery();
+    }
+  }
+};
   var optionsItem = document.querySelector('a.settings');
   if (optionsItem) {
     optionsItem.addEventListener('click', toggleOptionDisplay, 'capture');
@@ -1083,15 +1075,3 @@ define(['require', 'app/utils', 'app/info'], function(require, utilsjs, infojs) 
       resultsLink.appendChild(link);
     });
   };
-  // runQuery();
-  // function start() {
-  //
-  //   var message = document.getElementById('message');
-  //
-  //   // We're using textContent because inserting content from external sources into your page using innerHTML can be dangerous.
-  //   // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
-  //   message.textContent = translate('message');
-  //
-  // }
-
-});

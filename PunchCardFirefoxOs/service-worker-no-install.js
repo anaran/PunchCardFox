@@ -6,11 +6,9 @@ var version = 'TBD';
 
 console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
 
-let update_app = false;
-
 self.addEventListener('install', function(event) {
   console.log('[ServiceWorker] Skip waiting on install');
-  self.skipWaiting();
+    event.waitUntil(self.skipWaiting());
 });
 
 // NOTE: activate listener taken from
@@ -38,6 +36,21 @@ self.addEventListener('activate', function(event) {
         console.log('[ServiceWorker] Matching clients:', urls.join(', '));
       }).catch(err => console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
       console.log(`[ServiceWorker] just setting version to last cache key ${version}`);
+    }).then(function() {
+      // `claim()` sets this worker as the active worker for all clients that
+      // match the workers scope and triggers an `oncontrollerchange` event for
+      // the clients.
+      console.log('[ServiceWorker] Claiming clients for version', version);
+      self.clients.matchAll({
+        includeUncontrolled: true
+      }).then(function(clientList) {
+        clientList.map(function(client) {
+          client.postMessage({
+            message: `Claiming clients for last cached version ${version}`
+          });
+        });
+      });
+      return self.clients.claim();
     }));
 });
 
@@ -71,8 +84,8 @@ self.addEventListener('fetch', function(event) {
             cache.put(event.request, response.clone());
           }
           if (!response) {
-            // console.log(`fetch response for ${url} is ${response}`);
-            return response;
+            console.log(`NO RESPONSE for ${event.request.url} in ${version}`, request, response);
+            // return response;
           }
           else {
             return response;

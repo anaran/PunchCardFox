@@ -1,8 +1,7 @@
 'use strict';
 
 import './bower_components/pouchdb/dist/pouchdb.min.js';
-import './bower_components/marked/lib/marked.js';
-import { infojs } from './js/app/info-module.js';
+import { infojs } from './js/app/info.js';
 
 if ('serviceWorker' in navigator) {
   document.addEventListener('readystatechange', function (event) {

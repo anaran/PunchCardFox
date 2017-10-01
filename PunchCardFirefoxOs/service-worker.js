@@ -1,17 +1,13 @@
 'use strict';
 
-var version = 'punchcard-v42';
+var version = 'punchcard-v43';
 // import { version } from './sw-version.js';
 
 console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
 
-let update_app = true;
-
 self.addEventListener('install', function(event) {
-  if (update_app) {
-    console.log('[ServiceWorker] Skip waiting on install');
-    self.skipWaiting();
-  }
+  console.log('[ServiceWorker] Skip waiting on install');
+  event.waitUntil(self.skipWaiting());
 });
 
 // NOTE: activate listener taken from
@@ -22,53 +18,47 @@ self.addEventListener('install', function(event) {
 self.addEventListener('activate', function(event) {
   // Just for debugging, list all controlled clients.
   console.log ('activate');
-  if (update_app) {
-    self.clients.matchAll({
-      includeUncontrolled: true
-    }).then(function(clientList) {
-      var urls = clientList.map(function(client) {
-        client.postMessage({
-          request: 'version',
-          message: version
-        });
-        return client.url;
+  self.clients.matchAll({
+    includeUncontrolled: true
+  }).then(function(clientList) {
+    var urls = clientList.map(function(client) {
+      client.postMessage({
+        request: 'version',
+        message: version
       });
-      console.log('[ServiceWorker] Matching clients:', urls.join(', '));
-    }).catch(err => console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
-    event.waitUntil(
-      // Delete old cache entries that don't match the current version.
-      caches.keys().then(function(cacheNames) {
-        return Promise.all(
-          cacheNames.map(function(cacheName) {
-            if (cacheName !== version) {
-              console.log('[ServiceWorker] Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }).then(function() {
-        // `claim()` sets this worker as the active worker for all clients that
-        // match the workers scope and triggers an `oncontrollerchange` event for
-        // the clients.
-        console.log('[ServiceWorker] Claiming clients for version', version);
-        self.clients.matchAll({
-          includeUncontrolled: true
-        }).then(function(clientList) {
-          clientList.map(function(client) {
-            client.postMessage({
-              message: `Claiming clients for version ${version}`
-            });
+      return client.url;
+    });
+    console.log('[ServiceWorker] Matching clients:', urls.join(', '));
+  }).catch(err => console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
+  event.waitUntil(
+    // Delete old cache entries that don't match the current version.
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheName !== version) {
+            console.log('[ServiceWorker] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(function() {
+      // `claim()` sets this worker as the active worker for all clients that
+      // match the workers scope and triggers an `oncontrollerchange` event for
+      // the clients.
+      console.log('[ServiceWorker] Claiming clients for version', version);
+      self.clients.matchAll({
+        includeUncontrolled: true
+      }).then(function(clientList) {
+        clientList.map(function(client) {
+          client.postMessage({
+            message: `Claiming clients for version ${version}`
           });
         });
-        return self.clients.claim();
-      }).catch(err => {
-        console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
-      }));
-  }
-  else {
-    console.log(`[ServiceWorker] you declined installation of ${version}`);
-    event.waitUntil(self.skipWaiting());
-  }
+      });
+      return self.clients.claim();
+    }).catch(err => {
+      console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+    }));
 });
 
 // caches.delete(oldCacheName); // Delete the old one
@@ -100,9 +90,12 @@ self.addEventListener('fetch', function(event) {
             // if the response body is still streaming in.
             cache.put(event.request, response.clone());
           }
+          else {
+            console.log(`NOT put fetched ${event.request.url} response in ${version}`, request, response);
+          }
           if (!response) {
-            // console.log(`fetch response for ${url} is ${response}`);
-            return response;
+            console.log(`NO RESPONSE for ${event.request.url} in ${version}`, request, response);
+            // return response;
           }
           else {
             return response;
