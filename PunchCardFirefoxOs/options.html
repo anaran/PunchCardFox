@@ -1,14 +1,15 @@
 <section id="options" style="display: none;">
   <section>
-    <input class="persistent" type="search" id="include" data-l10n-id="include" placeholder="must match">
+    <!-- <span class="persistent" id="include" data-l10n-id="include"contentEditable>bla</span> -->
+    <input-ui class="persistent" type="text" id="include" data-l10n-id="include" placeholder="must match"></input-ui>
     <input class="persistent" type="checkbox" id="include_case" data-l10n-id="include_case">
-    <input class="persistent" type="search" id="exclude" data-l10n-id="exclude" placeholder="must not match">
+    <input-ui class="persistent" type="text" id="exclude" data-l10n-id="exclude" placeholder="must not match"></input-ui>
     <input class="persistent" type="checkbox" id="exclude_case" data-l10n-id="exclude_case">
-    <input class="persistent" type="number" id="match_limit" data-l10n-id="match_limit">
-    <input class="persistent" type="number" id="limit" data-l10n-id="limit">
-    <input class="persistent" type="checkbox" id="descending" data-l10n-id="descending">
-    <input class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id">
-    <input class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ...">
+    <input-ui class="persistent" type="number" id="match_limit" data-l10n-id="match_limit"></input-ui>
+    <input-ui class="persistent" type="number" id="limit" data-l10n-id="limit"></input-ui>
+    <input class="persistent" type="checkbox" id="descending" data-l10n-id="descendieng">
+    <input-ui class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id"></input-ui>
+    <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ..."></input-ui>
   </section>
   <section>
     <p>
@@ -21,17 +22,17 @@
     </p>
   </section>
   <section>
-    <input class="persistent" type="text" id="protocol" data-l10n-id="protocol" value="https://">
-    <input class="persistent" type="password" id="user" data-l10n-id="user" placeholder="user">
-    <input type="password" id="pass" data-l10n-id="pass" placeholder="pass">
-    <input class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path/">
+    <input-ui class="persistent" type="text" id="protocol" data-l10n-id="protocol" value="https://"></input-ui>
+    <input-ui class="persistent" type="password" id="user" data-l10n-id="user" placeholder="user"></input-ui>
+    <input-ui type="password" id="pass" data-l10n-id="pass" placeholder="pass"></input-ui>
+    <input-ui class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path/"></input-ui>
   <h1 data-l10n-id="options_db_title">Options Database</h1>
       <select id="options_sync_type">
         <option>Replicate from</option>
         <option>Replicate to</option>
         <option selected>Sync with</option>
       </select>
-    <input class="persistent" type="text" id="options_db_name" placeholder="options db name">
+    <input-ui class="persistent" type="text" id="options_db_name" placeholder="options db name"></input-ui>
     <input type="button" id="options_start_replication" data-l10n-id="options_start_replication" value="now">
     <input type="checkbox" id="options_live_sync">
     <input type="button" id="options_stop_replication" data-l10n-id="options_stop_replication" value="Stop Replication">
@@ -41,8 +42,8 @@
         <option>Replicate to</option>
         <option selected>Sync with</option>
       </select>
-    <input class="persistent" type="text" id="punchcard_db_name" data-l10n-id="db_name" placeholder="database name">
-    <input class="persistent" type="number" id="punchcard_doc_size" data-l10n-id="punchcard_doc_size" value="1000">
+    <input-ui class="persistent" type="text" id="punchcard_db_name" data-l10n-id="db_name" placeholder="database name"></input-ui>
+    <input-ui class="persistent" type="number" id="punchcard_doc_size" data-l10n-id="punchcard_doc_size" value="1000"></input-ui>
     <input type="button" id="punchcard_start_replication" data-l10n-id="punchcard_start_replication" value="now">
     <input type="checkbox" id="punchcard_live_sync">
     <input type="button" id="punchcard_stop_replication" data-l10n-id="punchcard_stop_replication" value="Stop Replication">

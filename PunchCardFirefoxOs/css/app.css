@@ -7,8 +7,9 @@
 /* @import url(links.css);
 */
 
-h1 {
-  /*   margin: 0 0 1rem 0; */
+h2 span {
+    padding: 0.25rem;
+    font-size: medium;
 }
 
 /* Not honored by nightly desktop firefox or nightly firefox os
@@ -64,15 +65,13 @@ pre {
   margin: 0 0 0;
   padding: 0 0 0;
   border: 0;
-  /*     border: 1px solid; */
   display: inline-block;
-  /*   overflow: hidden; */
   overflow: hidden;
   text-overflow: ellipsis ellipsis;
   white-space: nowrap;
 }
 
-pre:hover {
+pre:hover:not(.info) {
   color: white;
   background-color: black;
 }
@@ -162,12 +161,12 @@ pre.activity:hover {
 nav#punchcard_scrollbar li {
   text-align: right;
   overflow: hidden;
-  width: 3ex;
+  width: 1rem;
 }
 
 nav#punchcard_scrollbar:hover li {
   overflow: visible;
-  width: 12rem;
+  width: auto;
 }
 
 nav#punchcard_scrollbar {
@@ -182,7 +181,7 @@ nav#punchcard_scrollbar ol:hover {
 }
 
 section#view-punchcard-list {
-  width: calc(100% - 3ex);
+  width: calc(100% - 1rem);
 }
 
 nav#punchcard_scrollbar li a {
@@ -194,32 +193,34 @@ nav#punchcard_scrollbar li a {
   opacity: 1;
 }
 
-gaia-text-input {
-  background-color: white;
-  display: inline !important;
-  height: 1rem !important;
-  opacity: 1;
-}
-
-input#filter {
-  opacity: 0.7;
-  position: fixed;
-  top: 3rem;
-  left: 0;
+section#filter > input {
   font-size: x-large;
+  left: 0;
+  opacity: 0.7;
+    /* needed since 100% pushes
+         span.erase below input in Brave browser. */
+  max-width: 95%;
 }
 
-input#filter:focus {
+section#filter > input:focus {
   opacity: 1;
   background-color: white;
 }
 
-gaia-text-input:hover {
-  display: block !important;
-  height: 3rem !important;
+input + span.erase {
+    font-size: x-large;
+    margin-inline-start: -1em;
+    /* needed since margin-inline-start
+         not available in Brave browser yet. */
+    margin-left: -1em;
+    opacity: 0.7;
 }
 
-nav#punchcard_scrollbar li a:hover {
+input.empty + span.erase {
+    display: none;
+}
+
+nav#punchcard_scrollbar li:hover a {
   /*   direction: ltr; */
   /*   text-align: left; */
   font-size: large;
@@ -273,7 +274,7 @@ width: -moz-calc(100% + 1.5rem);
   height: calc(100% - 5rem);
 }
 
-div.entries.updating {
+div.entries.updating, input.updating {
   background-color: silver;
   /*     width: 90%; */
   /*   max-height: 50%; */

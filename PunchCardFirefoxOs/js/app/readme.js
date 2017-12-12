@@ -141,7 +141,7 @@ var init = function (url, renderElement, editElement, toggleElement) {
             toggleElement.style.visibility = 'hidden';
           }
           resolve(toggleElement.style.opacity);
-          // render.scrollIntoView();
+          // render.scrollIntoView({block: "center", inline: "center"});
         }
       };
     }

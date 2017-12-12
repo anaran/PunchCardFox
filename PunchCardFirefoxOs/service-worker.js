@@ -1,6 +1,6 @@
 'use strict';
 
-var version = 'punchcard-v43';
+var version = 'punchcard-v44';
 // import { version } from './sw-version.js';
 
 console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
@@ -91,7 +91,7 @@ self.addEventListener('fetch', function(event) {
             cache.put(event.request, response.clone());
           }
           else {
-            console.log(`NOT put fetched ${event.request.url} response in ${version}`, request, response);
+            // console.log(`NOT put fetched ${event.request.url} response in ${version}`, request, response);
           }
           if (!response) {
             console.log(`NO RESPONSE for ${event.request.url} in ${version}`, request, response);

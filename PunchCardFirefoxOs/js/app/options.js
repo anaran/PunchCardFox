@@ -3,12 +3,13 @@
 import { infojs } from './info.js';
 import utilsjs from './utils.js';
 import '../../bower_components/pouchdb/dist/pouchdb.min.js';
+// import '../../bower_components/pouchdb/dist/pouchdb.js';
 
 // try {
 let times = [];
 let DEBUG = false;
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+let TIME = false;
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 // define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
 // DOMContentLoaded is fired once the document has been loaded and parsed,
 // but without waiting for other external resources to load (css/images/etc)
@@ -31,12 +32,12 @@ var setCookie;
 var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
 var punchcardDB = new PouchDB('punchcard');
 var persistentNodeList = document.querySelectorAll('.persistent');
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 Array.prototype.forEach.call(persistentNodeList, function (element) {
   optionsDB.get(element.id, {
     conflicts: true
   }).then(function(otherDoc) {
-    times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+    TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
     if (otherDoc._conflicts) {
       addReadOnlyInfo({ conflicts: otherDoc._conflicts }, infoNode);
       // FIXME: just delete conflict for now for options.
@@ -47,12 +48,12 @@ Array.prototype.forEach.call(persistentNodeList, function (element) {
           _rev: conflict,
           _deleted: true
         }).then(function(response) {
-          times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
           console.log('conflict deleted', response);
           // document.location.reload('force');
           // saveLink.click();
         }).catch(function(err) {
-          times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
           //errors
           console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
@@ -143,14 +144,14 @@ optionsDB.allDocs({
 //     // DEBUG && console.log(doc);
 //   });
 // });
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var infoNode = document.getElementById('replication_info');
 var clearNode = document.getElementById('clear_replication_info');
 clearNode.addEventListener('click', function (event) {
   // NOTE Do not go to link, which is somewhat disruptive.
   event.preventDefault();
   if (!infoNode.textContent.trim()) {
-    times.reduce((prevValue, currValue, currIndex, object) => {
+    TIME && times.reduce((prevValue, currValue, currIndex, object) => {
       addReadOnlyInfo(
         `${(currValue[1] - prevValue[1])/1000} seconds spent between ${prevValue[0]} and ${currValue[0]}`,
         infoNode)
@@ -159,32 +160,9 @@ clearNode.addEventListener('click', function (event) {
   }
   else {
     infoNode.textContent = '';
-    times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-    optionsDB.allDocs({
-      include_docs: false
-    }).then(function (result) {
-      times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-      result.rows && result.rows.forEach(function (row) {
-        if (!Array.prototype.map.call(persistentNodeList, function (element) {
-          return element.id
-        }).includes(row.key)) {
-          if (!row.key.startsWith("_design/")) {
-            optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
-              console.log('deleted no longer used', row.key, row.value.rev);
-            }).catch(function(err) {
-              console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-            });
-          }
-        }
-      });
-    }).catch(function(err) {
-      times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-      //errors
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-    });
   }
 });
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var optionsStartButton = document.getElementById('options_start_replication');
 var optionsStopButton = document.getElementById('options_stop_replication');
 var punchcardStartButton = document.getElementById('punchcard_start_replication');
@@ -219,7 +197,7 @@ var syncOptions = {
   //   return delay * 3;
   // }
 };
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 let setupRemoteSync = function _setupRemoteSync(opt) {
   opt.startButton.addEventListener('click', function (event) {
     let dbSync;
@@ -227,13 +205,13 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         document.getElementById(opt.hostportpathId).value;
     var remoteDatabaseName = document.getElementById(opt.remoteDatabaseNameId).value;
     let remoteDB = new PouchDB(destination + remoteDatabaseName, opt.remoteOptions);
-    let localDbName = opt.localDB._db_name;
+    let localDbName = opt.localDB.name;
     let startButton = opt.startButton;
     let stopButton = opt.stopButton;
     let syncOptions = opt.syncOptions;
     let pullOptions = syncOptions;
     var syncType = document.getElementById(opt.syncTypeId).value;
-    var verbositySelect = document.getElementById(opt.verbositySelectId).value;
+    var verbositySelect = document.getElementById(opt.verbositySelectId);
     var liveSyncing = !!document.getElementById(opt.liveId).checked;
     syncOptions.live = liveSyncing;
     pullOptions.live = liveSyncing;
@@ -246,7 +224,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         }
       }
     }
-    times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+    TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
     if (true) {
       switch (syncType) {
       case 'Replicate from': {
@@ -270,7 +248,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
       }
       var myInfo = {};
       dbSync.on('change', function (info) {
-        if (verbositySelect != 'verbose') {
+        if (verbositySelect.value != 'verbose') {
           if (info.change && info.change.docs) {
             info.change.docs = ["..."];
           } 
@@ -278,34 +256,34 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
             info.docs = ["..."];
           } 
         }
-        if (verbositySelect != 'silent') {
+        if (verbositySelect.value != 'silent') {
           myInfo[localDbName] = info;
           addReadOnlyInfo(myInfo, infoNode);
         }
       })
         .on('paused', function () {
           // replication paused (e.g. user went offline)
-          if (verbositySelect != 'silent') {
+          if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = "replication paused (e.g. user went offline)";
             addReadOnlyInfo(myInfo, infoNode);
           }
         })
         .on('active', function () {
           // replicate resumed (e.g. user went back online)
-          if (verbositySelect != 'silent') {
+          if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = "replicate resumed (e.g. user went back online)";
             addReadOnlyInfo(myInfo, infoNode);
           }
         })
         .on('denied', function (info) {
           // a document failed to replicate, e.g. due to permissions
-          if (verbositySelect != 'silent') {
+          if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = info;
             addReadOnlyInfo(myInfo, infoNode);
           }
         })
         .on('complete', function (info) {
-          if (verbositySelect != 'silent') {
+          if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = info;
             addReadOnlyInfo(myInfo, infoNode);
             remoteDB.info().then(function (info) {
@@ -341,7 +319,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
     }
   });
 };
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 setupRemoteSync({
   startButton: punchcardStartButton,
   stopButton: punchcardStopButton,
@@ -356,7 +334,7 @@ setupRemoteSync({
   liveId: 'punchcard_live_sync',
   activitySizeId: 'punchcard_doc_size'
 });
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 setupRemoteSync({
   startButton: optionsStartButton,
   stopButton: optionsStopButton,
@@ -370,32 +348,32 @@ setupRemoteSync({
   verbositySelectId: 'verbosity',
   liveId: 'options_live_sync'
 });
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var include = document.getElementById('include');
 var exclude = document.getElementById('exclude');
 var includeCase = document.getElementById('include_case');
 var excludeCase = document.getElementById('exclude_case');
 
-include.addEventListener('keypress', function (event) {
-  if (event.key == 'Enter') {
-    if (include.value.length < 3) {
-      window.alert(include.value + ' is too short (< 3)');
-      return;
-    }
-    // searchMatchingActivities();
-  }
-  // console.log(event.type, event);
-});
-exclude.addEventListener('keypress', function (event) {
-  if (event.key == 'Enter') {
-    if (include.value.length < 3) {
-      window.alert(include.value + ' is too short (< 3)');
-      return;
-    }
-    // searchMatchingActivities();
-  }
-  // console.log(event.type, event);
-});
+// include.addEventListener('keypress', function (event) {
+//   if (event.key == 'Enter') {
+//     if (include.value.length < 3) {
+//       window.alert(include.value + ' is too short (< 3)');
+//       return;
+//     }
+//     // searchMatchingActivities();
+//   }
+//   // console.log(event.type, event);
+// });
+// exclude.addEventListener('keypress', function (event) {
+//   if (event.key == 'Enter') {
+//     if (include.value.length < 3) {
+//       window.alert(include.value + ' is too short (< 3)');
+//       return;
+//     }
+//     // searchMatchingActivities();
+//   }
+//   // console.log(event.type, event);
+// });
 // NOTE Seem to be supported by desktop safari only:
 // https://developer.mozilla.org/en-US/docs/Web/Events/search#Browser_compatibility
 // include.addEventListener('search', function (event) {
@@ -587,7 +565,7 @@ logout.addEventListener('click', function(e) {
 // };
 //   }
 // });
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var sessionLogin = function (url, username, password) {
   // Returns AuthSession header in Firefox OS App with systemXHR permission
   var request;
@@ -670,7 +648,7 @@ var sessionLogin = function (url, username, password) {
   // FIXME: async!
   // return cookie;
 };
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var sessionLogout = function (url) {
   var request;
   if (false && /* false && */window.location.protocol == "app:") {
@@ -715,7 +693,7 @@ var sessionLogout = function (url) {
   // FIXME: async!
   // return false;
 };
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var onRequestError = function (event) {
   var errorMessage = JSON.stringify(event, [ 'type', 'lengthComputable', 'loaded', 'total' ], 2);
   if (event.type == 'error') {
@@ -732,7 +710,7 @@ var showError = function (text) {
   // errorMsg.hidden = false;
   // results.hidden = true;
 };
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var start = function () {
 
   var message = document.getElementById('message');
@@ -743,7 +721,7 @@ var start = function () {
   message.textContent = 'message';
 
 };
-times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 // document.body.style.display = 'none';
 export default {
   sessionLogin,

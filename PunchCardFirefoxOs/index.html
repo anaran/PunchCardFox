@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="../manifest.json">
     <!--                 <link rel="manifest" href="manifest.webapp"> -->
     <meta charset="utf-8">
     <title>Privileged app</title>
@@ -32,20 +32,20 @@ Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-def
 -->
 
     <!--                                 <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.js"></script> -->
-    <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.min.js"></script>
+    <!-- <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.min.js"></script> -->
     <!-- <script type="text/javascript" src="./bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js"></script> -->
     <script src="./bower_components/font-fit/font-fit.js"></script>
     <script>
       // gaia-icons.js is defaulting to bower_components relative to build directory
       window.GAIA_ICONS_BASE_URL = "../bower_components/";
     </script>
-    <script src="./bower_components/gaia-icons/gaia-icons.js"></script>
+    <!-- <script src="./bower_components/gaia-icons/gaia-icons.js"></script> -->
     <!-- <link rel="stylesheet" type="text/css" href="./bower_components/gaia-icons/gaia-icons.css"> -->
-    <script src="./bower_components/gaia-component/gaia-component.js"></script>
-    <script src="./bower_components/gaia-header/gaia-header.js"></script>
-    <script src="./bower_components/gaia-sub-header/gaia-sub-header.js"></script>
-    <script src="./bower_components/gaia-text-input/gaia-text-input.js"></script>
-    <script src="./bower_components/gaia-text-input/gaia-text-input-multiline.js"></script>
+    <!-- <script src="./bower_components/gaia-component/gaia-component.js"></script> -->
+    <!-- <script src="./bower_components/gaia-header/gaia-header.js"></script> -->
+    <!-- <script src="./bower_components/gaia-sub-header/gaia-sub-header.js"></script> -->
+    <!-- <script src="./bower_components/gaia-text-input/gaia-text-input.js"></script> -->
+    <!-- <script src="./bower_components/gaia-text-input/gaia-text-input-multiline.js"></script> -->
     <link href="./scrolling.css" rel="stylesheet" type="text/css">
     <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
     <!-- <link href="./bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css"> -->
@@ -57,15 +57,19 @@ own language (as long as you provide translations).
 -->
     <link rel="prefetch" type="application/l10n" href="./data/locales.ini" />
     <script type="text/javascript" src="./js/libs/l10n.js" defer></script>
+    <script type="module" src="./js/app/input-ui.js"></script>
   </head>
   <body role="application">
     <link rel="import" href="common-header.html">
     <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
+      <section id="top"></section>
+      <section id="filter">
+          <input-ui placeholder="filter by activity" type="text">
+          <!-- <span class="erase">&times;</span> -->
+      </section>
       <link rel="import" href="new_entry.html">
       <link rel="import" href="options.html">
       <link rel="import" href="about.html">
-      <div id="entries">
-      </div>
     </section>
     <ul id="start_menu" class="menu">
       <li><button id="start_now">start now</button></li>
@@ -121,21 +125,9 @@ own language (as long as you provide translations).
         <li><a href="#">X</a></li>
         <li><a href="#">Y</a></li>
         <li><a href="#">Z</a></li>
-        <li><a href="#entries">Top of the list</a></li>
+        <li><a href="#top">Top</a></li>
       </ol>
     </nav>
-    <!--
-<gaia-text-input autofocus="true" id="filter" clearable placeholder="filter by activity" type="search"></gaia-text-input>
--->
-    <input autofocus="true" id="filter" placeholder="filter by activity" type="search">
-    <!--                 <section id='view-after-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-<link rel="import" href="new_entry.html">
-<link rel="import" href="options.html">
-<link rel="import" href="about.html">
-    </section> -->
-    <!-- Cannot use import statement in ServiceWorker script as of brave 0.18.36 -->
-    <!-- <script type="text/javascript" src="./service-worker.js"></script> -->
-    <!-- <script type="text/javascript" src="./service-worker-no-install.js"></script> -->
     <script type="module" src="./sw-support.js"></script>
     <script type="module" src="./js/app/app.js"></script>
     <link rel="import" href="templates.html">

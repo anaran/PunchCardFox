@@ -7,9 +7,16 @@ ul.menu {
   padding: 0;
 }
 
-ul.menu li {
+ul.menu > li {
   display: block;
-  padding: 0.4em;
+}
+
+ul.menu > li > button {
+    border: 0;
+    display: block;
+    font-size: medium;
+    padding: 0.5em;
+    width: 100%;
 }
 
 ul.menu a {

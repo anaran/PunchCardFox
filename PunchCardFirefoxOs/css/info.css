@@ -4,7 +4,8 @@ pre.info {
   width: 100%;
 }
 
-pre.info:focus {
+pre.info.selected {
   overflow: visible;
   white-space: pre-wrap;
 }
+

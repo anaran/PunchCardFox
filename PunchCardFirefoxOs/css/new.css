@@ -2,42 +2,25 @@
 /* @import url(view.css); */
 
 #start, #end {
-  font-family: monospace;
-  font-size: medium;
-  /*   width: 80%; */
+  width: 70%;
 }
 
-.delta {
+.sign, .year, .month, .date, .week, .hour, .minute, .second {
   font-family: monospace;
-  /*   margin: 0;
-  padding: 0; */
-  font-size: medium;
-  text-align: end;
-  /*    border: 0 solid; */
-  /*   display: inline-block; */
-}
-
-.sign {
-  font-family: monospace;
-  /*   margin: 0;
-  padding: 0; */
+  /*   margin: 0; */
+  padding: 0 0 1rem 0;
   text-align: end;
   /*   border: 0 solid; */
   display: inline-block;
 }
 
-.year, .month, .date, .week, .hour, .minute, .second {
-  font-family: monospace;
-  /*   margin: 0;
-  padding: 0; */
-  text-align: end;
-  /*   border: 0 solid; */
-  /*   display: inline-block; */
+textarea  {
+  resize: vertical;
+  /*min-height: 3rem;
+  min-width: 10rem;*/
+  width: calc(100% - 3rem);
 }
 
-/* Don't specify size so resize will work. */
-textarea {
-  font-size: large;
-  resize: vertical;
-  width: 95%;
+#resize_ta {
+    vertical-align: top;
 }

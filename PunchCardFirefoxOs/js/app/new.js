@@ -12,9 +12,9 @@ import utilsjs from './utils.js';
 
 // We'll ask the browser to use strict code to help us catch errors earlier.
 // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
-var DEBUG = false, LOG = false;
+var DEBUG = false;
+let LOG = false;
 var saved = false;
-let entries = document.getElementById('entries');
 let db = new PouchDB('punchcard');
 // var id = document.location.hash.substring(1);
 var startDateTime = new Date;
@@ -98,10 +98,15 @@ let addTouchable = function(options) {
     var dy = document.querySelector(options.year.selector);
     var dmo = document.querySelector(options.month.selector);
     var dd = document.querySelector(options.date.selector);
+    var dw = document.querySelector(options.week.selector);
     var dh = document.querySelector(options.hour.selector);
     var dmi = document.querySelector(options.minute.selector);
     var ds = document.querySelector(options.second.selector);
     var element = document.querySelector(options.datetime.selector);
+    // [ dy, dmo, dd, dh, dmi, ds ].forEach(value => value.textContent = "0");
+    [ 'year', 'month', 'date', 'week', 'hour', 'minute', 'second' ].forEach(type => {
+      document.querySelector(options[type].selector).textContent = '-' + utilsjs.pad('0', options[type].padwidth, '0');
+    });
     return function () {
       // Construct a copy.
       // new Date(new Date) loses fractional seconds, hence getTime().
@@ -109,6 +114,7 @@ let addTouchable = function(options) {
       d.setUTCFullYear(d.getUTCFullYear() + Number(dy.textContent));
       d.setUTCMonth(d.getUTCMonth() + Number(dmo.textContent));
       d.setUTCDate(d.getUTCDate() + Number(dd.textContent));
+      d.setUTCDate(d.getUTCDate() + (Number(dw.textContent) * 7));
       d.setUTCHours(d.getUTCHours() + Number(dh.textContent));
       d.setUTCMinutes(d.getUTCMinutes() + Number(dmi.textContent));
       d.setUTCSeconds(d.getUTCSeconds() + Number(ds.textContent));
@@ -124,10 +130,12 @@ let addTouchable = function(options) {
         deltaSum;
     prevX = prevY = deltaX = deltaY = deltaSum = 0;
     var offset = document.querySelector(options.selector);
-    var padWidth = options.padwidth;
+    var padwidth = options.padwidth;
+    let firstMove = true;
     offset.addEventListener('touchstart', function(event) {
-      event.preventDefault();
-      event.stopPropagation();
+      // event.preventDefault();
+      // event.stopPropagation();
+      firstMove = true;
       LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY);
       prevX = event.touches[event.touches.length - 1].clientX;
       prevY = event.touches[event.touches.length - 1].clientY;
@@ -136,7 +144,7 @@ let addTouchable = function(options) {
     }, false);
     // Firefox on a Dell XPS 13 9343 receives mouse events from touch screen, not touch events!
     // No contextmenu event is raised in this configuration, therefor we handle click events to reset offset to 0 as well.
-    true && offset.addEventListener('click', function(event) {
+    var clickListener = function(event) {
       event.preventDefault();
       event.stopPropagation();
       LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
@@ -145,7 +153,7 @@ let addTouchable = function(options) {
       // Therefor we only reset value for single click on touch device.
       // if ("touches" in event) {
       offset.style.backgroundColor = 'white';
-      offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
+      offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
       prevX = prevY = deltaX = deltaY = deltaSum = 0;
       updateDateTimeGui();
       // }
@@ -153,7 +161,7 @@ let addTouchable = function(options) {
       // prevY = event.touches[event.touches.length - 1].clientY;
       // event.dataTransfer.effectAllowed = "all";
       // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
-    }, true);
+    };
     true && offset.addEventListener('contextmenu', function(event) {
       event.preventDefault();
       event.stopPropagation();
@@ -163,7 +171,7 @@ let addTouchable = function(options) {
       // Therefor we only reset value for single click on touch device.
       // if ("touches" in event) {
       offset.style.backgroundColor = 'white';
-      offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
+      offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
       prevX = prevY = deltaX = deltaY = deltaSum = 0;
       updateDateTimeGui();
       // }
@@ -171,7 +179,7 @@ let addTouchable = function(options) {
       // prevY = event.touches[event.touches.length - 1].clientY;
       // event.dataTransfer.effectAllowed = "all";
       // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
-    }, true);
+    }, false);
     // NOTE: We use double click to reset value for mouse clicks to be sure there was no associated mouse move.
     // true && offset.addEventListener('dblclick', function(event) {
     //   event.preventDefault();
@@ -179,7 +187,7 @@ let addTouchable = function(options) {
     //   LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
     //   LOG && console.log(event);
     //   offset.style.backgroundColor = 'white';
-    //   offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
+    //   offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
     //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
     //   updateDateTimeGui();
     //   // prevX = event.touches[event.touches.length - 1].clientX;
@@ -191,7 +199,7 @@ let addTouchable = function(options) {
     //   event.preventDefault();
     //   event.stopPropagation();
     //   LOG && console.log(event.type);
-    //   offset.textContent = '-' + utilsjs.pad('0', padWidth, '0');
+    //   offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
     //   // timeFromDeltaUpdater(getDateTime(), Math.round(-deltaSum));
     //   elementUpdater(getDateTime());
     //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
@@ -208,11 +216,17 @@ let addTouchable = function(options) {
     }, false);
     offset.addEventListener('touchend', function(event) {
       LOG && console.log(event.type, event.touches.length && event.touches[event.touches.length - 1].clientX, event.touches.length && event.touches[event.touches.length - 1].clientY);
-      offset.style.backgroundColor = 'white';
+      // offset.style.backgroundColor = 'white';
     }, false);
     offset.addEventListener('touchmove', function(event) {
       event.preventDefault();
       event.stopPropagation();
+      if (firstMove) {
+        LOG && console.log(event.type, 'remove click and click input element');
+        true && offset.removeEventListener('click', clickListener, false);
+        event.target.parentElement.parentElement.previousElementSibling.firstElementChild.click();
+        firstMove = false;
+      }
       LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY, event.x, event.y);
       LOG && console.log(event);
       // TODO Need to stop only associated element.
@@ -224,7 +238,7 @@ let addTouchable = function(options) {
           offset.style.backgroundColor = 'lightcyan';
           // deltaSum += deltaX;
           deltaSum += deltaX > 0 ? 0.1 : -0.1;
-          offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+          offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
         }
         if (Math.abs(deltaY) > Math.abs(deltaX)) {
           //     Fast mode
@@ -232,7 +246,7 @@ let addTouchable = function(options) {
           // deltaSum += deltaY * 5;
           deltaSum += deltaY > 0 ? 0.5 : -0.5;
           // TODO Please note toFixed() also produces -0 values.
-          offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+          offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
         }
       }
       LOG && console.log(deltaX, deltaY, offset.textContent);
@@ -245,11 +259,17 @@ let addTouchable = function(options) {
     let moveListener = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      if (event.buttons == 0) {
-        prevX = event.clientX;
-        prevY = event.clientY;
+      if (firstMove) {
+        LOG && console.log(event.type, 'remove click and click input element');
+        true && offset.removeEventListener('click', clickListener, false);
+        event.target.parentElement.parentElement.previousElementSibling.firstElementChild.click();
+        firstMove = false;
       }
-      if (event.buttons == 1) {
+      // if (event.buttons == 0) {
+      //   prevX = event.clientX;
+      //   prevY = event.clientY;
+      // }
+      // if (event.buttons == 1) {
         deltaX = event.clientX - prevX;
         deltaY = prevY - event.clientY;
         if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
@@ -258,7 +278,7 @@ let addTouchable = function(options) {
             offset.style.backgroundColor = 'lightcyan';
             deltaSum += deltaX / 8;
             deltaSum += 0.1;
-            offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+            offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
           }
           if (Math.abs(deltaY) * 2 > Math.abs(deltaX)) {
             //     Fast mode
@@ -266,7 +286,7 @@ let addTouchable = function(options) {
             deltaSum += deltaY;
             deltaSum += 0.1;
             // TODO Please note toFixed() also produces -0 values.
-            offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padWidth, '0');
+            offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
           }
         }
         // var d = timeFromDeltaUpdater(getDateTime(), Math.round(deltaSum));
@@ -278,7 +298,7 @@ let addTouchable = function(options) {
         LOG && console.log(event.type, event.clientX, event.clientY);
         LOG && console.log(event);
         LOG && console.log(event.buttons);
-      }
+      // }
     };
     // Firefox on a Dell XPS 13 9343 receives mouse events from touch screen, not touch events!
     // We have to add and remove listeners on the appropriate parentElement
@@ -286,6 +306,8 @@ let addTouchable = function(options) {
     true && offset.addEventListener('mousedown', function(event) {
       event.preventDefault();
       event.stopPropagation();
+      firstMove = true;
+      true && offset.addEventListener('click', clickListener, false);
       true && offset.parentElement.parentElement.parentElement.parentElement.addEventListener('mousemove', moveListener, false);
       LOG && console.log(event);
       // TODO: Remove mouseup listener as well!
@@ -294,7 +316,7 @@ let addTouchable = function(options) {
         event.stopPropagation();
         true && this.removeEventListener('mousemove', moveListener, false);
         true && this.removeEventListener('mouseup', upListener, false);
-        LOG && console.log(event);
+        LOG && console.log(event.type, event);
       };
       true && offset.parentElement.parentElement.parentElement.parentElement.addEventListener('mouseup', upListener, false);
     }, false);
@@ -302,6 +324,7 @@ let addTouchable = function(options) {
   setupListener(options.year);
   setupListener(options.month);
   setupListener(options.date);
+  setupListener(options.week);
   setupListener(options.hour);
   setupListener(options.minute);
   setupListener(options.second);
@@ -334,15 +357,35 @@ let isValidEntry = function (entry) {
 
 let save = function () {
   return new Promise(function(resolve, reject) {
-    // event.preventDefault();
-    // event.stopPropagation();
+    let entries = document.querySelector('div#new_entries');
+    if (!entries) {
+      let scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+      let content = document.getElementById('entries_template').content;
+      entries = document.importNode(content, "deep").firstElementChild;
+      scrollView.appendChild(entries);
+      entries.id = 'new_entries';
+      let queryInfoElement = entries.querySelector('span.info');
+      queryInfoElement.scrollIntoView({block: "center", inline: "center"});
+      let update = entries.querySelector('a.update');
+      let close = entries.querySelector('a.close');
+      update.addEventListener('click', function(event) {
+        event.preventDefault();
+        alert('rerun query is not implemented yet. \u221E');
+      });
+      close.addEventListener('click', function(event) {
+        event.preventDefault();
+        scrollView.removeChild(entries);
+        updateScrollLinks();
+      });
+      queryInfoElement.textContent = 'New Entries';
+    }
     DEBUG && window.alert('saving...');
     if (activity.dataset.id) {
       var id = activity.dataset.id.toString();
       // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
       activity.removeAttribute('data-id');
       let oldStartString = (new Date(id.substring(0, 24))).toString();
-      // document.getElementById(id).scrollIntoView();
+      // document.getElementById(id).scrollIntoView({block: "center", inline: "center"});
       db.get(id).then(function(otherDoc) {
         var startDate = getDateTime(start);
         var endDate = getDateTime(end);
@@ -394,7 +437,7 @@ let save = function () {
             (changedStart || changedEnd) &&
               utilsjs.updateEntriesElement(id, 'pre.duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
             changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
-            // document.getElementById(response.id).scrollIntoView();
+            // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
             // Update id attribute to reflect now document id.
             // Fixes bug where future menu operations on replaced entry would not work.
             document.getElementById(id).id = response.id;
@@ -436,7 +479,7 @@ let save = function () {
           newEntry.querySelector('pre.start').classList.add('changed');
           newEntry.querySelector('pre.end').classList.add('changed');
           // Too early, will scroll out of view when new entry UI is no longer displayed in caller.
-          // document.getElementById(response.id).scrollIntoView();
+          // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
           resolve({ new: response });
         }).catch(function(err) {
           //errors
@@ -449,7 +492,7 @@ let save = function () {
         // window.alert('saving entry failed, please review values of start, end, activity.');
         infojs(entry, entries);
         var newEntry = document.querySelector('#new_entry');
-        newEntry.scrollIntoView();
+        newEntry.scrollIntoView({block: "center", inline: "center"});
         reject('New entry has invalid times or empty activity.\nDiscard edit?'
                + JSON.stringify(entry, Object.getOwnPropertyNames(entry), 2));
       }
@@ -476,6 +519,7 @@ addTouchable({
   year: { selector: '.start_delta_div>.year', padwidth: 2},
   month: { selector: '.start_delta_div>.month', padwidth: 2},
   date: { selector: '.start_delta_div>.date', padwidth: 2},
+  week: { selector: '.start_delta_div>.week', padwidth: 2},
   hour: { selector: '.start_delta_div>.hour', padwidth: 2},
   minute: { selector: '.start_delta_div>.minute', padwidth: 2},
   second: { selector: '.start_delta_div>.second', padwidth: 2},
@@ -497,6 +541,7 @@ addTouchable({
   year: { selector: '.end_delta_div>.year', padwidth: 2},
   month: { selector: '.end_delta_div>.month', padwidth: 2},
   date: { selector: '.end_delta_div>.date', padwidth: 2},
+  week: { selector: '.end_delta_div>.week', padwidth: 2},
   hour: { selector: '.end_delta_div>.hour', padwidth: 2},
   minute: { selector: '.end_delta_div>.minute', padwidth: 2},
   second: { selector: '.end_delta_div>.second', padwidth: 2},
@@ -517,9 +562,9 @@ Tacker.prototype.removeCallback = function(callback) {
       delete this.callbacks[index];
       return true;
     }}, this);
-  if (!found) {
-    infojs(callback.toString() + ' was never registered', entries);
-  }
+  // if (!found) {
+  //   infojs(callback.toString() + ' was never registered', entries);
+  // }
   return found;
 };
 Tacker.prototype.tick = function () {
@@ -569,16 +614,28 @@ updateEndButton.addEventListener('click', (function (event) {
 tack.start();
 // let id = document.location.hash.substring(1);
 let init = function (id) {
+  let editorTextArea = document.getElementById ('activity');
+  // let editorSizeToggle = document.getElementById ('resize_ta');
+  editorTextArea.addEventListener ('focus', event => {
+    editorTextArea.rows = 10;
+    editorTextArea.style['text-overflow'] = 'unset';
+  });
+  editorTextArea.addEventListener ('blur', event => {
+    editorTextArea.rows = 1;
+    editorTextArea.style['text-overflow'] = 'ellipsis ellipsis';
+  });
   if (id) {
     activity.dataset.id = id;
     db.get(id).then(function(otherDoc) {
       // activity.textContent = otherDoc.activity;
       activity.value = otherDoc.activity;
       var start = new Date(otherDoc._id.substring(0, 24));
+      tack.removeCallback(updateStart);
       startDateTime = start;
       startUpdater(start);
       if ('end' in otherDoc) {
         var end = new Date(otherDoc.end);
+        tack.removeCallback(updateEnd);
         endDateTime = end;
         endUpdater(end);
       }

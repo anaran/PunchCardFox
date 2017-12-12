@@ -4,6 +4,8 @@ import { infojs } from './info.js';
 import readmejs from './readme.js';
 import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
+// import '../../bower_components/pouchdb/dist/pouchdb.js';
+// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
 import pouchdbuijs from './pouchdb-ui.js';
 
 // DOMContentLoaded is fired once the document has been loaded and parsed,
@@ -78,19 +80,19 @@ try {
         if (dbs.length) {
           Array.prototype.forEach.call(dbs, function (db) {
             let localDB = new PouchDB(db);
-            let remoteDB = new PouchDB(destination + db, opts);
+            // let remoteDB = new PouchDB(destination + db, opts);
             localDB.info().then(function (info) {
               infojs(info, databasesInfoNode);
             }).catch(function (err) {
               infojs(err, databasesInfoNode);
               // handle err
             });
-            remoteDB.info().then(function (info) {
-              infojs(info, databasesInfoNode);
-            }).catch(function (err) {
-              infojs(err, databasesInfoNode);
-              // handle err
-            });
+            // remoteDB.info().then(function (info) {
+            //   infojs(info, databasesInfoNode);
+            // }).catch(function (err) {
+            //   infojs(err, databasesInfoNode);
+            //   // handle err
+            // });
             let pui = new pouchdbuijs.PouchdbUI();
             let dbUI = databasesInfoNode.appendChild(pui);
             dbUI.setAttribute('db_name', db);
@@ -126,6 +128,8 @@ try {
     // NOTE Do not go to link, which is somewhat disruptive.
     event.preventDefault();
     // event.stopPropagation();
+    // Force exception:   "message": "cyclic object value"
+    // infojs(window, applicationInfoNode);
     infojs(window.location, applicationInfoNode);
     infojs(document.head.querySelector('link[rel=manifest]').href, applicationInfoNode);
     // NOTE: Only availabe for Firefox OS packaged apps:

@@ -2,6 +2,8 @@
 
 import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
+// import '../../bower_components/pouchdb/dist/pouchdb.js';
+// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
 
 class PouchdbUI extends HTMLElement {
   constructor() {
@@ -79,9 +81,9 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
             console.timeEnd('read of ' + file.name);
             var result = readEvent.target.result;
             // console.log(result);
-            console.time(`db.bulkDocs of ${db._db_name}`);
+            console.time(`db.bulkDocs of ${db.name}`);
             db.bulkDocs(JSON.parse(result)).then(function (result) {
-              console.timeEnd(`db.bulkDocs of ${db._db_name}`);
+              console.timeEnd(`db.bulkDocs of ${db.name}`);
               resolve({ result: result, file: fileName });
               // handle result
             }).catch(function (err) {
@@ -127,7 +129,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
         div.parentElement.removeChild(div);
       });
       download.href = window.URL.createObjectURL(blob);
-      console.timeEnd(`window.Blob, URL of ${this.db._db_name}`);
+      console.timeEnd(`window.Blob, URL of ${this.db.name}`);
       download.download = filename;
       download.textContent = text;
       element.appendChild(div);
@@ -184,14 +186,14 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
     this.exportButton = this.shadow.querySelector('#export_db');
     this.exportButton.addEventListener('click', event => {
       console.log(event, this);
-      console.time(`db.allDocs of ${this.db._db_name}`);
+      console.time(`db.allDocs of ${this.db.name}`);
       this.db.allDocs({
         include_docs: true/*, 
                             attachments: true*/
       }).then(result => {
         // handle result
         let exportDate = new Date();
-        console.timeEnd(`db.allDocs of ${this.db._db_name}`);
+        console.timeEnd(`db.allDocs of ${this.db.name}`);
         // Map to JSON which can be directly loaded into new database using
         // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
         // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
@@ -203,10 +205,10 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
             return row.doc;
           })
         };
-        console.time(`window.Blob, URL of ${this.db._db_name}`);
+        console.time(`window.Blob, URL of ${this.db.name}`);
         addDownloadLink(this.shadow.children[0], docs,
                         `Download all ${result.total_rows} doc exported at ${exportDate.toLocaleString()}`,
-                        `${this.db._db_name}-${result.total_rows}-${exportDate.getTime()}.txt`);
+                        `${this.db.name}-${result.total_rows}-${exportDate.getTime()}.txt`);
       }).catch(function (err) {
         console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
       });
@@ -219,7 +221,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
           this.db instanceof PouchDB &&
           window.confirm('Make sure you have downloaded all docs, else they will be lost forever')) {
         this.db.destroy().then(response => {
-          console.log('deleted database', this.db._db_name);
+          console.log('deleted database', this.db.name);
         }).catch(function (err) {
           console.log(err);
         });
