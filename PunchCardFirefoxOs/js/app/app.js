@@ -917,72 +917,67 @@ var runQuery = function() {
         var changesSinceElement = document.getElementById('changes_since_sequence');
         var changesSinceSequence = options.changes_since_sequence.length ? Number(options.changes_since_sequence) : 0;
         let matchingDeletes = 0;
-        db.changes(opts
-                   // {
-                   // include_docs: true,
-                   /*style: 'all_docs', */
-                   // since: changesSinceSequence
-                   // }
-                  ).on('delete', function(info) {
-                    // infojs({delete: info}, entries);
-                    // db.allDocs({
-                    //   include_docs: true,
-                    //   keys: [info.id]
-                    // }).then(function (otherDoc) {
-                    //   infojs({otherDoc: otherDoc}, entries);
-                    // }).catch(function (err) {
-                    //   infojs({all_docs_error: err}, entries);
-                    // });
-                    db.get(info.doc._id, {
-                      rev: info.doc._rev,
-                      revs: true,
-                      open_revs: "all"
-                    }).then(function (otherDoc) {
-                      if (otherDoc[0].ok && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
-                        // infojs({get: otherDoc}, entries);
-                        // Adding revision to id allows us to add document back
-                        var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
-                        entry.classList.add('deleted');
-                      }
-                      false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-                        // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-                        db.get(otherDoc[0].ok._id, {
-                          open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-                        }).then(function (otherDoc) {
-                          // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-                          if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-                            // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-                          }
-                          else {
-                          }
-                          infojs({ 'rev': otherDoc }, entries);
-                        }).catch(function (err) {
-                          infojs(err, entries);
-                        });
-                      });
-                    }).catch(function (err) {
-                      infojs(err, entries);
-                    });
-                    //   if (info.seq == 894) {
-                    //     info.doc._deleted = false;
-                    //     db.put(info.doc).then(function (otherDoc) {
-                    //       infojs(otherDoc, entries);
-                    //     }).catch(function (err) {
-                    //       infojs(err, entries);
-                    //     });
-                    //   }
-                    // changes() was canceled
-                  })/*.on('change', function(info) {
-                    var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
-                  })*/.on('error', function (err) {
-                    DEBUG && console.log(err);
-                    infojs({delete_error: err}, entries);
-                  }).on('complete', function(info) {
-                    resultIndex += 1;
-                    updateScrollLinks();
-                    queryInfoElement.textContent += ` found ${entries.querySelectorAll('div.deleted').length}`;
-                    entries.classList.remove('updating');
-                  });
+        db.changes({
+          include_docs: true,
+          /*style: 'all_docs', */
+          since: changesSinceSequence
+        }).on('change', function(info) {
+    //       PouchDB 5.0.0 (blog post)
+
+    // Removed PouchDB.destroy(); use db.destroy() instead
+    // Removed 'create', 'update', 'delete' events; use 'change' instead
+    // Removed idb-alt adapter
+
+          // infojs({delete: info}, entries);
+          // db.allDocs({
+          //   include_docs: true,
+          //   keys: [info.id]
+          // }).then(function (otherDoc) {
+          //   infojs({otherDoc: otherDoc}, entries);
+          // }).catch(function (err) {
+          //   infojs({all_docs_error: err}, entries);
+          // });
+          db.get(info.doc._id, {
+            rev: info.doc._rev,
+            revs: true,
+            open_revs: "all"
+          }).then(function (otherDoc) {
+            if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
+              // infojs({get: otherDoc}, entries);
+              // Adding revision to id allows us to add document back
+              var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
+              entry.classList.add('deleted');
+            }
+            false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+              // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+              db.get(otherDoc[0].ok._id, {
+                open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+              }).then(function (otherDoc) {
+                // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+                if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+                  // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+                }
+                else {
+                }
+                infojs({ 'rev': otherDoc }, entries);
+              }).catch(function (err) {
+                infojs(err, entries);
+              });
+            });
+          }).catch(function (err) {
+            infojs(err, entries);
+          });
+        // }).on('change', function(info) {
+        //   var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+        }).on('error', function (err) {
+          DEBUG && console.log(err);
+          infojs({delete_error: err}, entries);
+        }).on('complete', function(info) {
+          resultIndex += 1;
+          updateScrollLinks();
+          queryInfoElement.textContent += ` found ${entries.querySelectorAll('div.deleted').length}`;
+          entries.classList.remove('updating');
+        });
         // db.get(options.deleted_id, {
         //   // rev: info.doc._rev,
         //   revs: true,
