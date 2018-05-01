@@ -1,6 +1,6 @@
 'use strict';
 
-var version = 'punchcard-v45';
+var version = 'punchcard-v46';
 // import { version } from './sw-version.js';
 
 console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);

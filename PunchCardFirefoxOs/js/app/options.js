@@ -263,14 +263,14 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
       })
         .on('paused', function () {
           // replication paused (e.g. user went offline)
-          if (verbositySelect.value != 'silent') {
+          if (verbositySelect.value == 'verbose') {
             myInfo[localDbName] = "replication paused (e.g. user went offline)";
             addReadOnlyInfo(myInfo, infoNode);
           }
         })
         .on('active', function () {
           // replicate resumed (e.g. user went back online)
-          if (verbositySelect.value != 'silent') {
+          if (verbositySelect.value == 'verbose') {
             myInfo[localDbName] = "replicate resumed (e.g. user went back online)";
             addReadOnlyInfo(myInfo, infoNode);
           }
