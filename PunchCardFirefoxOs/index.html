@@ -4,6 +4,7 @@
     <link rel="manifest" href="../manifest.json">
     <!--                 <link rel="manifest" href="manifest.webapp"> -->
     <meta charset="utf-8">
+    <script type="module" src="./sw-support.js"></script>
     <title>Privileged app</title>
     <meta name="description" content="A privileged app stub">
 
@@ -46,7 +47,7 @@ Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-def
     <!-- <script src="./bower_components/gaia-sub-header/gaia-sub-header.js"></script> -->
     <!-- <script src="./bower_components/gaia-text-input/gaia-text-input.js"></script> -->
     <!-- <script src="./bower_components/gaia-text-input/gaia-text-input-multiline.js"></script> -->
-    <link href="./scrolling.css" rel="stylesheet" type="text/css">
+    <!-- <link href="./css/scrolling.css" rel="stylesheet" type="text/css"> -->
     <!--   <link href="https://raw.githubusercontent.com/mozilla-b2g/gaia/master/shared/style/scrolling.css" rel="stylesheet" type="text/css"> -->
     <!-- <link href="./bower_components/gaia-icons/gaia-icons-embedded.css" rel="stylesheet" type="text/css"> -->
 
@@ -61,44 +62,11 @@ own language (as long as you provide translations).
   </head>
   <body role="application">
     <link rel="import" href="common-header.html">
-    <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-      <section id="top"></section>
-      <section id="filter">
-          <input-ui placeholder="filter by activity" type="text">
-          <!-- <span class="erase">&times;</span> -->
-      </section>
-      <link rel="import" href="new_entry.html">
-      <link rel="import" href="options.html">
-      <link rel="import" href="about.html">
-    </section>
-    <ul id="start_menu" class="menu">
-      <li><button id="start_now">start now</button></li>
-    </ul>
-    <ul id="end_menu" class="menu">
-      <li><button id="end_now">end now</button></li>
-      <li><button id="end_undefined">end undefined</button></li>
-    </ul>
-    <ul id="revisions_menu" class="menu">
-      <li><button id="show_revisions">show revisions</button></li>
-      <li><button id="add_as_new_revision">add as new revision</button></li>
-    </ul>
-    <ul id="activity_menu" class="menu">
-      <li><button id="edit">edit</button></li>
-      <li><button id="edit_new_copy">edit new copy</button></li>
-      <li><button id="repeat_now">repeat now</button></li>
-      <li><button id="copy_to_editor">copy to editor</button></li>
-      <li><button id="delete">delete</button></li>
-      <!--                                 <li><a>edit</a></li>
-<li><a>insert parallel activity</a></li>
-<li><a>show only this activity</a></li>
-<li><a>show all activities</a></li> -->
-      <!--                         </menu> -->
-    </ul>
     <nav data-type="scrollbar" id="punchcard_scrollbar">
-      <ol>
+      <ul>
+        <li><a href="#top">Top</a></li>
         <li id="results"></li>
-        <!--                                         <li><a href="#">search</li>
-<li><a href="#">favorites</li> -->
+        <li><a href="#bottom">Bottom</a></li>
         <li><a href="#">A</a></li>
         <li><a href="#">B</a></li>
         <li><a href="#">C</a></li>
@@ -125,10 +93,42 @@ own language (as long as you provide translations).
         <li><a href="#">X</a></li>
         <li><a href="#">Y</a></li>
         <li><a href="#">Z</a></li>
-        <li><a href="#top">Top</a></li>
-      </ol>
+      </ul>
     </nav>
-    <script type="module" src="./sw-support.js"></script>
+    <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
+      <section id="top"></section>
+      <section id="filter">
+          <input-ui placeholder="filter by activity" type="text"></input-ui>
+          <!-- <span class="erase">&times;</span> -->
+      </section>
+      <!-- <link rel="import" href="new_entry.html"> -->
+      <link rel="import" href="options.html">
+      <link rel="import" href="about.html">
+      <section id="bottom"></section>
+    </section>
+    <ul id="start_menu" class="menu">
+      <li><button id="start_now">start now</button></li>
+    </ul>
+    <ul id="end_menu" class="menu">
+      <li><button id="end_now">end now</button></li>
+      <li><button id="end_undefined">end undefined</button></li>
+    </ul>
+    <ul id="revisions_menu" class="menu">
+      <li><button id="show_revisions">show revisions</button></li>
+      <li><button id="add_as_new_revision">add as new revision</button></li>
+    </ul>
+    <ul id="activity_menu" class="menu">
+      <li><button id="edit">edit</button></li>
+      <li><button id="edit_new_copy">edit new copy</button></li>
+      <li><button id="repeat_now">repeat now</button></li>
+      <li><button id="copy_to_editor">copy to editor</button></li>
+      <li><button id="delete">delete</button></li>
+      <!--                                 <li><a>edit</a></li>
+<li><a>insert parallel activity</a></li>
+<li><a>show only this activity</a></li>
+<li><a>show all activities</a></li> -->
+      <!--                         </menu> -->
+    </ul>
     <script type="module" src="./js/app/app.js"></script>
     <link rel="import" href="templates.html">
   </body>

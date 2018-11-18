@@ -76,7 +76,7 @@ try {
       };
       PouchDB.allDbs().then(function (dbs) {
         // dbs is an array of strings, e.g. ['mydb1', 'mydb2']
-        console.log('dbs', dbs, 'destination', destination);
+        DEBUG && console.log('dbs', dbs, 'destination', destination);
         if (dbs.length) {
           Array.prototype.forEach.call(dbs, function (db) {
             let localDB = new PouchDB(db);

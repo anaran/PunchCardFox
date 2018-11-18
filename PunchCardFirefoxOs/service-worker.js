@@ -1,127 +1,207 @@
 'use strict';
 
-var version = 'punchcard-v46';
-// import { version } from './sw-version.js';
+let version = 'Punchcard v80';
+let cachedVersion = undefined;
 
-console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
+let DEBUG = false;
+let evaluatedExpression = (str) => { return `${str[0]}:${`${eval(str[0])}`}`; }
+
+DEBUG && console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
+
+// self.clients.matchAll({
+//   includeUncontrolled: true
+// }).then(function(clientList) {
+//   clientList.map(function(client) {
+//     // client.postMessage({
+//     //   message: `Claiming clients for version ${version}`
+//     // });
+//     caches.keys().then((cacheNames) => {
+//       return Promise.all(
+//         cacheNames.map(function(cacheName) {
+//           return cacheName;
+//         })
+//       )}).then((names) => {
+//         client.postMessage({
+//           request: 'caches',
+//           message: JSON.stringify(names)
+//         });
+//       });
+//     client.postMessage({
+//       request: 'claim',
+//       message: version
+//     });
+//     // DEBUG && console.log(`[ServiceWorker] Claiming client for version ${version}`, client.id, client.type, client.url, client);
+//     // DEBUG && console.log(evaluatedExpression`JSON.stringify(client)`);
+//   });
+//   // return self.clients.claim();
+// }).catch(err => {
+//   DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+// });
 
 self.addEventListener('install', function(event) {
-  console.log('[ServiceWorker] Skip waiting on install');
+  DEBUG && console.log('[ServiceWorker] install (Skip waiting)');
   event.waitUntil(self.skipWaiting());
 });
 
-// NOTE: activate listener taken from
+// NOTE: activate listener originally taken from
 // https://serviceworke.rs/immediate-claim_service-worker_doc.html
 // `onactivate` is usually called after a worker was installed and the page
 // got refreshed. Since we call `skipWaiting()` in `oninstall`, `onactivate` is
 // called immediately.
 self.addEventListener('activate', function(event) {
-  // Just for debugging, list all controlled clients.
-  console.log ('activate');
-  self.clients.matchAll({
-    includeUncontrolled: true
-  }).then(function(clientList) {
-    var urls = clientList.map(function(client) {
-      client.postMessage({
-        request: 'version',
-        message: version
-      });
-      return client.url;
-    });
-    console.log('[ServiceWorker] Matching clients:', urls.join(', '));
-  }).catch(err => console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
+  DEBUG && console.log ('[ServiceWorker] activate');
+  // self.clients.matchAll({
+  //   includeUncontrolled: true
+  // }).then(function(clientList) {
+  //   let urls = clientList.map(function(client) {
+  //     return client.url;
+  //   });
+  //   DEBUG && console.log('[ServiceWorker] Matching clients:', urls.join(', '));
+  // }).catch(err => DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
   event.waitUntil(
-    // Delete old cache entries that don't match the current version.
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== version) {
-            console.log('[ServiceWorker] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(function() {
-      // `claim()` sets this worker as the active worker for all clients that
-      // match the workers scope and triggers an `oncontrollerchange` event for
-      // the clients.
-      console.log('[ServiceWorker] Claiming clients for version', version);
-      self.clients.matchAll({
-        includeUncontrolled: true
-      }).then(function(clientList) {
-        clientList.map(function(client) {
-          client.postMessage({
-            message: `Claiming clients for version ${version}`
-          });
+    // `claim()` sets this worker as the active worker for all clients that
+    // match the worker's scope and triggers an `oncontrollerchange` event for
+    // the clients.
+    self.clients.matchAll({
+      includeUncontrolled: true
+    }).then(function(clientList) {
+      clientList.map(function(client) {
+        // client.postMessage({
+        //   message: `Claiming clients for version ${version}`
+        // });
+        // caches.keys().then((cacheNames) => {
+        //   return Promise.all(
+        //     cacheNames.map(function(cacheName) {
+        //       return cacheName;
+        //     })
+        //   )}).then((names) => {
+        //     client.postMessage({
+        //       request: 'caches',
+        //       message: JSON.stringify(names)
+        //     });
+        //   });
+        client.postMessage({
+          request: 'claim',
+          message: version
         });
+        // DEBUG && console.log(`[ServiceWorker] Claiming client for version ${version}`, client.id, client.type, client.url, client);
+        // DEBUG && console.log(evaluatedExpression`JSON.stringify(client)`);
       });
       return self.clients.claim();
     }).catch(err => {
-      console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+      DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
     }));
 });
 
-// caches.delete(oldCacheName); // Delete the old one
-// console.log('caches.delete('+oldCacheName+')');
-var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
-
-// Basically following strategy of
+// NOTE: Originally following strategy of
 // https://pouchdb.com/serviceWorker.js
 // which is cache.match or fetch.
 // Now devtools shows URLs in Storage inspector!
 self.addEventListener('fetch', function(event) {
-  var request = event.request;
-  var url = request.url;
+  const successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
+  let request = event.request;
+  let url = request.url;
   event.respondWith(
-    caches.open(version).then(function(cache) {
+    caches.open(cachedVersion || version).then(function(cache) {
       return cache.match(request).then(resp => {
         if (resp) {
-          // console.log(`prefer cache.match(${url}) for ${version}`);
           return resp;
         }
-        return fetch(event.request).then(response => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const fetchTimeout = 5000;
+        const timeout = setTimeout(() => { 
+          controller.abort();
+          const msg = `fetch request for ${event.request.url} timed out after ${fetchTimeout} ms`;
+          self.clients.get(event.clientId).then((client) => {
+            client.postMessage({
+              request: 'error',
+              message: msg
+            });
+          });
+          DEBUG && console.log(msg);
+        }, fetchTimeout);
+        return fetch(event.request, {signal}).then(response => {
+          clearTimeout(timeout);
           if (request.method == 'GET' && response && successResponses.test(response.status) &&
               request.url.match(self.registration.scope) &&
               (response.type == 'basic' || /\.(js|png|ttf|woff|woff2)/i.test(request.url) ||
                /fonts\.googleapis\.com/i.test(request.url))) {
-            // console.log(`put fetched ${event.request.url} response in ${version}`);
             // More recent spec versions have newer language stating that the browser can
             // resolve the promise as soon as the entry is recorded in the database even
             // if the response body is still streaming in.
             cache.put(event.request, response.clone());
           }
           else {
-            // console.log(`NOT put fetched ${event.request.url} response in ${version}`, request, response);
+            DEBUG && console.log(`NOT put fetched ${event.request.url} response ${response.status} in ${version}`);
           }
           if (!response) {
-            console.log(`NO RESPONSE for ${event.request.url} in ${version}`, request, response);
-            // return response;
+            DEBUG && console.log(`NO RESPONSE for ${event.request.url} in ${version}`, request, response);
           }
           else {
             return response;
           }
         }).catch(err => {
-          console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+          DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2), event);
+          self.clients.get(event.clientId).then((client) => {
+            client.postMessage({
+              request: 'error',
+              message: `${err.message} for ${event.request.url}`
+            });
+          });
         });
       }).catch(err => {
-        console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+        DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
       });
-    })
-  );
+    }).catch(err => {
+      DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+    }));
 });
 
 self.addEventListener("message", function(e) {
   // e.source is a client object
-  console.log('[ServiceWorker] message for ${version}', e.data);
+  DEBUG && console.log(`[ServiceWorker] message for ${version}`, e.source, e.data);
   switch (e.data.request) {
+  case 'caches': {
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          return cacheName;
+        })
+      )}).then((names) => {
+        e.source.postMessage({
+          request: 'caches',
+          message: JSON.stringify(names)
+        });
+      });
+    break;
+  }
+  case 'delete cache': {
+    self.caches.delete(e.data.cache);
+    break;
+  }
   case 'version': {
     e.source.postMessage({
       request: 'version',
-      message: version
+      message: cachedVersion || version
+    });
+    break;
+  }
+  case 'use cache': {
+    cachedVersion = e.data.cache;
+    if (cachedVersion) {
+      DEBUG && console.log(`fetch will now use cachedVersion ${cachedVersion} instead of version ${version}`);
+    }
+    else {
+      DEBUG && console.log(`fetch will now use version ${version} instead of cachedVersion`);
+    }
+    e.source.postMessage({
+      request: 'version',
+      message: cachedVersion || version
     });
     break;
   }
   }
 });
 
-console.log('end', (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
+DEBUG && console.log('end', (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);

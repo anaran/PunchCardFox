@@ -1,15 +1,32 @@
+/* Imported by readme.css
 @import url(view.css);
+*/
 @import url(menu.css);
 @import url(new.css);
 @import url(options.css);
 @import url(info.css);
 @import url(readme.css);
+/* @import url(scrolling.css); */
 /* @import url(links.css);
 */
 
-h2 span {
-    padding: 0.25rem;
-    font-size: medium;
+/* h2 span { */
+/*     padding: 0.25rem 0 0.25rem 0.75rem; */
+/* } */
+
+#app_header {
+    font-size: 1.5rem;
+    margin: 0;
+    position: fixed;
+    top: 0;
+    left: 1.5rem;
+    display: flex;
+    width: calc(100vw - 1.5em);
+    text-align: center;
+}
+
+#app_header > span {
+    flex: auto;
 }
 
 /* Not honored by nightly desktop firefox or nightly firefox os
@@ -17,13 +34,13 @@ menuitem {
 font-size: x-large;
 } */
 
-div {
-  /*   font-size: small; */
-  /*   border: 1px solid; */
+/* div {
+  /*   font-size: small; * /
+  /*   border: 1px solid; * /
   margin: 0 0 0;
   padding: 0 0 0;
-  /*     display: inline-block; */
-}
+  /*     display: inline-block; * /
+}*/
 
 div.entry {
   margin: 0 0 0;
@@ -57,9 +74,9 @@ div.linked {
   margin: 0 0 1rem; */
 }
 
-span {
+/*span {
   margin: 0 0 0;
-}
+}*/
 
 pre {
   margin: 0 0 0;
@@ -159,47 +176,95 @@ pre.activity:hover {
 /* JUMPER */
 
 nav#punchcard_scrollbar li {
-  text-align: right;
-  overflow: hidden;
-  width: 1rem;
+    display: flex;
+    /* 29 should be sufficient for 29 entries, but last entry gets
+   truncated for small heigths */
+    height: calc(100vh/29);
+    overflow: hidden;
+    text-align: center;
+    white-space: pre;
+    width: 1.5rem;
 }
 
 nav#punchcard_scrollbar:hover li {
-  overflow: visible;
-  width: auto;
+    overflow: visible;
+    width: auto;
 }
 
 nav#punchcard_scrollbar {
-  position: absolute;
+  bottom: 0;
+  left: 0;
   overflow: hidden;
-  top: 3rem;
-  right: 0;
+  position: absolute;
+  top: 0;
 }
 
-nav#punchcard_scrollbar ol:hover {
-  opacity: 0.7;
+nav#punchcard_scrollbar ul {
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+nav#punchcard_scrollbar ul:hover {
+    opacity: 0.9;
+    display: block;
+    background-color: white;
 }
 
 section#view-punchcard-list {
-  width: calc(100% - 1rem);
+    width: calc(100vw - 1.5em);
+    /* right: 0; */
+}
+
+/* scrollbar is a sibling of #view-punchcard-list and ancestor of the
+     hovered anchor element. */
+nav#punchcard_scrollbar:hover + section#view-punchcard-list {
+    left: 12ch;
 }
 
 nav#punchcard_scrollbar li a {
-  display: inline;
-  font-family: monospace;
-  font-size: small;
-  color: black;
-  background-color: white;
-  opacity: 1;
+    background-color: white;
+    color: black;
+    flex: auto;
+    font-family: monospace;
+    /* font-size: small; */
+    opacity: 1;
+    padding: 0;
+    text-decoration: none;
 }
 
+nav#punchcard_scrollbar li a.deleted {
+    background-color: white;
+    color: red;
+}
+
+nav#punchcard_scrollbar li a:hover/* , nav#punchcard_scrollbar li:active a, nav#punchcard_scrollbar li:focus a */ {
+    /* border-radius: 6px; */
+    /* border: 2px solid black; */
+    /* left: 0; */
+    /* Create stacking context to move element to the front, see
+         https://developer.mozilla.org/en-US/docs/Web/CSS/transform */
+    /* transform: translate(0, 0); */
+    /* Invert font colors, works for images too. */
+    /* background-color: red; */
+    filter: invert(100%);
+}
+
+nav#punchcard_scrollbar li a:active {
+    background-color: blue;
+}
+
+/* nav#punchcard_scrollbar li:focus a { */
+/*     background-color: green; */
+/* } */
+
 section#filter > input {
-  font-size: x-large;
-  left: 0;
-  opacity: 0.7;
+    font-size: x-large;
+    left: 0;
+    opacity: 0.7;
     /* needed since 100% pushes
          span.erase below input in Brave browser. */
-  max-width: 95%;
+    max-width: 95%;
 }
 
 section#filter > input:focus {
@@ -220,29 +285,19 @@ input.empty + span.erase {
     display: none;
 }
 
-nav#punchcard_scrollbar li:hover a {
-  /*   direction: ltr; */
-  /*   text-align: left; */
-  font-size: large;
-  border-radius: 6px;
-  border: 2px solid black;
-  padding: 3px;
-  right: 0;
-}
-
 /* nav#punchcard_scrollbar li a:active {
 color: blue;
 } */
 
-/* nav[data-type="scrollbar"] {
+/* nav#punchcard_scrollbar {
 z-index: 6;
 }
 
-nav[data-type="scrollbar"].selecting {
+nav#punchcard_scrollbar.selecting {
 bottom: 4.2rem;
 }
 
-nav[data-type="scrollbar"] ol > li > * {
+nav#punchcard_scrollbar ul > li > * {
 pointer-events: none;
 } */
 
@@ -268,11 +323,6 @@ will-change: scroll-position;
 /* .view-noscroll .view-body-inner {
 width: -moz-calc(100% + 1.5rem);
 } */
-
-.view-body {
-  position: relative;
-  height: calc(100% - 5rem);
-}
 
 div.entries.updating, input.updating {
   background-color: silver;
@@ -306,11 +356,11 @@ body {
 background: none;
 }
 
-body[role="application"] nav[data-type="scrollbar"] p {
+body[role="application"] nav#punchcard_scrollbar p {
 opacity: 1;
 }
 
-body[role="application"] nav[data-type="scrollbar"] {
+body[role="application"] nav#punchcard_scrollbar {
 top: 6.8rem;
 } */
 /* End of section taken from

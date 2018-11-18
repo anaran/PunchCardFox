@@ -2,15 +2,19 @@
 .view {
   position: fixed;
   overflow: scroll;
-  top: 3rem;
+  top: 1.5rem;
+  left: 1.5rem;
+  bottom: 0;
 /*   margin: 0.2rem; */
 /*   width: 100%; */
-  height: calc(100% - 3rem);
-  transform: translate(0, 0);
+  /* height: calc(100vh - 3rem); */
+  /* transform: translate(0, 0); */
+  /* scrollbar-color: black white; */
+  /* scrollbar-width: thin; */
 }
 
-section#view-after-punchcard-list {
-  background-color: white;
-  display: none;
-  width: calc(100% - 3ex);
-}
+/* section#view-after-punchcard-list { */
+/*   background-color: white; */
+/*   display: none; */
+/*   width: calc(100% - 3ex); */
+/* } */

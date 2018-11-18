@@ -65,6 +65,9 @@ var successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
 self.addEventListener('fetch', function(event) {
   var request = event.request;
   var url = request.url;
+  if (version == 'TDB') {
+    return fetch(event.request);
+  }
   event.respondWith(
     caches.open(version).then(function(cache) {
       return cache.match(request).then(resp => {
@@ -100,18 +103,18 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
-self.addEventListener("message", function(e) {
-  // e.source is a client object
-  console.log('[ServiceWorker] message for ${version}', e.data);
-  switch (e.data.request) {
-  case 'version': {
-    e.source.postMessage({
-      request: 'version',
-      message: version
-    });
-    break;
-  }
-  }
-});
+// self.addEventListener("message", function(e) {
+//   // e.source is a client object
+//   console.log('[ServiceWorker] message for ${version}', e.data);
+//   switch (e.data.request) {
+//   case 'version': {
+//     e.source.postMessage({
+//       request: 'version',
+//       message: version
+//     });
+//     break;
+//   }
+//   }
+// });
 
 console.log('end', (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);

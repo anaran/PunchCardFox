@@ -17,7 +17,7 @@ export function infojs(info, element, append) {
     var pre = document.createElement('pre');
     pre.classList.add('info');
     // pre.contentEditable = true;
-    pre.textContent = JSON.stringify(info, getAllPropertyNames(info), 2);
+    pre.textContent = `"${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
     pre.addEventListener('click', event => {
       if (event.target.classList.contains('selected')) {
         event.target.classList.remove('selected');
