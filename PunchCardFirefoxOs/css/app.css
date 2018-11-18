@@ -2,7 +2,7 @@
 @import url(view.css);
 */
 @import url(menu.css);
-@import url(new.css);
+/* @import url(new.css); */
 @import url(options.css);
 @import url(info.css);
 @import url(readme.css);
@@ -219,7 +219,7 @@ section#view-punchcard-list {
 /* scrollbar is a sibling of #view-punchcard-list and ancestor of the
      hovered anchor element. */
 nav#punchcard_scrollbar:hover + section#view-punchcard-list {
-    left: 12ch;
+    left: 8rem;
 }
 
 nav#punchcard_scrollbar li a {

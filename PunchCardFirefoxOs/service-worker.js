@@ -1,6 +1,6 @@
 'use strict';
 
-let version = 'Punchcard v80';
+let version = 'Punchcard v46';
 let cachedVersion = undefined;
 
 let DEBUG = false;
