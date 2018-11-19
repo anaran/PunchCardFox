@@ -2,7 +2,7 @@
 
 import { infojs } from './info.js';
 
-class InputUI extends HTMLElement {
+export class InputUI extends HTMLElement {
   constructor() {
     try {
       // Trying to extent HTMLPreElement I get:
@@ -231,6 +231,6 @@ if (!customElements.get('input-ui')) {
   customElements.define('input-ui', InputUI);
 }
 
-export default {
-  InputUI
-};
+// export default {
+//   InputUI
+// };

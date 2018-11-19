@@ -1,7 +1,7 @@
 'use strict';
 
-import { infojs } from './info.js';
-import utilsjs from './utils.js';
+import * as infojs from './info.js';
+import * as utilsjs from './utils.js';
 import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 // import '../../bower_components/pouchdb/dist/pouchdb.js';
 
@@ -23,7 +23,7 @@ TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.no
 // typeof document != 'undefined' && document.addEventListener('readystatechange', function (event) {
 //   // DEBUG_ADDON && console.log('document.readyState', document.readyState);
 //   if (document.readyState == 'complete') {
-var addReadOnlyInfo = infojs;
+var addReadOnlyInfo = infojs.infojs;
 var infoNode = document.getElementById('replication_info');
 var XHR_TIMEOUT_MS = 65000;
 var cookie;
@@ -566,7 +566,7 @@ logout.addEventListener('click', function(e) {
 //   }
 // });
 TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-var sessionLogin = function (url, username, password) {
+export let sessionLogin = function (url, username, password) {
   // Returns AuthSession header in Firefox OS App with systemXHR permission
   var request;
   if (false && /* false && */window.location.protocol == "app:") {
@@ -649,7 +649,7 @@ var sessionLogin = function (url, username, password) {
   // return cookie;
 };
 TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-var sessionLogout = function (url) {
+export let sessionLogout = function (url) {
   var request;
   if (false && /* false && */window.location.protocol == "app:") {
     request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
@@ -723,10 +723,10 @@ var start = function () {
 };
 TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 // document.body.style.display = 'none';
-export default {
-  sessionLogin,
-  sessionLogout
-};
+// export default {
+//   sessionLogin,
+//   sessionLogout
+// };
 // }
 // catch (e) {
 //   window.alert(e.message + '\n' + e.stack);

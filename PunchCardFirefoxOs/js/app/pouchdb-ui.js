@@ -5,7 +5,7 @@ import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
 // import '../../bower_components/pouchdb/dist/pouchdb.js';
 // import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
 
-class PouchdbUI extends HTMLElement {
+export class PouchdbUI extends HTMLElement {
   constructor() {
     // Trying to extent HTMLPreElement I get:
     // VM1330:1 Uncaught TypeError: Illegal constructor
@@ -249,6 +249,6 @@ if (!customElements.get('pouchdb-ui')) {
   customElements.define('pouchdb-ui', PouchdbUI);
 }
 
-export default {
-  PouchdbUI
-};
+// export default {
+//   PouchdbUI
+// };

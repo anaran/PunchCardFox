@@ -1,14 +1,14 @@
 'use strict';
 
 import { infojs } from './info.js';
-import utilsjs from './utils.js';
+import * as utilsjs from './utils.js';
 // import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 // import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
 
 let DEBUG = false;
 let LOG = false;
 
-class NewEntryUI extends HTMLElement {
+export class NewEntryUI extends HTMLElement {
   // See
   // https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements
   // for constuctor arguments
@@ -820,6 +820,6 @@ if (!customElements.get('new-entry')) {
   customElements.define('new-entry', NewEntryUI);
 }
 
-export default {
-  NewEntryUI
-};
+// export default {
+//   NewEntryUI
+// };

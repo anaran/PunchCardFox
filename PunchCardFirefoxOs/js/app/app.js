@@ -2,9 +2,9 @@
 
 import { infojs } from './info.js';
 import './about.js';
-import utilsjs from './utils.js';
-import newentryjs from './new-entry.js';
-import optionsjs from './options.js';
+import * as utilsjs from './utils.js';
+import { NewEntryUI }  from './new-entry.js';
+import * as optionsjs from './options.js';
 
 // DOMContentLoaded is fired once the document has been loaded and parsed,
 // but without waiting for other external resources to load (css/images/etc)
@@ -331,7 +331,7 @@ document.addEventListener('readystatechange', (event) => {
     // };
 
     var addNewEdit = function(id) {
-      let neu = new newentryjs.NewEntryUI(id);
+      let neu = new NewEntryUI(id);
       document.querySelector('#filter').insertAdjacentElement('afterend', neu);
     };
 

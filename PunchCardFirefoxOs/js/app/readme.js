@@ -4,7 +4,7 @@ import '../../bower_components/marked/lib/marked.js';
 
 var DEBUG = false;
 var XHR_TIMEOUT_MS = 0;
-var init = function (url, renderElement, editElement, toggleElement) {
+export let init = function (url, renderElement, editElement, toggleElement) {
   return new Promise(function(resolve, reject) {
     // See
     // https://github.com/chjj/marked/issues/545#issuecomment-74505539
@@ -158,6 +158,6 @@ var onRequestError = function (event) {
   window.alert(event.type + ': ' + errorMessage);
 };
 
-export default {
-  init
-};
+// export default {
+//   init
+// };

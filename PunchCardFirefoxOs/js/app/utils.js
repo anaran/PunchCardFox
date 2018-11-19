@@ -15,7 +15,7 @@ import { infojs } from './info.js';
 // <- "Mi., 9. Sep. 15, 01:07:04 MESZ"
 // >> navigator.languages
 // <- Array [ "de", "en-US" ]
-let formatStartDate = (date) => {
+export let formatStartDate = (date) => {
   return date.toLocaleString();
 };
 
@@ -38,14 +38,14 @@ if ('Intl' in window) {
   }
 }
 
-let formatEndDate = (date) => {
+export let formatEndDate = (date) => {
   // return date.toString().substring(4, 24);
   // NOTE Make clear we use same format as for start date,
   // instead of duplicating implementation here.
   return formatStartDate(date);
 }
 
-let updateEntriesElement = (id, selector, value) => {
+export let updateEntriesElement = (id, selector, value) => {
   let updateItem = document.getElementById(id).querySelector(selector);
   if (updateItem.textContent != value) {
     updateItem.textContent = value;
@@ -57,7 +57,7 @@ let updateEntriesElement = (id, selector, value) => {
   // }
 }
 
-let pad = (text, length, padding) => {
+export let pad = (text, length, padding) => {
   padding = padding ? padding : '0';
   text += '';
   while (text.length < length) {
@@ -66,7 +66,7 @@ let pad = (text, length, padding) => {
   return text;
 }
 
-let reportDateTimeDiff = (d1, d2) => {
+export let reportDateTimeDiff = (d1, d2) => {
   let dt = d2.getTime() - d1.getTime(),
       milliSecondsPerDay = 24 * 3600000,
       dtDayFraction = dt % milliSecondsPerDay,
@@ -88,7 +88,7 @@ let reportDateTimeDiff = (d1, d2) => {
   return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
 }
 
-let addNewEntry = function (doc, entries, before, addRevisionToElementId) {
+export let addNewEntry = function (doc, entries, before, addRevisionToElementId) {
   try {
     let content = document.getElementById('entry_template').content;
     let entry = document.importNode(content, "deep").firstElementChild;
@@ -201,12 +201,11 @@ let addNewEntry = function (doc, entries, before, addRevisionToElementId) {
   }
 }
 
-export default {
-    formatEndDate,
-    formatStartDate,
-    updateEntriesElement,
-    pad,
-    reportDateTimeDiff,
-    addNewEntry
-  };
-
+// export default {
+//     formatEndDate,
+//     formatStartDate,
+//     updateEntriesElement,
+//     pad,
+//     reportDateTimeDiff,
+//     addNewEntry
+//   };
