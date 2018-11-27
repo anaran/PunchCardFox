@@ -17,10 +17,11 @@ document.addEventListener('readystatechange', (event) => {
   if (event.target.readyState !== 'complete') {
     return;
   }
+  let ORIENTATION = false;
+  let SCROLL = false;
+  let DEBUG = false;
+  let TIME = false;
   try {
-    let ORIENTATION = true;
-    let DEBUG = false;
-    let TIME = false;
     let resultIndex = 1;
     let optionsDB = new PouchDB('options');
     let db = new PouchDB('punchcard');
@@ -133,8 +134,25 @@ document.addEventListener('readystatechange', (event) => {
     // };
     let pendingFrame = false;
     let elementAtCenter;
+    let recenterCenterElement = () => {
+      if (elementAtCenter) {
+        scrollView.removeEventListener('scroll', scrollListener);
+        ORIENTATION && console.log('remove scrollListener');
+        ORIENTATION && console.log(elementAtCenter.innerText);
+        window.setTimeout(() => {
+          // window.requestAnimationFrame(function (timestamp) {
+          elementAtCenter.scrollIntoView({block: "center", inline: "center"});
+          ORIENTATION && console.log(event.type, scrollView.scrollTop);
+          // });
+        }, 500);
+        window.setTimeout(() => {
+          scrollView.addEventListener('scroll', scrollListener);
+          ORIENTATION && console.log('add scrollListener');
+        }, 1000);
+      }
+    };
     let scrollListener = (event) => {
-      console.log(event.type, event.target.scrollTop);
+      SCROLL && console.log(event.type, event.target.scrollTop);
       if (!pendingFrame) {
         window.requestAnimationFrame(function (timestamp) {
           // timer = window.setTimeout(() => {
@@ -147,7 +165,7 @@ document.addEventListener('readystatechange', (event) => {
             menu.style.display = 'none';
           });
           elementAtCenter = document.elementFromPoint(scrollView.offsetLeft + scrollView.offsetWidth / 2, scrollView.offsetTop + scrollView.offsetHeight / 2);
-          console.log('animation frame spaced elementFromPoint menu display none', elementAtCenter.innerText);
+          SCROLL && console.log('animation frame spaced elementFromPoint menu display none', elementAtCenter.innerText);
           // elementAtTop = document.elementFromPoint(scrollView.offsetLeft, scrollView.offsetTop);
           pendingFrame = false;
           // }, 500);
@@ -256,16 +274,27 @@ document.addEventListener('readystatechange', (event) => {
     let click = (event) => {
       // event.preventDefault();
       // event.stopPropagation();
+      DEBUG && console.log(event.type, event.target, event.eventPhase, event);
       if (event.changedTouches.length) {
         let it = document.elementFromPoint(event.changedTouches[event.changedTouches.length-1].clientX, event.changedTouches[event.changedTouches.length-1].clientY);
         it.click();
       }
-      // scrollBar.blur();
-      DEBUG && console.log(event.type, event.target, event.eventPhase, event);
     };
-    scrollBar.addEventListener('contextmenu', ignore, !'capture');
+    let toggleNarrow = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      DEBUG && console.log(this, event);
+      if (this.classList.contains('narrow')) {
+        this.classList.remove('narrow');
+      }
+      else {
+        this.classList.add('narrow');
+      }
+      recenterCenterElement();
+    };
+    scrollBar.addEventListener('contextmenu', toggleNarrow);
     // scrollBar.addEventListener('touchstart', log, !'capture');
-    // scrollBar.addEventListener('touchmove', click, !'capture');
+    // scrollBar.addEventListener('touchmove', log, !'capture');
     // scrollBar.addEventListener('touchend', click, !'capture');
     // scrollBar.addEventListener('touchcancel', log, !'capture');
     // Array.prototype.forEach.call(links, (link) => {
@@ -281,10 +310,8 @@ document.addEventListener('readystatechange', (event) => {
     // scrollBar.addEventListener('drag', ignore, !'capture');
     
     screen.orientation.addEventListener('change', (event) => {
-      scrollView.removeEventListener('scroll', scrollListener);
-      console.log('remove scrollListener');
       ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
-      console.log(event.type, scrollView.scrollTop);
+      ORIENTATION && console.log(event.type, scrollView.scrollTop);
       // [
       //   startMenu,
       //   endMenu,
@@ -305,19 +332,7 @@ document.addEventListener('readystatechange', (event) => {
       //   }
       //   // console.log(`centering ${menu.dataset.id}`);
       // });
-      if (elementAtCenter) {
-        console.log(elementAtCenter.innerText);
-        window.setTimeout(() => {
-          // window.requestAnimationFrame(function (timestamp) {
-          elementAtCenter.scrollIntoView({block: "center", inline: "center"});
-          console.log(event.type, scrollView.scrollTop);
-          // });
-        }, 500);
-        window.setTimeout(() => {
-          scrollView.addEventListener('scroll', scrollListener);
-          console.log('add scrollListener');
-        }, 1000);
-      }
+      recenterCenterElement();
     });
     // All these listener capture values report Event.AT_TARGET
     // screen.orientation.addEventListener('change', (event) => {
@@ -673,15 +688,30 @@ document.addEventListener('readystatechange', (event) => {
       if (filter.style['display'] == 'none') {
         filter.style['display'] = 'block';
         filter.focus();
-        filter.scrollIntoView({block: "center", inline: "center"});
+        // filter.scrollIntoView({block: "center", inline: "center"});
       }
       else {
         filter.style['display'] = 'none';
       }
     };
-    var titleItem = document.getElementById('app_header');
+    var titleItem = document.querySelector('span.app_title');
     if (titleItem) {
       titleItem.addEventListener('click', toggleFilter);
+    }
+    var toggleScrollbar = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (scrollBar.style['display'] == 'none') {
+        scrollBar.style['display'] = 'block';
+      }
+      else {
+        scrollBar.style['display'] = 'none';
+      }
+      recenterCenterElement();
+    };
+    var scrollbaritem = document.querySelector('span.scrollbar');
+    if (scrollbaritem) {
+      scrollbaritem.addEventListener('click', toggleScrollbar);
     }
 
     var editNewItem = document.querySelector('span.edit');
@@ -938,7 +968,7 @@ document.addEventListener('readystatechange', (event) => {
           var limit = options.limit.length ? Number(options.limit) : 100;
           var matchLimit = options.match_limit.length ? Number(options.match_limit) : 50;
           var dec = !!options.descending;
-          var opts = { include_docs: true, descending: dec, limit: limit };
+          var opts = { include_docs: true, descending: dec, limit: /*limit*/1000 };
           TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
           TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
           var content = document.getElementById('entries_template').content;
@@ -1068,6 +1098,9 @@ document.addEventListener('readystatechange', (event) => {
             if (start && end) {
               var startDate = new Date(start.value).toJSON();
               var endDate = new Date(end.value).toJSON();
+              if (startDate && endDate && startDate > endDate) {
+                [ startDate, endDate ] = [ endDate, startDate ];
+              }
               if (startDate) {
                 if (dec) {
                   opts.endkey = startDate;
@@ -1085,70 +1118,32 @@ document.addEventListener('readystatechange', (event) => {
                 }
               }
             }
-            // }
-            // startkey: "2015-02",
-            // endkey: "2015-03",
-            // var queryInfoElement = document.getElementById('query_search_info');
-            var isSearch = (options.include.length || options.exclude.length);
-            // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
-            var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
-            var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
-            var query;
-            // if (options.deleted_id.length) {
-            //   return;
-            // }
-            TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
             if (isSearch) {
               queryInfoElement.textContent = `Search limited to ${matchLimit} matches of "${includeRegExp}" ${ excludeRegExp ? ` (but not "${excludeRegExp}")` : ''} ${ limit ? `, limited to ${limit} entries, ` : ''}`;
               TIME && console.time('query allDocs');
-              query = db.allDocs(opts);
-              TIME && console.timeEnd('query allDocs');
             }
             else {
               queryInfoElement.textContent = `Query limited to ${limit} entries`;
               opts.reduce = false;
               TIME && console.time('query by_start');
-              query = db.allDocs(opts);
-              // query = db.query('foolin/by_start', opts);
-              TIME && console.timeEnd('query by_start');
             }
-            // window.requestAnimationFrame(function (timestamp) {
-            TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-            query.then(function(doc) {
-              TIME && console.time('query');
-              var rowCount = doc.rows.length;
-              var matches = 0;
-              // NOTE: Iteration statement is needed to use break statement.
-              // doc.rows.forEach(function (row, index) {
-              TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-              for (var index = 0; index < rowCount; index++) {
-                var row = doc.rows[index];
-                if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
-                    excludeRegExp && excludeRegExp.test(row.doc.activity)) {
-                  // forEach function return becomes continue in for loop.
-                  continue;
-                }
-                var entry;
-                if (!('activity' in row.doc)) {
-                  continue;
-                }
-                entry = utilsjs.addNewEntry(row.doc, entries, undefined, 0);
-                if (isSearch) {
-                  if (matchLimit && (matches == matchLimit)) {
-                    break;
-                  }
-                  else {
-                    matches += 1;
-                  }
-                }
-              }
-              if (isSearch) {
-                queryInfoElement.textContent += ` found ${matches}`;
+            var isSearch = (options.include.length || options.exclude.length);
+            // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
+            var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
+            var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
+            let rowCount = 0,  matches = 0, loops = 1;
+            // for (; rowCount < limit; loops++) {
+
+            let updateQueryResults = (result) => {
+              console.log(result);
+              // loops end
+              if (result[0]) {
+                queryInfoElement.textContent += ` found ${result[2]}`;
               }
               else {
-                queryInfoElement.textContent += ` found ${rowCount}`;
+                queryInfoElement.textContent += ` found ${result[3]}`;
               }
-              TIME && console.timeEnd('query');
+              TIME && console.timeEnd('query result processing');
               resultIndex += 1;
               TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
               updateScrollLinks();
@@ -1163,9 +1158,76 @@ document.addEventListener('readystatechange', (event) => {
                   entries)
                 return currValue;
               });
-            }).catch(function(err) {
-              infojs(err, entries);
-            });
+            };
+            let recursiveQuery = (opts, matches, rowCount) => {
+              return new Promise((resolve, reject) => {
+                var query;
+                // if (options.deleted_id.length) {
+                //   return;
+                // }
+                TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                if (isSearch) {
+                  query = db.allDocs(opts);
+                }
+                else {
+                  query = db.allDocs(opts);
+                }
+                // window.requestAnimationFrame(function (timestamp) {
+                TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                query.then(function(doc) {
+                  if (isSearch) {
+                    TIME && console.timeEnd('query allDocs');
+                  }
+                  else {
+                    TIME && console.timeEnd('query by_start');
+                  }
+                  TIME && console.time('query result processing');
+                  opts.startkey = doc.rows[doc.rows.length - 1].doc._id.substring(0, 24);
+                  // NOTE: Iteration statement is needed to use break statement.
+                  // doc.rows.forEach(function (row, index) {
+                  TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                  for (var index = 0; index < doc.rows.length; index++) {
+                    var row = doc.rows[index];
+                    if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
+                        excludeRegExp && excludeRegExp.test(row.doc.activity)) {
+                      // forEach function return becomes continue in for loop.
+                      if (rowCount + index +1 == limit) {
+                        return resolve([isSearch, opts, matches, rowCount + index + 1]);
+                      }
+                      else {
+                        continue;
+                      }
+                    }
+                    var entry;
+                    if (!('activity' in row.doc)) {
+                      console.log(`no activity at ${rowCount + index}`);
+                      if (rowCount + index +1 == limit) {
+                        return resolve([isSearch, opts, matches, rowCount + index + 1]);
+                      }
+                      else {
+                        continue;
+                      }
+                    }
+                    entry = utilsjs.addNewEntry(row.doc, entries, undefined, 0);
+                    if (isSearch) {
+                      matches += 1;
+                      if (matchLimit && (matches == matchLimit)) {
+                        return resolve([isSearch, opts, matches, rowCount + index + 1]);
+                      }
+                    }
+                    if (rowCount + index + 1 == limit) {
+                      return resolve([ isSearch, opts, matches, rowCount + index + 1]);
+                    }
+                  }
+                  rowCount += doc.rows.length;
+                  // Just recurse, we already checked for limit and matchLimit above
+                  return resolve(recursiveQuery(opts, matches, rowCount));
+                }).catch(function(err) {
+                  infojs(err, entries);
+                });
+              });
+            };
+            recursiveQuery(opts, matches, rowCount).then(updateQueryResults);
           }
           // });
         }
@@ -1181,7 +1243,7 @@ document.addEventListener('readystatechange', (event) => {
       var entriesNodes = scrollView.querySelectorAll('.entries');
       var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ul>li');
       var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
-      for (var linkIndex = 3; linkIndex < scrollLinks.length - 1; linkIndex++)  {
+      for (var linkIndex = 3; linkIndex < scrollLinks.length; linkIndex++)  {
         scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
       }
       Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
@@ -1224,7 +1286,7 @@ document.addEventListener('readystatechange', (event) => {
               link.style.visibility = 'visible';
               DEBUG && console.log({ last: last });
               if (last) {
-                TIME && console.timeEnd('updateScrollLinks');
+                // TIME && console.timeEnd('updateScrollLinks');
               }
               // });
               // }
@@ -1245,6 +1307,7 @@ document.addEventListener('readystatechange', (event) => {
         link.href = '#' + node.id;
         resultsLink.appendChild(link);
       });
+      TIME && console.timeEnd('updateScrollLinks');
     };
   }
   catch(err) {

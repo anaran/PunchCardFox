@@ -18,19 +18,21 @@ this.shadow.innerHTML = `
 </span>
 <style>
 span.top {
-  border: solid grey 1px;
+  display: flex;
 }
 input {
-  border: hidden;
+  /* NOTE: - 2rem to make span.top extend across both span siblings after input child! */
+  width: calc(100% - 2rem);
+  font-size: inherit;
 }
 input:invalid {
   background: lightpink;
 }
 span.erase {
-  border: hidden;
+  border: 0;
 }
 span.undo {
-  border: hidden;
+  border: 0;
 }
 input.empty ~ span.erase {
   opacity: 0.3;

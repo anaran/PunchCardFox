@@ -159,7 +159,7 @@ if ('serviceWorker' in navigator) {
         }
         case 'claim': {
           // Offer user to refresh to cache newly claimed version of ServiceWorker.
-          document.getElementById('app_header').firstChild.textContent = e.data.message;
+          document.querySelector('span.app_title').textContent = e.data.message;
           let reload = window.confirm(`Press OK to reload app to fetch and cache new version ${e.data.message}.\n\nPress Cancel, pick a cache and press (Use selected cache) to stay with your preferred version after the next reload`);
           if (reload) {
             document.location.reload();
@@ -177,7 +177,7 @@ if ('serviceWorker' in navigator) {
           break;
         }
         case 'version': {
-          document.getElementById('app_header').firstChild.textContent = e.data.message;
+          document.querySelector('span.app_title').textContent = e.data.message;
           break;
         }
         }

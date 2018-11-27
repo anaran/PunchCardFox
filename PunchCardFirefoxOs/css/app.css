@@ -10,18 +10,24 @@
 /* @import url(links.css);
 */
 
-/* h2 span { */
-/*     padding: 0.25rem 0 0.25rem 0.75rem; */
-/* } */
+body {
+    color: black;
+    background-color: white;
+}
+
+body.dark_theme {
+    color: white;
+    background-color: black;
+}
 
 #app_header {
     font-size: 1.5rem;
     margin: 0;
     position: fixed;
     top: 0;
-    left: 1.5rem;
+    left: 0;
     display: flex;
-    width: calc(100vw - 1.5em);
+    width: 100vw;
     text-align: center;
 }
 
@@ -29,25 +35,12 @@
     flex: auto;
 }
 
-/* Not honored by nightly desktop firefox or nightly firefox os
-menuitem {
-font-size: x-large;
-} */
-
-/* div {
-  /*   font-size: small; * /
-  /*   border: 1px solid; * /
-  margin: 0 0 0;
-  padding: 0 0 0;
-  /*     display: inline-block; * /
-}*/
-
 div.entry {
   margin: 0 0 0;
   padding: 0 0 0;
-  /*   font-size: small; */
-  border: 0.1em solid;
-  /*   margin: 0 0 1rem; */
+  border: 0.1rem solid;
+  display: grid;
+  grid-template-columns: 0.75fr 0.25fr 1fr;
 }
 
 div.entry.deleted {
@@ -68,15 +61,8 @@ div.entry:hover * {
 }
 
 div.linked {
-  /*   font-size: small; */
-  border: 0.2em solid;
-  /* background: skyblue;
-  margin: 0 0 1rem; */
+  border: 0.2rem solid;
 }
-
-/*span {
-  margin: 0 0 0;
-}*/
 
 pre {
   margin: 0 0 0;
@@ -95,146 +81,129 @@ pre:hover:not(.info) {
 
 pre.start {
   white-space: pre-wrap;
-  width: 49%;
-  /*   direction: ltr;
-  text-overflow: clip ellipsis; */
+  /* width: 49%; */
+  grid-column: 1 / 3;
+  grid-row: 1;
 }
 
 pre.end {
   white-space: pre-wrap;
-  width: 49%;
-  /*   direction: ltr;
-  text-overflow: ellipsis clip; */
+  /* width: 49%; */
+  grid-column: 3;
+  grid-row: 1;
 }
 
 pre.duration {
   white-space: pre-wrap;
-  width: 49%;
-  /*   text-overflow: clip ellipsis; */
+  /* width: 49%; */
+  grid-column: 1;
+  grid-row: 2;
+}
+
+input.checked {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 pre.revisions {
-  width: 49%;
-  /*   text-overflow: clip ellipsis; */
+  /* width: 49%; */
+  grid-column: 3;
+  grid-row: 2;
 }
-
-/* pre.start:hover {
-font-size: x-large;
-white-space: pre-wrap;
-}
-
-pre.end:hover {
-font-size: x-large;
-white-space: pre-wrap;
-}
-
-pre.duration:hover {
-white-space: pre-wrap;
-}
-
-pre.revisions:hover {
-white-space: pre-wrap;
-} */
-
-/*pre:hover {
-color: red;
-overflow: visible;
-white-space: pre-wrap;
-/ *   white-space: pre; * /
-}*/
-
-/*pre:hover {
-color: hotpink;
-overflow: visible;
-white-space: pre-wrap;
-/ *   white-space: pre; * /
-}*/
 
 pre.activity {
-  /*   color:blue; */
-  /*   font-size: larger; */
-  display: block;
-  /*     white-space: pre; */
+  /* display: block; */
+  grid-column: 1 / 4;
+  grid-row: 3;
 }
 
 pre.activity:hover {
-  /*   color:blue; */
-  /*   font-size: larger; */
   overflow: visible;
   display: block;
   white-space: pre-wrap;
-  /*     white-space: pre; */
 }
 
 .changed {
-  /*   background: lightgreen; */
-  /*   font-weight: bold; */
-  /*   background-color: aliceblue; */
   background-color: greenyellow;
 }
 
 /* JUMPER */
 
-nav#punchcard_scrollbar li {
+div#scroll-and-view {
+    background-color: inherit;
     display: flex;
-    /* 29 should be sufficient for 29 entries, but last entry gets
-   truncated for small heigths */
-    height: calc(100vh/29);
-    overflow: hidden;
-    text-align: center;
-    white-space: pre;
-    width: 1.5rem;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* overflow: hidden; */
+    position: fixed;
+    top: 2rem;
 }
 
-nav#punchcard_scrollbar:hover li {
-    overflow: visible;
-    width: auto;
-}
+/* nav#punchcard_scrollbar:hover li { */
+/*     overflow: visible; */
+/*     width: auto; */
+/* } */
 
 nav#punchcard_scrollbar {
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  top: 0;
+    background-color: inherit;
+    flex: auto;
+    font-family: monospace;
+    font-size: small;
+    text-align: center;
+}
+
+nav#punchcard_scrollbar.narrow {
+    width: 2rem;
+    text-indent: -2.7em;
 }
 
 nav#punchcard_scrollbar ul {
+    background-color: inherit;
     margin: 0;
     padding: 0;
-    display: block;
+    height: 100%;
+    overflow-x: scroll;
+    /* display: block; */
 }
 
-nav#punchcard_scrollbar ul:hover {
-    opacity: 0.9;
-    display: block;
-    background-color: white;
-}
+/* nav#punchcard_scrollbar ul:hover { */
+/*     /\* opacity: 0.9; *\/ */
+/*     display: block; */
+/*     background-color: white; */
+/* } */
 
-section#view-punchcard-list {
-    width: calc(100vw - 1.5em);
+/* section#view-punchcard-list { */
+    /* width: calc(100vw - 1.5rem); */
     /* right: 0; */
-}
+/* } */
 
 /* scrollbar is a sibling of #view-punchcard-list and ancestor of the
      hovered anchor element. */
-nav#punchcard_scrollbar:hover + section#view-punchcard-list {
-    left: 8rem;
+/* nav#punchcard_scrollbar:hover + section#view-punchcard-list { */
+/*     left: 8rem; */
+/* } */
+
+nav#punchcard_scrollbar li {
+    background-color: inherit;
+    display: flex;
+    /* 29 should be sufficient for 29 entries, but last entry gets
+   truncated for small heigths */
+    height: calc(100%/29);
+    /* width: 1.5rem; */
 }
 
 nav#punchcard_scrollbar li a {
-    background-color: white;
-    color: black;
+    background-color: inherit;
+    color: inherit;
     flex: auto;
-    font-family: monospace;
-    /* font-size: small; */
-    opacity: 1;
     padding: 0;
     text-decoration: none;
+    white-space: pre;
 }
 
 nav#punchcard_scrollbar li a.deleted {
-    background-color: white;
+    /* background-color: white; */
     color: red;
 }
 
@@ -245,45 +214,47 @@ nav#punchcard_scrollbar li a:hover/* , nav#punchcard_scrollbar li:active a, nav#
     /* Create stacking context to move element to the front, see
          https://developer.mozilla.org/en-US/docs/Web/CSS/transform */
     /* transform: translate(0, 0); */
-    /* Invert font colors, works for images too. */
     /* background-color: red; */
+    /* Invert font colors, works for images too. */
     filter: invert(100%);
+    /* font-weight: bold; */
 }
 
-nav#punchcard_scrollbar li a:active {
-    background-color: blue;
-}
+/* nav#punchcard_scrollbar li a:active { */
+/*     background-color: blue; */
+/* } */
 
 /* nav#punchcard_scrollbar li:focus a { */
 /*     background-color: green; */
 /* } */
 
-section#filter > input {
+#filter > input-ui {
+    background-color: inherit;
     font-size: x-large;
-    left: 0;
+    /* left: 1.5rem; */
     opacity: 0.7;
-    /* needed since 100% pushes
-         span.erase below input in Brave browser. */
-    max-width: 95%;
+    /* input-ui input element adjust to width */
+    /* width: calc(100vw - 3rem); */
+    position: fixed;
 }
 
-section#filter > input:focus {
+#filter > input-ui:focus-within {
   opacity: 1;
   background-color: white;
 }
 
-input + span.erase {
-    font-size: x-large;
-    margin-inline-start: -1em;
-    /* needed since margin-inline-start
-         not available in Brave browser yet. */
-    margin-left: -1em;
-    opacity: 0.7;
-}
+/* input + span.erase { */
+/*     font-size: x-large; */
+/*     margin-inline-start: -1rem; */
+/*     /\* needed since margin-inline-start */
+/*          not available in Brave browser yet. *\/ */
+/*     margin-left: -1rem; */
+/*     opacity: 0.7; */
+/* } */
 
-input.empty + span.erase {
-    display: none;
-}
+/* input.empty + span.erase { */
+/*     display: none; */
+/* } */
 
 /* nav#punchcard_scrollbar li a:active {
 color: blue;

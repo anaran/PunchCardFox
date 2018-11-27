@@ -1,16 +1,18 @@
 
 .view {
-  position: fixed;
-  overflow: scroll;
-  top: 1.5rem;
-  left: 1.5rem;
-  bottom: 0;
-/*   margin: 0.2rem; */
-/*   width: 100%; */
-  /* height: calc(100vh - 3rem); */
-  /* transform: translate(0, 0); */
-  /* scrollbar-color: black white; */
-  /* scrollbar-width: thin; */
+    flex: auto;
+    /* position: fixed; */
+    overflow: scroll;
+    /* top: 2rem; */
+    /* left: 0; */
+    /* right: 0; */
+    /* bottom: 0; */
+    /*   margin: 0.2rem; */
+    /*   width: 100%; */
+    /* height: calc(100vh - 3rem); */
+    /* transform: translate(0, 0); */
+    scrollbar-color: black white;
+    /* scrollbar-width: thin; */
 }
 
 /* section#view-after-punchcard-list { */

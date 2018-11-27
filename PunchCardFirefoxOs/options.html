@@ -10,8 +10,8 @@
     <input class="persistent" type="checkbox" id="descending" data-l10n-id="descendieng" placeholder="descending">
     <input-ui class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id"></input-ui>
     <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ..."></input-ui>
-    <input-ui class="persistent" type="date" id="query_start" data-l10n-id="query_start_id" placeholder="earliest entry date"></input-ui>
-    <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" placeholder="latest entry date"></input-ui>
+    <input-ui class="persistent" type="text" id="query_start" data-l10n-id="query_start_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 1, YYYY-MM-DD"></input-ui>
+    <input-ui class="persistent" type="text" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
   </section>
   <section>
     <p>
