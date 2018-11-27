@@ -135,7 +135,8 @@ div#scroll-and-view {
     bottom: 0;
     left: 0;
     right: 0;
-    /* overflow: hidden; */
+    overflow-x: scroll;
+    overflow-y: hidden;
     position: fixed;
     top: 2rem;
 }
@@ -163,7 +164,7 @@ nav#punchcard_scrollbar ul {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow-x: scroll;
+    /* overflow-x: scroll; */
     /* display: block; */
 }
 
