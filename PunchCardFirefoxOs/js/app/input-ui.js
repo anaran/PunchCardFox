@@ -11,46 +11,35 @@ export class InputUI extends HTMLElement {
       this.shadow = this.attachShadow({ mode: 'open' });
       // this.shadow = this;
 this.shadow.innerHTML = `
-<span class="top">
-<input/>
-<span class="undo">&#x238c;</span>
-<span class="erase">&times;</span>
-</span>
+<input class="val"/>
+<input type="button" class="undo" value="&#x238c;"/>
+<input type="button" class="erase" value="&Cross;"/>
 <style>
-span.top {
-  display: flex;
-}
-input {
-  /* NOTE: - 2rem to make span.top extend across both span siblings after input child! */
-  width: calc(100% - 2rem);
+input.val {
+  font-family: inherit;
   font-size: inherit;
+  width: inherit;
 }
 input:invalid {
   background: lightpink;
 }
-span.erase {
-  border: 0;
-}
-span.undo {
-  border: 0;
-}
-input.empty ~ span.erase {
+input.empty ~ input.erase {
   opacity: 0.3;
 }
-input:not(.empty) ~ span.undo {
+input:not(.empty) ~ input.undo {
   display: none;
 }
-span.undo:not(.undoable) {
+input.undo:not(.undoable) {
   display: none;
 }
-input.empty + span.undo.undoable + span.erase {
+input.empty + input.undo.undoable + input.erase {
   display: none;
 }
 </style>
 `;
-      this.erase = this.shadow.querySelector('span.erase');
-      this.undo = this.shadow.querySelector('span.undo');
-      this.inp = this.shadow.querySelector('input');
+      this.erase = this.shadow.querySelector('input.erase');
+      this.undo = this.shadow.querySelector('input.undo');
+      this.inp = this.shadow.querySelector('input.val');
     }
     catch (e) {
       infojs(e, document.body, "append");

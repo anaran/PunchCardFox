@@ -79,7 +79,7 @@ if ('serviceWorker' in navigator) {
             checkbox.id = value;
             checkbox.checked = localStorage.getItem('cachedVersion') == value;
             let label = document.createElement('label');
-            label.for = checkbox.id;
+            label.setAttribute('for', checkbox.id);
             label.textContent = value;
             checkbox.addEventListener('click', (event) => {
               if (event.target.checked) {
@@ -103,8 +103,8 @@ if ('serviceWorker' in navigator) {
                 }
               });
             });
-            document.getElementById('view-punchcard-list').appendChild(checkbox);
-            document.getElementById('view-punchcard-list').appendChild(label);
+            document.getElementById('bottom').appendChild(checkbox);
+            document.getElementById('bottom').appendChild(label);
           });
           let deleteButton = document.createElement('input');
           deleteButton.className = 'cacheName';

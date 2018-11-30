@@ -127,6 +127,14 @@ pre.activity:hover {
   background-color: greenyellow;
 }
 
+new-entry {
+    font-family: monospace;
+    /* display: block; */
+    /* hight: 50vh; */
+    /* width: 50vw; */
+    /* font-size: small; */
+}
+
 /* JUMPER */
 
 div#scroll-and-view {
@@ -230,7 +238,7 @@ nav#punchcard_scrollbar li a:hover/* , nav#punchcard_scrollbar li:active a, nav#
 
 #filter > input-ui {
     background-color: inherit;
-    font-size: x-large;
+    /* font-size: x-large; */
     /* left: 1.5rem; */
     opacity: 0.7;
     /* input-ui input element adjust to width */

@@ -19,19 +19,16 @@ export class NewEntryUI extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.innerHTML = `
 <section id="new_entry">
-  <section>
+  <section id="editor">
     <!-- <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
-    <div>
-      <span>
-        <input type="button" id="save_edit" value="&check;"/>
-      </span>
-      <span>
-        <input type="button" id="quit_edit" value="&cross;"/>
-      </span>
-    </div>
-    </span>
+    <textarea id="activity" placeholder="enter activity"></textarea>
     <span>
-      <textarea id="activity" placeholder="enter activity"></textarea>
+      <div>
+        <input type="button" id="save_edit" value="&check;"/>
+      </div>
+      <div>
+        <input type="button" id="quit_edit" value="&Cross;"/>
+      </div>
     </span>
     <!-- <span> --> <!-- <input type="button" id="resize_ta"
                          value="&DownTeeArrow;"/> --> <!-- </span> -->
@@ -40,13 +37,9 @@ export class NewEntryUI extends HTMLElement {
   </section>
   <section>
     <input-ui id="start" type="text"></input-ui>
-    <span>
       <input type="button" class="start_at_end" value="&UpTeeArrow;"/>
-    </span>
-    <span>
       <input type="button" id="update_start"
              value="&circlearrowright;" disabled/>
-    </span>
   </section>
   <section class="start">
     <div class="start_delta_div">
@@ -115,12 +108,17 @@ export class NewEntryUI extends HTMLElement {
     display: inline-block;
   }
 
+  #editor {
+    display: flex;
+  }
+
   textarea {
+    flex: auto;
     resize: both;
-    min-height: 6ch;
+    height: 10ch;
+    /*min-height: 6ch;
     min-width: 33ch;
-    height: 8ch;
-    width: 40ch;
+    width: 100%;*/
   }
 </style>
       `;
