@@ -2,13 +2,14 @@
 
 import { infojs } from './js/app/info.js';
 
-let TIME = false;
-let DEBUG = false;
+let TIME = true;
+let DEBUG = true;
 let times = [];
 let cachedVersion = undefined;
 
 if ('serviceWorker' in navigator) {
   document.addEventListener('readystatechange', function (event) {
+    TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
     if (document.readyState == 'complete') {
       let infoNode = document.getElementById('replication_info');
       // DEBUG && console.log('Document Ready navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
@@ -22,13 +23,21 @@ if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register(sw, {
         scope: '../'
       }).then(function(registration) {
-        DEBUG && console.log('ServiceWorker registration successful: ', registration);
+        DEBUG && console.log('ServiceWorker registration successful', registration);
+        DEBUG && infojs('ServiceWorker registration successful', infoNode);
+        DEBUG && infojs(registration, infoNode);
         if(registration.installing) {
-          DEBUG && console.log('Service worker installing', registration.installing);
+          DEBUG && console.log('ServiceWorker installing', registration.installing);
+          DEBUG && infojs('ServiceWorker installing', infoNode);
+          DEBUG && infojs(registration.installing, infoNode);
         } else if(registration.waiting) {
-          DEBUG && console.log('Service worker (installed and) waiting', registration.waiting);
+          DEBUG && console.log('ServiceWorker (installed and) waiting', registration.waiting);
+          DEBUG && infojs('ServiceWorker (installed and) waiting', infoNode);
+          DEBUG && infojs(registration.waiting, infoNode);
         } else if(registration.active) {
-          DEBUG && console.log('Service worker active', registration.active);
+          DEBUG && console.log('ServiceWorker active', registration.active);
+          DEBUG && infojs('ServiceWorker active', infoNode);
+          DEBUG && infojs(registration.active, infoNode);
           registration.active.postMessage({
             request: 'caches'
           });
@@ -44,6 +53,7 @@ if ('serviceWorker' in navigator) {
               request: 'version'
             });
           }
+          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
           // if (navigator.serviceWorker.controller) {
           // }
           // else {
@@ -52,7 +62,9 @@ if ('serviceWorker' in navigator) {
         }
         // DEBUG && console.log('Register navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
       }).catch(err => {
-        DEBUG && console.log('registration failed with error: ', err);
+        DEBUG && console.log('Service-Worker registration failed with error', err);
+        DEBUG && infojs('Service-Worker registration failed with error', infoNode);
+        DEBUG && infojs(err, infoNode);
       });
       // navigator.serviceWorker.addEventListener('controllerchange', function(e) {
       //   DEBUG && console.log(`[ServiceWorker] : controllerchange`, e);
@@ -73,13 +85,14 @@ if ('serviceWorker' in navigator) {
         switch (e.data.request) {
         case 'caches': {
           JSON.parse(e.data.message).forEach((value, index, object) => {
+            let cacheContainer = document.createElement('div');
             let checkbox = document.createElement('input');
             checkbox.className = 'cacheName';
             checkbox.type = 'checkbox';
             checkbox.id = value;
             checkbox.checked = localStorage.getItem('cachedVersion') == value;
             let label = document.createElement('label');
-            label.for = checkbox.id;
+            label.setAttribute('for', checkbox.id);
             label.textContent = value;
             checkbox.addEventListener('click', (event) => {
               if (event.target.checked) {
@@ -103,8 +116,9 @@ if ('serviceWorker' in navigator) {
                 }
               });
             });
-            document.getElementById('view-punchcard-list').appendChild(checkbox);
-            document.getElementById('view-punchcard-list').appendChild(label);
+            cacheContainer.appendChild(checkbox);
+            cacheContainer.appendChild(label);
+            document.getElementById('cache_versions').appendChild(cacheContainer);
           });
           let deleteButton = document.createElement('input');
           deleteButton.className = 'cacheName';
@@ -118,8 +132,7 @@ if ('serviceWorker' in navigator) {
                   request: 'delete cache',
                   cache: value.id
                 });
-                document.getElementById('view-punchcard-list').removeChild(value.nextSibling);
-                document.getElementById('view-punchcard-list').removeChild(value);
+                document.getElementById('cache_versions').removeChild(value.parentElement);
               }
             });
           });
@@ -153,8 +166,8 @@ if ('serviceWorker' in navigator) {
             }
             }
           });
-          document.getElementById('view-punchcard-list').appendChild(deleteButton);
-          document.getElementById('view-punchcard-list').appendChild(useCacheButton);
+          document.getElementById('cache_versions').appendChild(deleteButton);
+          document.getElementById('cache_versions').appendChild(useCacheButton);
           break;
         }
         case 'claim': {

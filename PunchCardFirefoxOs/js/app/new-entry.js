@@ -19,19 +19,16 @@ export class NewEntryUI extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.innerHTML = `
 <section id="new_entry">
-  <section>
+  <section id="editor">
     <!-- <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
-    <div>
-      <span>
-        <input type="button" id="save_edit" value="&check;"/>
-      </span>
-      <span>
-        <input type="button" id="quit_edit" value="&cross;"/>
-      </span>
-    </div>
-    </span>
+    <textarea id="activity" placeholder="enter activity"></textarea>
     <span>
-      <textarea id="activity" placeholder="enter activity"></textarea>
+      <div>
+        <input type="button" id="save_edit" value="&check;"/>
+      </div>
+      <div>
+        <input type="button" id="quit_edit" value="&Cross;"/>
+      </div>
     </span>
     <!-- <span> --> <!-- <input type="button" id="resize_ta"
                          value="&DownTeeArrow;"/> --> <!-- </span> -->
@@ -40,13 +37,9 @@ export class NewEntryUI extends HTMLElement {
   </section>
   <section>
     <input-ui id="start" type="text"></input-ui>
-    <span>
       <input type="button" class="start_at_end" value="&UpTeeArrow;"/>
-    </span>
-    <span>
       <input type="button" id="update_start"
              value="&circlearrowright;" disabled/>
-    </span>
   </section>
   <section class="start">
     <div class="start_delta_div">
@@ -101,27 +94,75 @@ export class NewEntryUI extends HTMLElement {
   </section>
 </section>
 <style>
-  #start, #end {
-    width: 33ch;
+#start, #end {
+  background-color: inherit;
+  color: inherit;
+  width: 33ch;
     /*font-family: monospace;*/
-  }
+}
 
-  .sign, .year, .month, .date, .week, .hour, .minute, .second {
+.sign, .year, .month, .date, .week, .hour, .minute, .second {
+    background-color: inherit;
+    color: inherit;
     font-family: monospace;
     /* margin: 0; */
     padding: 0 0 1rem 0;
     text-align: end;
     /* border: 0 solid; */
     display: inline-block;
-  }
+}
 
-  textarea {
-    resize: both;
-    min-height: 6ch;
+.changed {
+  /*font-weight: bold;
+    color: black;
+    background-color: white;*/
+    text-decoration-style: wavy;
+    text-decoration-color: red;
+    text-decoration-line: underline;
+}
+
+/*:host-context(body.dark_theme) span.changed {
+    color: white;
+    background-color: black;
+    filter: invert(100%);
+}
+
+:host-context(body) span.changed {
+    color: black;
+    background-color: white;
+    filter: invert(100%);
+}*/
+
+/* #new_entry {
+    font-size: 1.5rem;
+    margin: 0;
+    position: fixed;
+    text-align: center;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: 100vw;
+} */
+
+#editor {
+    display: flex;
+}
+
+#activity {
+  background-color: inherit;
+  color: inherit;
+  flex: auto;
+  resize: both;
+  height: 10ch;
+  /*min-height: 6ch;
     min-width: 33ch;
-    height: 8ch;
-    width: 40ch;
-  }
+    width: 100%;*/
+}
+
+#save_edit, #quit_edit {
+    min-width: 2em;
+    min-height: 2em;
+}
 </style>
       `;
   }
@@ -146,7 +187,7 @@ export class NewEntryUI extends HTMLElement {
         this.scrollView.removeChild(this);
         document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView({block: "center", inline: "center"});
       }).catch((err) => {
-        infojs(err, this.entries);
+        infojs(err, this.shadow.firstElementChild, 'append');
       });
     }
     this.shadow.querySelector ('#quit_edit').addEventListener('click', quitEdit, 'capture');
@@ -219,7 +260,7 @@ export class NewEntryUI extends HTMLElement {
           }
           if (Number.isNaN(newDateTime.getMilliseconds())) {
             // window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
-            infojs('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).', this.entries);
+            infojs('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).', this.shadow.firstElementChild, 'append');
           }
           else {
             elementUpdater(newDateTime);
@@ -288,9 +329,10 @@ export class NewEntryUI extends HTMLElement {
           // NOTE: Cannot distinguish between mouse click with and without mouse move.
           // Therefor we only reset value for single click on touch device.
           // if ("touches" in event) {
-          offset.style.backgroundColor = 'white';
+          // offset.style.backgroundColor = 'white';
           offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
+          offset.classList.remove('changed');
           updateDateTimeGui();
           // }
           // prevX = event.touches[event.touches.length - 1].clientX;
@@ -306,9 +348,10 @@ export class NewEntryUI extends HTMLElement {
           // NOTE: Cannot distinguish between mouse click with and without mouse move.
           // Therefor we only reset value for single click on touch device.
           // if ("touches" in event) {
-          offset.style.backgroundColor = 'white';
+          // offset.style.backgroundColor = 'white';
           offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
+          offset.classList.remove('changed');
           updateDateTimeGui();
           // }
           // prevX = event.touches[event.touches.length - 1].clientX;
@@ -359,6 +402,7 @@ export class NewEntryUI extends HTMLElement {
           event.stopPropagation();
           if (firstMove) {
             LOG && console.log(event.type, 'remove click and click input element');
+            offset.classList.add('changed');
             true && offset.removeEventListener('click', clickListener, false);
             element.click();
             firstMove = false;
@@ -371,14 +415,14 @@ export class NewEntryUI extends HTMLElement {
           if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
               //     Slow mode
-              offset.style.backgroundColor = 'lightcyan';
+              // offset.style.backgroundColor = 'lightcyan';
               // deltaSum += deltaX;
               deltaSum += deltaX > 0 ? 0.1 : -0.1;
               offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
             }
             if (Math.abs(deltaY) > Math.abs(deltaX)) {
               //     Fast mode
-              offset.style.backgroundColor = 'lightpink';
+              // offset.style.backgroundColor = 'lightpink';
               // deltaSum += deltaY * 5;
               deltaSum += deltaY > 0 ? 0.5 : -0.5;
               // TODO Please note toFixed() also produces -0 values.
@@ -403,6 +447,7 @@ export class NewEntryUI extends HTMLElement {
           // actually just a click before we remove the click
           // listener.
           if (firstMove && deltaX && deltaY) {
+          offset.classList.add('changed');
             LOG && console.log(event.type, 'remove click and click input element');
             true && offset.removeEventListener('click', clickListener, false);
             element.click();
@@ -416,14 +461,14 @@ export class NewEntryUI extends HTMLElement {
           if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
             if (Math.abs(deltaX) * 2 > Math.abs(deltaY)) {
               //     Slow mode
-              offset.style.backgroundColor = 'lightcyan';
+              // offset.style.backgroundColor = 'lightcyan';
               deltaSum += deltaX / 8;
               deltaSum += 0.1;
               offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
             }
             if (Math.abs(deltaY) * 2 > Math.abs(deltaX)) {
               //     Fast mode
-              offset.style.backgroundColor = 'lightpink';
+              // offset.style.backgroundColor = 'lightpink';
               deltaSum += deltaY;
               deltaSum += 0.1;
               // TODO Please note toFixed() also produces -0 values.
@@ -660,7 +705,7 @@ export class NewEntryUI extends HTMLElement {
           this.endUpdater(end);
         }
       }).catch((err) => {
-        infojs(err, this.entries);
+        infojs(err, this.shadow.firstElementChild, 'append');
       });
     }
     else {
@@ -673,12 +718,13 @@ export class NewEntryUI extends HTMLElement {
 
   save() {
     return new Promise((resolve, reject) => {
+      this.entries = this.entries  || document.querySelector('#New');
       if (!this.entries) {
         let content = document.querySelector('#entries_template').content;
         this.entries = document.importNode(content, "deep").firstElementChild;
-        let bottom = document.querySelector('#bottom');
-        this.scrollView.insertBefore(this.entries, bottom);
-        this.entries.id = 'new_entries';
+        let cache_versions = document.querySelector('#cache_versions');
+        this.scrollView.insertBefore(this.entries, cache_versions);
+        this.entries.id = 'New';
         let queryInfoElement = this.entries.querySelector('span.info');
         queryInfoElement.scrollIntoView({block: "center", inline: "center"});
         let update = this.entries.querySelector('a.update');
@@ -721,7 +767,7 @@ export class NewEntryUI extends HTMLElement {
               this.db.put(otherDoc).then((response) => {
                 document.getElementById(response.id).classList.add('deleted');
               }).catch((err) => {
-                infojs(err, this.entries);
+                infojs(err, this.shadow.firstElementChild, 'append');
                 reject('Cannot delete entry with old start time.\nDiscard edit?'
                        + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
               });
@@ -761,7 +807,7 @@ export class NewEntryUI extends HTMLElement {
               // TO be set by caller
               // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
             }).catch((err) => {
-              infojs(err, this.entries);
+              infojs(err, this.shadow.firstElementChild, 'append');
               reject('Cannot save modified entry.\nDiscard edit?'
                      + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
@@ -771,7 +817,7 @@ export class NewEntryUI extends HTMLElement {
                    + JSON.stringify(otherDoc, Object.getOwnPropertyNames(otherDoc), 2));
           }
         }).catch((err) => {
-          infojs(err, this.entries);
+          infojs(err, this.shadow.firstElementChild, 'append');
           reject('Cannot get entry to be modified.\nDiscard edit?'
                  + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
@@ -798,14 +844,14 @@ export class NewEntryUI extends HTMLElement {
             resolve({ new: response });
           }).catch((err) => {
             //errors
-            infojs(err, this.entries);
+            infojs(err, this.shadow.firstElementChild, 'append');
             reject('New entry is valid but cannot be saved.\nDiscard edit?'
                    + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
         }
         else {
           // window.alert('saving entry failed, please review values of start, end, activity.');
-          infojs(entry, this.entries);
+          infojs(entry, this.shadow.firstElementChild, 'append');
           var newEntry = document.querySelector('new-entry');
           newEntry.scrollIntoView({block: "center", inline: "center"});
           reject('New entry has invalid times or empty activity.\nDiscard edit?'

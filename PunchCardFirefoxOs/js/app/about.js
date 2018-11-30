@@ -2,10 +2,10 @@
 
 import { infojs } from './info.js';
 import * as readmejs from './readme.js';
-import '../../bower_components/pouchdb/dist/pouchdb.min.js';
-import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.js';
-// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
+// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
+// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
+import '../../bower_components/pouchdb/dist/pouchdb.js';
+import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
 import { PouchdbUI } from './pouchdb-ui.js';
 
 // DOMContentLoaded is fired once the document has been loaded and parsed,
@@ -93,10 +93,12 @@ try {
             //   infojs(err, databasesInfoNode);
             //   // handle err
             // });
-            let pui = new PouchdbUI();
-            let dbUI = databasesInfoNode.appendChild(pui);
-            dbUI.setAttribute('db_name', db);
-            // dbUI.setAttribute('bad_db_name', db);
+            if (!databasesInfoNode.querySelector (`[db_name="${db}"]`)) {
+              let pui = new PouchdbUI();
+              let dbUI = databasesInfoNode.appendChild(pui);
+              dbUI.setAttribute('db_name', db);
+              // dbUI.setAttribute('bad_db_name', db);
+            }
           });
         }
       }).catch(function (err) {

@@ -89,6 +89,10 @@ self.addEventListener('activate', function(event) {
       });
       return self.clients.claim();
     }).catch(err => {
+      client.postMessage({
+        request: 'error',
+        message: err
+      });
       DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
     }));
 });
@@ -116,7 +120,8 @@ self.addEventListener('fetch', function(event) {
           self.clients.get(event.clientId).then((client) => {
             client.postMessage({
               request: 'error',
-              message: msg
+              message: msg,
+              scope: self.registration.scope
             });
           });
           DEBUG && console.log(msg);
@@ -146,15 +151,28 @@ self.addEventListener('fetch', function(event) {
           self.clients.get(event.clientId).then((client) => {
             client.postMessage({
               request: 'error',
-              message: `${err.message} for ${event.request.url}`
+              message: `${err.message} ${event.request.url}`,
+              scope: self.registration.scope
             });
           });
         });
       }).catch(err => {
         DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+        self.clients.get(event.clientId).then((client) => {
+          client.postMessage({
+            request: 'error',
+            message: `${err.message} for ${event.request.url}`
+          });
+        });
       });
     }).catch(err => {
       DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
+      self.clients.get(event.clientId).then((client) => {
+        client.postMessage({
+          request: 'error',
+          message: `${err.message} for ${event.request.url}`
+        });
+      });
     }));
 });
 

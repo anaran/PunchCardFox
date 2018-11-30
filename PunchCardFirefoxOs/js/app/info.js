@@ -1,5 +1,7 @@
 'use strict';
 
+import { InfoUI } from './info-ui.js';
+
 function getAllPropertyNames(obj, props = []) {
   // console.log(obj.constructor.name, props);
   if (obj.constructor.name == 'Object') {
@@ -13,46 +15,24 @@ function getAllPropertyNames(obj, props = []) {
 }
 
 export function infojs(info, element, append) {
+  let pre;
   try {
-    var pre = document.createElement('pre');
-    pre.classList.add('info');
-    // pre.contentEditable = true;
-    pre.textContent = `"${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
-    pre.addEventListener('click', event => {
-      if (event.target.classList.contains('selected')) {
-        event.target.classList.remove('selected');
+    pre = new InfoUI();
+    if (pre instanceof InfoUI && 'textContent' in pre) {
+      pre.textContent = `"${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
+      if (append) {
+        element.appendChild(pre);
       }
       else {
-        event.target.classList.add('selected');
+        element.insertBefore(pre, element.firstElementChild);
       }
-      // event.preventDefault();
-      pre.contentEditable = false;
-      // let s = window.getSelection();
-      // s.selectAllChildren(event.target);
-    });
-    // pre.addEventListener('focus', event => {
-    //   event.preventDefault();
-    //   pre.contentEditable = false;
-    //   let s = window.getSelection();
-    //   s.selectAllChildren(event.target);
-    // });
-    // pre.addEventListener('blur', event => {
-    //   pre.contentEditable = true;
-    //   // let s = window.getSelection();
-    //   // s.selectAllChildren(event.target);
-    // });
-    // pre.addEventListener('input', event => {
-    //   event.preventDefault();
-    // }, true);
-    if (append) {
-      element.appendChild(pre);
     }
     else {
-      element.insertBefore(pre, element.firstElementChild);
+      window.alert(`"${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`);
     }
   }
   catch (e) {
-    window.alert(pre.textContent);
+    // window.alert(pre && pre.textContent);
     window.alert(JSON.stringify(e, getAllPropertyNames(e), 2));
   }
 };

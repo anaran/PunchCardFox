@@ -20,7 +20,7 @@ document.addEventListener('readystatechange', (event) => {
   let ORIENTATION = false;
   let SCROLL = false;
   let DEBUG = false;
-  let TIME = false;
+  let TIME = true;
   try {
     let resultIndex = 1;
     let optionsDB = new PouchDB('options');
@@ -32,14 +32,14 @@ document.addEventListener('readystatechange', (event) => {
     let activityMenu = document.getElementById('activity_menu');
     // let request = navigator.mozApps.getSelf();
     let stringToRegexp = function(str) {
-      let captureGroups = str.match(/^\/?(.+?)(?:\/([gim]*))?$/);
+      let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/);
       // Default to ignore case.
       // Regexp syntax requires at least a slash at end, possibly followed by flags.
       return captureGroups &&
         new RegExp(captureGroups[1],
-                   typeof captureGroups[2] == 'undefined' ? "i" : captureGroups[2]);
+                   typeof captureGroups[2] == 'undefined' ? "is" : captureGroups[2]);
     };
-    let filter = document.querySelector('#filter>input-ui');
+    let filter = document.querySelector('#filter input-ui');
     // let erase = document.querySelector('span.erase');
     // erase.addEventListener('click', event => {
     //   event.preventDefault();
@@ -139,12 +139,12 @@ document.addEventListener('readystatechange', (event) => {
         scrollView.removeEventListener('scroll', scrollListener);
         ORIENTATION && console.log('remove scrollListener');
         ORIENTATION && console.log(elementAtCenter.innerText);
-        window.setTimeout(() => {
-          // window.requestAnimationFrame(function (timestamp) {
+        // window.setTimeout(() => {
+        // window.requestAnimationFrame(function (timestamp) {
           elementAtCenter.scrollIntoView({block: "center", inline: "center"});
-          ORIENTATION && console.log(event.type, scrollView.scrollTop);
-          // });
-        }, 500);
+          ORIENTATION && console.log(scrollView.scrollTop);
+        // });
+        // }, 50);
         window.setTimeout(() => {
           scrollView.addEventListener('scroll', scrollListener);
           ORIENTATION && console.log('add scrollListener');
@@ -153,6 +153,7 @@ document.addEventListener('readystatechange', (event) => {
     };
     let scrollListener = (event) => {
       SCROLL && console.log(event.type, event.target.scrollTop);
+      elementAtCenter = document.elementFromPoint(scrollView.offsetLeft + scrollView.offsetWidth / 2, scrollView.offsetTop + scrollView.offsetHeight / 2);
       if (!pendingFrame) {
         window.requestAnimationFrame(function (timestamp) {
           // timer = window.setTimeout(() => {
@@ -164,9 +165,6 @@ document.addEventListener('readystatechange', (event) => {
           ].forEach(function (menu) {
             menu.style.display = 'none';
           });
-          elementAtCenter = document.elementFromPoint(scrollView.offsetLeft + scrollView.offsetWidth / 2, scrollView.offsetTop + scrollView.offsetHeight / 2);
-          SCROLL && console.log('animation frame spaced elementFromPoint menu display none', elementAtCenter.innerText);
-          // elementAtTop = document.elementFromPoint(scrollView.offsetLeft, scrollView.offsetTop);
           pendingFrame = false;
           // }, 500);
         });
@@ -309,6 +307,9 @@ document.addEventListener('readystatechange', (event) => {
     // scrollBar.addEventListener('dragstart', ignore, !'capture');
     // scrollBar.addEventListener('drag', ignore, !'capture');
     
+    screen.orientation.addEventListener('change', (event) => {
+      ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
+    }, true);
     screen.orientation.addEventListener('change', (event) => {
       ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
       ORIENTATION && console.log(event.type, scrollView.scrollTop);
@@ -686,7 +687,7 @@ document.addEventListener('readystatechange', (event) => {
     var toggleFilter = function(event) {
       // event.preventDefault();
       if (filter.style['display'] == 'none') {
-        filter.style['display'] = 'block';
+        filter.style['display'] = 'inline';
         filter.focus();
         // filter.scrollIntoView({block: "center", inline: "center"});
       }
@@ -806,6 +807,7 @@ document.addEventListener('readystatechange', (event) => {
       //   });
       // }
       // document.location.reload('force');
+      // See https://developer.mozilla.org/en-US/docs/Web/API/Location/reload#location.reload_has_no_parameter
       document.location.reload();
     };
 
@@ -951,12 +953,12 @@ document.addEventListener('readystatechange', (event) => {
       let times = [];
       TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
       var options = {};
-      TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+      // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
       optionsDB.allDocs({
         include_docs: true/*,
                             attachments: true*/
       }).then(function (result) {
-        TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+        // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
         if ('rows' in result) {
           DEBUG && console.log('reading all options for db for query configuration', result);
           // window.alert(JSON.stringify(result, null, 2));
@@ -968,20 +970,21 @@ document.addEventListener('readystatechange', (event) => {
           var limit = options.limit.length ? Number(options.limit) : 100;
           var matchLimit = options.match_limit.length ? Number(options.match_limit) : 50;
           var dec = !!options.descending;
-          var opts = { include_docs: true, descending: dec, limit: /*limit*/1000 };
-          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+          // Limit query to a maximum of 1000 rows, not to use too much memory in mobile browsers on smartphones
+          var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
+          // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+          // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
           var content = document.getElementById('entries_template').content;
           var entries = document.importNode(content, "deep").firstElementChild;
           var previousEntries = scrollView.querySelector('div.entries');
           entries.classList.add('updating');
-          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-          var bottom = document.querySelector('#bottom');
+          // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+          var cache_versions = document.querySelector('#cache_versions');
           if (previousEntries) {
             scrollView.insertBefore(entries, previousEntries);
           }
           else {
-            scrollView.insertBefore(entries, bottom);
+            scrollView.insertBefore(entries, cache_versions);
           }
           entries.id = 'R' + resultIndex;
           var queryInfoElement = entries.querySelector('span.info');
@@ -997,10 +1000,9 @@ document.addEventListener('readystatechange', (event) => {
             scrollView.removeChild(entries);
             updateScrollLinks();
           });
-          var regexp = stringToRegexp(options.deleted_id);
+          var regexp = stringToRegexp(options.deleted_id.trim());
           if (options.deleted_id.length && regexp) {
             queryInfoElement.textContent = `Search for deleted activity matching "${regexp.toString()}"`;
-            var changesSinceElement = document.getElementById('changes_since_sequence');
             var changesSinceSequence = options.changes_since_sequence.length ? Number(options.changes_since_sequence) : 0;
             let matchingDeletes = 0;
             db.changes({
@@ -1091,33 +1093,39 @@ document.addEventListener('readystatechange', (event) => {
             // });
           }
           else {
-            TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+            // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
             // if (document.querySelector('#new_entry').style.display != 'none') {
             var start = document.querySelector('#query_start');
             var end = document.querySelector('#query_end');
-            if (start && end) {
-              var startDate = new Date(start.value).toJSON();
-              var endDate = new Date(end.value).toJSON();
-              if (startDate && endDate && startDate > endDate) {
-                [ startDate, endDate ] = [ endDate, startDate ];
+            // if (start && end) {
+            var startDate = start.valueAsDate;
+            var endDate = end.valueAsDate;
+            if (startDate && endDate && startDate > endDate) {
+              [ startDate, endDate ] = [ endDate, startDate ];
+            }
+            // start.value = startDate.toString();
+            // end.value = endDate.toString();
+            if (startDate) {
+              if (dec) {
+                opts.endkey = startDate;
               }
-              if (startDate) {
-                if (dec) {
-                  opts.endkey = startDate;
-                }
-                else {
-                  opts.startkey = startDate;
-                }
-              }
-              if (endDate) {
-                if (dec) {
-                  opts.startkey = endDate;
-                }
-                else {
-                  opts.endkey = endDate;
-                }
+              else {
+                opts.startkey = startDate;
               }
             }
+            if (endDate) {
+              if (dec) {
+                opts.startkey = endDate;
+              }
+              else {
+                opts.endkey = endDate;
+              }
+            }
+            // }
+            var isSearch = (options.include.length || options.exclude.length);
+            // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
+            var includeRegExp = options.include.length ? stringToRegexp(options.include.trim()) : undefined;
+            var excludeRegExp = options.exclude.length ? stringToRegexp(options.exclude.trim()) : undefined;
             if (isSearch) {
               queryInfoElement.textContent = `Search limited to ${matchLimit} matches of "${includeRegExp}" ${ excludeRegExp ? ` (but not "${excludeRegExp}")` : ''} ${ limit ? `, limited to ${limit} entries, ` : ''}`;
               TIME && console.time('query allDocs');
@@ -1127,10 +1135,6 @@ document.addEventListener('readystatechange', (event) => {
               opts.reduce = false;
               TIME && console.time('query by_start');
             }
-            var isSearch = (options.include.length || options.exclude.length);
-            // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
-            var includeRegExp = options.include.length ? new RegExp(options.include, options.include_case ? '' : 'i') : undefined;
-            var excludeRegExp = options.exclude.length ? new RegExp(options.exclude, options.exclude_case ? '' : 'i') : undefined;
             let rowCount = 0,  matches = 0, loops = 1;
             // for (; rowCount < limit; loops++) {
 
@@ -1145,11 +1149,11 @@ document.addEventListener('readystatechange', (event) => {
               }
               TIME && console.timeEnd('query result processing');
               resultIndex += 1;
-              TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+              // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
               updateScrollLinks();
-              TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+              // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
               Array.prototype.forEach.call(document.querySelectorAll('div.entry'), entry => setAvailableRevisionCount(entry));
-              TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+              // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
               entries.classList.remove('updating');
               TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
               TIME && times.reduce((prevValue, currValue, currIndex, object) => {
@@ -1165,7 +1169,7 @@ document.addEventListener('readystatechange', (event) => {
                 // if (options.deleted_id.length) {
                 //   return;
                 // }
-                TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
                 if (isSearch) {
                   query = db.allDocs(opts);
                 }
@@ -1173,7 +1177,7 @@ document.addEventListener('readystatechange', (event) => {
                   query = db.allDocs(opts);
                 }
                 // window.requestAnimationFrame(function (timestamp) {
-                TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
                 query.then(function(doc) {
                   if (isSearch) {
                     TIME && console.timeEnd('query allDocs');
@@ -1182,10 +1186,14 @@ document.addEventListener('readystatechange', (event) => {
                     TIME && console.timeEnd('query by_start');
                   }
                   TIME && console.time('query result processing');
-                  opts.startkey = doc.rows[doc.rows.length - 1].doc._id.substring(0, 24);
                   // NOTE: Iteration statement is needed to use break statement.
                   // doc.rows.forEach(function (row, index) {
-                  TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                  // TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+                  // Discard first row on subsequent queries with a opts.startkey because it is the last row of the previous query
+                  if ('startkey' in opts && rowCount && doc.rows.length) {
+                    DEBUG && console.log('shift out', doc.rows[0].doc);
+                    doc.rows.shift();
+                  }
                   for (var index = 0; index < doc.rows.length; index++) {
                     var row = doc.rows[index];
                     if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
@@ -1200,7 +1208,7 @@ document.addEventListener('readystatechange', (event) => {
                     }
                     var entry;
                     if (!('activity' in row.doc)) {
-                      console.log(`no activity at ${rowCount + index}`);
+                      console.log(`no activity at ${rowCount + index}: `, row.doc);
                       if (rowCount + index +1 == limit) {
                         return resolve([isSearch, opts, matches, rowCount + index + 1]);
                       }
@@ -1219,7 +1227,18 @@ document.addEventListener('readystatechange', (event) => {
                       return resolve([ isSearch, opts, matches, rowCount + index + 1]);
                     }
                   }
+                  if (doc.rows.length == 0) {
+                    return resolve([ isSearch, opts, matches, rowCount]);
+                  }
                   rowCount += doc.rows.length;
+                  // Must not drop random part of ID because multiple entries may have same start time!
+                  let newStart = doc.rows[doc.rows.length - 1].doc._id;
+                  DEBUG && console.log(doc.rows[doc.rows.length - 1].doc);
+                  // startkey would not change, no use to carry on.
+                  if (newStart == opts.startkey) {
+                    return resolve([ isSearch, opts, matches, rowCount + doc.rows.length]);
+                  }
+                  opts.startkey = newStart;
                   // Just recurse, we already checked for limit and matchLimit above
                   return resolve(recursiveQuery(opts, matches, rowCount));
                 }).catch(function(err) {
@@ -1247,7 +1266,7 @@ document.addEventListener('readystatechange', (event) => {
         scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
       }
       Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
-        element.classList.remove('.linked');
+        element.classList.remove('linked');
       });
       DEBUG && console.log("entryNodes.length, rowsPerLink, scrollLinks.length");
       DEBUG && console.log(entryNodes.length, rowsPerLink, scrollLinks.length);

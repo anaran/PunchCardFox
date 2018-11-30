@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="manifest" href="../manifest.json">
+    <meta http-equiv="pragma" content="no-cache" />
+    <link rel="manifest" href="./manifest.json">
     <!--                 <link rel="manifest" href="manifest.webapp"> -->
     <meta charset="utf-8">
     <script type="module" src="./sw-support.js"></script>
-    <title>Privileged app</title>
-    <meta name="description" content="A privileged app stub">
+    <title>Punchcard</title>
+    <meta name="description" content="Punchcard is a note-taking web application for syncing with couchdb">
 
     <!--
 viewport allows you to control how mobile browsers will render your content.
@@ -15,8 +16,9 @@ full width of the screen, without being zoomed out (by default it would render
 it at a desktop width, then shrink it to fit.)
 Read more about it here:
 https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, user-scalable=yes">
 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, user-scalable=no, user-scalable=0">
     <link rel="stylesheet" href="./css/app.css">
 
     <!--
@@ -35,11 +37,11 @@ Read about defer: https://developer.mozilla.org/Web/HTML/Element/script#attr-def
     <!--                                 <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.js"></script> -->
     <!-- <script type="text/javascript" src="./bower_components/pouchdb/dist/pouchdb.min.js"></script> -->
     <!-- <script type="text/javascript" src="./bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js"></script> -->
-    <script src="./bower_components/font-fit/font-fit.js"></script>
-    <script>
-      // gaia-icons.js is defaulting to bower_components relative to build directory
-      window.GAIA_ICONS_BASE_URL = "../bower_components/";
-    </script>
+    <!-- <script src="./bower_components/font-fit/font-fit.js"></script> -->
+    <!-- <script> -->
+    <!--   // gaia-icons.js is defaulting to bower_components relative to build directory -->
+    <!--   window.GAIA_ICONS_BASE_URL = "../bower_components/"; -->
+    <!-- </script> -->
     <!-- <script src="./bower_components/gaia-icons/gaia-icons.js"></script> -->
     <!-- <link rel="stylesheet" type="text/css" href="./bower_components/gaia-icons/gaia-icons.css"> -->
     <!-- <script src="./bower_components/gaia-component/gaia-component.js"></script> -->
@@ -99,11 +101,16 @@ own language (as long as you provide translations).
     <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
       <section id="top"></section>
       <section id="filter">
-          <input-ui placeholder="filter by activity" type="text"></input-ui>
+        <span>
+          <form id="filter">
+            <input-ui placeholder="filter by activity" type="search"></input-ui>
+          </form>
+        </span>
           <!-- <span class="erase">&times;</span> -->
       </section>
       <link rel="import" href="options.html">
       <link rel="import" href="about.html">
+      <section id="cache_versions"></section>
       <section id="bottom"></section>
     </section>
     </div>

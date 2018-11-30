@@ -1,9 +1,11 @@
 'use strict';
 
-import '../../bower_components/pouchdb/dist/pouchdb.min.js';
-import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.js';
-// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
+// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
+// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
+import '../../bower_components/pouchdb/dist/pouchdb.js';
+import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
+
+import { infojs } from './info.js';
 
 export class PouchdbUI extends HTMLElement {
   constructor() {
@@ -31,8 +33,6 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
   </template>
   <template id="template_info">
     <div>
-      <span class="info">
-      </span>
       <span class="close">&times;</span>
     </div>
   </template>
@@ -57,6 +57,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
 `;
   }
   connectedCallback() {
+    let self = this;
     let checkFileCount = function(files) {
       if (files.length === 0) {
         alert('Please pick some .txt file for import, e.g. a previously exported db.');
@@ -66,6 +67,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
       }
     };
     let errorHandler = function (domError) {
+      addInfo(self.shadow.children[0], `${domError}`);
       alert(domError);
     }
     let readFileUpdateUI = function(file, dbObj) {
@@ -79,10 +81,10 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
           try {
             filesLoaded++;
             console.timeEnd('read of ' + file.name);
-            var result = readEvent.target.result;
+            var data = JSON.parse(readEvent.target.result);
             // console.log(result);
             console.time(`db.bulkDocs of ${db.name}`);
-            db.bulkDocs(JSON.parse(result)).then(function (result) {
+            db.bulkDocs(data, { new_edits: false }).then(function (result) {
               console.timeEnd(`db.bulkDocs of ${db.name}`);
               resolve({ result: result, file: fileName });
               // handle result
@@ -91,6 +93,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
             });
           }
           catch (err) {
+            addInfo(self.shadow.children[0], `${err}`);
             reject(err);
           }
         };
@@ -108,12 +111,12 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
     let addInfo = (element, text) => {
       let infoTemplate = this.infoTemplate;
       let div = document.importNode(infoTemplate.content, true).children[0];
-      let info = div.querySelector('span.info');
+      // let info = div.querySelector('span.info');
       let close = div.querySelector('span.close');
       close.addEventListener('click', event => {
         div.parentElement.removeChild(div);
       });
-      info.textContent = text;
+      infojs(text, div);
       element.appendChild(div);
     };
     let addDownloadLink = (element, obj, text, filename) => {
@@ -162,18 +165,18 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
                   return previousValue;
                 }
               }, 0);
-              addInfo(this.shadow.children[0], `Imported ${okCount} documents, got errors on ${errorCount}`);
+              addInfo(self.shadow.children[0], `Imported ${okCount} documents, got errors on ${errorCount}`);
               if (result.result.some((value, index) => {
                 if ('error' in value && value.error) {
                   return true;
                 }
               })) {
-                addDownloadLink(this.shadow.children[0], result.result,
+                addDownloadLink(self.shadow.children[0], result.result,
                                 'Download import response', `errors-${importFile}`);
               }
             }
           }).catch(err => {
-            addInfo(this.shadow.children[0], `failed to import ${importFile}`);
+            addInfo(self.shadow.children[0], `failed to import ${event.target.files[i].name}`);
           });
         }
       }
@@ -188,6 +191,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
       console.log(event, this);
       console.time(`db.allDocs of ${this.db.name}`);
       this.db.allDocs({
+        timeout: 1000000,
         include_docs: true/*, 
                             attachments: true*/
       }).then(result => {
@@ -206,7 +210,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
           })
         };
         console.time(`window.Blob, URL of ${this.db.name}`);
-        addDownloadLink(this.shadow.children[0], docs,
+        addDownloadLink(self.shadow.children[0], docs,
                         `Download all ${result.total_rows} doc exported at ${exportDate.toLocaleString()}`,
                         `${this.db.name}-${result.total_rows}-${exportDate.getTime()}.txt`);
       }).catch(function (err) {

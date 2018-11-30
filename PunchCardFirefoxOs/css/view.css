@@ -2,15 +2,16 @@
 .view {
     flex: auto;
     /* position: fixed; */
-    overflow: scroll;
+    overflow-y: scroll;
     /* top: 2rem; */
     /* left: 0; */
     /* right: 0; */
     /* bottom: 0; */
     /*   margin: 0.2rem; */
-    /*   width: 100%; */
+    /* width: 95%; */
     /* height: calc(100vh - 3rem); */
     /* transform: translate(0, 0); */
+    /* overscroll-behavior-y: contain; */
     scrollbar-color: black white;
     /* scrollbar-width: thin; */
 }

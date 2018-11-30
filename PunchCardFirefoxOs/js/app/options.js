@@ -2,8 +2,8 @@
 
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
-import '../../bower_components/pouchdb/dist/pouchdb.min.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.js';
+// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
+import '../../bower_components/pouchdb/dist/pouchdb.js';
 
 // try {
 let times = [];
@@ -32,6 +32,36 @@ var setCookie;
 var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
 var punchcardDB = new PouchDB('punchcard');
 var persistentNodeList = document.querySelectorAll('.persistent');
+let fontSizeSelect = document.getElementById ('punchcard_font_size_select');
+let changeFontSize = (element) => {
+  document.documentElement.style.fontSize = element.value;
+};
+changeFontSize(fontSizeSelect);
+fontSizeSelect.addEventListener ('change', (event) => changeFontSize(event.target));
+let themeSelect = document.getElementById ('punchcard_theme_select');
+let changeTheme = (element) => {
+  switch (element.value) {
+  case "Light": {
+    document.body.classList.remove('dark_theme');
+    break;
+  }
+  case "Dark": {
+    document.body.classList.add('dark_theme');
+    break;
+  }
+  case "System": {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.body.classList.add('dark_theme');
+    }
+    else {
+      document.body.classList.remove('dark_theme');
+    }
+    break;
+  }
+  }
+};
+changeTheme(themeSelect);
+themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
 TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 Array.prototype.forEach.call(persistentNodeList, function (element) {
   optionsDB.get(element.id, {
@@ -150,7 +180,7 @@ var clearNode = document.getElementById('clear_replication_info');
 clearNode.addEventListener('click', function (event) {
   // NOTE Do not go to link, which is somewhat disruptive.
   event.preventDefault();
-  if (!infoNode.textContent.trim()) {
+  if (!infoNode.childElementCount) {
     TIME && times.reduce((prevValue, currValue, currIndex, object) => {
       addReadOnlyInfo(
         `${(currValue[1] - prevValue[1])/1000} seconds spent between ${prevValue[0]} and ${currValue[0]}`,
@@ -159,7 +189,9 @@ clearNode.addEventListener('click', function (event) {
     });
   }
   else {
-    infoNode.textContent = '';
+    Array.prototype.forEach.call(infoNode.querySelectorAll('info-ui'), function(elem) {
+      infoNode.removeChild(elem);
+    });
   }
 });
 TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
