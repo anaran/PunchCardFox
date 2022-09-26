@@ -112,6 +112,7 @@ export class NewEntryUI extends HTMLElement {
     display: inline-block;
 }
 
+<<<<<<< HEAD
 .changed {
   /*font-weight: bold;
     color: black;
@@ -163,6 +164,20 @@ export class NewEntryUI extends HTMLElement {
     min-width: 2em;
     min-height: 2em;
 }
+=======
+  #editor {
+    display: flex;
+  }
+
+  textarea {
+    flex: auto;
+    resize: both;
+    height: 10ch;
+    /*min-height: 6ch;
+    min-width: 33ch;
+    width: 100%;*/
+  }
+>>>>>>> 67896be05ca4c467b438d5e44ce31d798f21c3fb
 </style>
       `;
   }

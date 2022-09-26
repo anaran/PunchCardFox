@@ -173,6 +173,14 @@ new-entry  {
     /* font-size: small; */
 }
 
+new-entry {
+    font-family: monospace;
+    /* display: block; */
+    /* hight: 50vh; */
+    /* width: 50vw; */
+    /* font-size: small; */
+}
+
 /* JUMPER */
 
 div#scroll-and-view {
