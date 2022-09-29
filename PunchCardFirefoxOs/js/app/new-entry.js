@@ -12,10 +12,11 @@ export class NewEntryUI extends HTMLElement {
   // See
   // https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements
   // for constuctor arguments
-  constructor(databaseID) {
+  constructor(databaseID, copy) {
     super();
     DEBUG && console.log(`new NewEntryUI(${databaseID})`);
     this.databaseID = databaseID;
+    this.copy = copy;
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.innerHTML = `
 <section id="new_entry">
@@ -112,7 +113,6 @@ export class NewEntryUI extends HTMLElement {
     display: inline-block;
 }
 
-<<<<<<< HEAD
 .changed {
   /*font-weight: bold;
     color: black;
@@ -164,20 +164,6 @@ export class NewEntryUI extends HTMLElement {
     min-width: 2em;
     min-height: 2em;
 }
-=======
-  #editor {
-    display: flex;
-  }
-
-  textarea {
-    flex: auto;
-    resize: both;
-    height: 10ch;
-    /*min-height: 6ch;
-    min-width: 33ch;
-    width: 100%;*/
-  }
->>>>>>> 67896be05ca4c467b438d5e44ce31d798f21c3fb
 </style>
       `;
   }
@@ -756,7 +742,7 @@ export class NewEntryUI extends HTMLElement {
         });
         queryInfoElement.textContent = 'New Entries';
       }
-      if (this.activity.dataset.id) {
+      if (this.activity.dataset.id && !this.copy) {
         var id = this.activity.dataset.id.toString();
         // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
         this.activity.removeAttribute('data-id');
@@ -850,7 +836,16 @@ export class NewEntryUI extends HTMLElement {
         if (this.isValidEntry(entry)) {
           this.db.put(entry).then((response) => {
             // Insert before the first entry
-            var newEntry = utilsjs.addNewEntry(entry, this.entries, this.entries.querySelector('div.entry'));
+            let newEntry;
+            if (this.copy && this.activity.dataset.id) {
+              let beforeThisElement = document.getElementById(this.activity.dataset.id);
+              // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
+              this.activity.removeAttribute('data-id');
+              newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+            }
+            else {
+              newEntry = utilsjs.addNewEntry(entry, this.entries, this.entries.querySelector('div.entry'));
+            }
             newEntry.querySelector('pre.activity').classList.add('changed');
             newEntry.querySelector('pre.start').classList.add('changed');
             newEntry.querySelector('pre.end').classList.add('changed');

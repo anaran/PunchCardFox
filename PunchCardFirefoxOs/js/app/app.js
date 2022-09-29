@@ -346,8 +346,8 @@ document.addEventListener('readystatechange', (event) => {
     //   ORIENTATION && console.log("The orientation of the screen is: " + screen.orientation, screen, arg);
     // };
 
-    var addNewEdit = function(id) {
-      let neu = new NewEntryUI(id);
+    var addNewEdit = function(id, copy) {
+      let neu = new NewEntryUI(id, copy);
       document.querySelector('#filter').insertAdjacentElement('afterend', neu);
     };
 
@@ -365,7 +365,7 @@ document.addEventListener('readystatechange', (event) => {
           db.put(otherDoc).then(function(response) {
             document.getElementById(response.id).classList.add('deleted');
           }).catch(function(err) {
-            infojs(err, entries);
+            infojs(err, document.getElementById(id).parentElement);
           });
           newDoc = {
             _id: startText + Math.random().toString(16).substring(3, 15),
@@ -385,12 +385,12 @@ document.addEventListener('readystatechange', (event) => {
             newEntry.querySelector('pre.revisions').classList.add('changed');
           }).catch(function(err) {
             //errors
-            infojs(err, entries);
+            infojs(err, document.getElementById(id).parentElement);
           });
         }
       }).catch(function(err) {
         //errors
-        infojs(err, entries);
+        infojs(err, document.getElementById(id).parentElement);
       });
       // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
       // document.location.reload('force');
@@ -413,11 +413,11 @@ document.addEventListener('readystatechange', (event) => {
           // saveLink.click();
         }).catch(function(err) {
           //errors
-          infojs(err, entries);
+          infojs(err, document.getElementById(id).parentElement);
         });
       }).catch(function(err) {
         //errors
-        infojs(err, entries);
+        infojs(err, document.getElementById(id).parentElement);
       });
     };
     var endNowItem = document.querySelector('#end_now');
@@ -436,11 +436,11 @@ document.addEventListener('readystatechange', (event) => {
           // saveLink.click();
         }).catch(function(err) {
           //errors
-          infojs(err, entries);
+          infojs(err, document.getElementById(id).parentElement);
         });
       }).catch(function(err) {
         //errors
-        infojs(err, entries);
+        infojs(err, document.getElementById(id).parentElement);
       });
     };
     var endUndefinedItem = document.querySelector('#end_undefined');
@@ -477,7 +477,7 @@ document.addEventListener('readystatechange', (event) => {
           // infojs({
           //   get_error: JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
           // }, entries);
-          infojs(err, entries);
+          infojs(err, document.getElementById(id).parentElement);
         });
       }
       // getIt.then(function (result) {
@@ -538,7 +538,7 @@ document.addEventListener('readystatechange', (event) => {
             });
           });
         }).catch(function (err) {
-          infojs(err, entries);
+          infojs(err, document.getElementById(id).parentElement);
         });
       }
     };
@@ -581,11 +581,11 @@ document.addEventListener('readystatechange', (event) => {
           setAvailableRevisionCount(document.getElementById(elementId));
         }).catch(function(err) {
           //errors
-          infojs(err, entries);
+          infojs(err, document.getElementById(id).parentElement);
         });
       }).catch(function(err) {
         //errors
-        infojs(err, entries);
+        infojs(err, document.getElementById(id).parentElement);
       });
     };
     var addAsNewRevision = function (event) {
@@ -601,7 +601,7 @@ document.addEventListener('readystatechange', (event) => {
       }).catch(function(err) {
         // This is a deleted doc, use revision.
         putNewRevision(id, rev);
-        // infojs(err, entries);
+        // infojs(err, document.getElementById(id).parentElement);
       });
     };
     var addAsNewRevisionItem = document.querySelector('#add_as_new_revision');
@@ -621,42 +621,8 @@ document.addEventListener('readystatechange', (event) => {
     }
     var editNewCopy = function (event) {
       event.preventDefault();
-      var id = getDataSetIdHideMenu(event);
-      let entries = document.getElementById('entries');
-      db.get(id).then(function(otherDoc) {
-        var entry = {
-          // The random part is vital to always be unique,
-          // since the new entry/doc initially has same start time,
-          // which is the initial part of the _id
-          _id: otherDoc._id.substring(0, 24) + Math.random().toString(16).substring(3, 15),
-          activity: otherDoc.activity,
-        };
-        // end may not be present in original document.
-        if ('end' in otherDoc) {
-          entry.end = otherDoc.end;
-        }
-        db.put(entry).then(function(response) {
-          // NOTE: Don't forget to add newly obtained id!
-          entry._id = response.id;
-          // This is a way to put new entry above others.
-          // TODO: Find a cleaner design. entries has acccumulated various foreign elements
-          // for the convenience of being nicely scrollable via scrollbar.
-          var beforeThisElement = document.getElementById(id);
-          var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
-          newEntry.scrollIntoView({block: "center", inline: "center"});
-          newEntry.querySelector('pre.activity').classList.add('changed');
-          newEntry.querySelector('pre.start').classList.add('changed');
-          newEntry.querySelector('pre.end').classList.add('changed');
-          newEntry.querySelector('pre.revisions').classList.add('changed');
-          addNewEdit(response.id);
-        }).catch(function(err) {
-          //errors
-          infojs(err, entries);
-        });
-      }).catch(function(err) {
-        //errors
-        infojs(err, entries);
-      });
+      let id = getDataSetIdHideMenu(event);
+      addNewEdit(id, 'new_copy');
     }
     var editNewCopyItem = document.querySelector('#edit_new_copy');
     if (editNewCopyItem) {
@@ -886,11 +852,11 @@ document.addEventListener('readystatechange', (event) => {
           // saveLink.click();
         }).catch(function(err) {
           //errors
-          infojs(err, entries);
+          infojs(err, document.getElementById(id).parentElement);
         });
       }).catch(function(err) {
         //errors
-        infojs(err, entries);
+        infojs(err, document.getElementById(id).parentElement);
       });
     };
     var repeatNowItem = document.querySelector('#repeat_now');
@@ -918,14 +884,14 @@ document.addEventListener('readystatechange', (event) => {
               deletedElement.classList.add('deleted');
               // document.location.reload('force');
             }).catch(function (err) {
-              infojs(err, entries);
+              infojs(err, document.getElementById(id).parentElement);
             });
           }
           else {
             return db.remove(doc).then(function(response) {
               // document.location.reload('force');
             }).catch(function (err) {
-              infojs(err, entries);
+              infojs(err, document.getElementById(id).parentElement);
             });
           }
         }
@@ -1049,11 +1015,11 @@ document.addEventListener('readystatechange', (event) => {
                     }
                     infojs({ 'rev': otherDoc }, entries);
                   }).catch(function (err) {
-                    infojs(err, entries);
+                    infojs(err, document.getElementById(id).parentElement);
                   });
                 });
               }).catch(function (err) {
-                infojs(err, entries);
+                infojs(err, document.getElementById(id).parentElement);
               });
               // }).on('change', function(info) {
               //   var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
@@ -1242,7 +1208,7 @@ document.addEventListener('readystatechange', (event) => {
                   // Just recurse, we already checked for limit and matchLimit above
                   return resolve(recursiveQuery(opts, matches, rowCount));
                 }).catch(function(err) {
-                  infojs(err, entries);
+                  infojs(err, document.getElementById(id).parentElement);
                 });
               });
             };
@@ -1251,7 +1217,7 @@ document.addEventListener('readystatechange', (event) => {
           // });
         }
       }).catch(function (err) {
-        infojs(err, entries);
+        infojs(err, document.getElementById(id).parentElement);
       });
     };
 

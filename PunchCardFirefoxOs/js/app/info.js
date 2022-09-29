@@ -15,16 +15,16 @@ function getAllPropertyNames(obj, props = []) {
 }
 
 export function infojs(info, element, append) {
-  let pre;
+  let niu;
   try {
-    pre = new InfoUI();
-    if (pre instanceof InfoUI && 'textContent' in pre) {
-      pre.textContent = `"${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
+    niu = new InfoUI();
+    if (niu instanceof InfoUI && 'textContent' in niu && element) {
+      niu.textContent = `"${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
       if (append) {
-        element.appendChild(pre);
+        element.appendChild(niu);
       }
       else {
-        element.insertBefore(pre, element.firstElementChild);
+        element.insertBefore(niu, element.firstElementChild);
       }
     }
     else {
@@ -32,7 +32,7 @@ export function infojs(info, element, append) {
     }
   }
   catch (e) {
-    // window.alert(pre && pre.textContent);
+    // window.alert(niu && niu.textContent);
     window.alert(JSON.stringify(e, getAllPropertyNames(e), 2));
   }
 };
