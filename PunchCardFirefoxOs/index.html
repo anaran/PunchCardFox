@@ -61,6 +61,7 @@ own language (as long as you provide translations).
     <link rel="prefetch" type="application/l10n" href="./data/locales.ini" />
     <script type="text/javascript" src="./js/libs/l10n.js" defer></script>
     <script type="module" src="./js/app/input-ui.js"></script>
+    <link rel="icon" type="image/png" href="./img/icons/icon16x16.png">
   </head>
   <body role="application">
     <link rel="import" href="common-header.html">
@@ -108,8 +109,36 @@ own language (as long as you provide translations).
       </section>
       <link rel="import" href="options.html">
       <link rel="import" href="about.html">
+      <section id="info_section">
+        <fieldset id="info_categories">
+          <legend>Information Logging Categories</legend>
+          <div>
+            <input type="checkbox" id="info-error" name="category"
+                   value="error" />
+            <label for="info-error">Errors</label>
+          </div>
+          <div>
+            <input type="checkbox" id="info-warning" name="category"
+                   value="warning" />
+            <label for="info-warning">Warnings</label>
+          </div>
+          <div>
+            <input type="checkbox" id="info-information" name="category"
+                   value="information" />
+            <label for="info-information">Information</label>
+          </div>
+          <div>
+            <input type="checkbox" id="info-performance" name="category"
+                   value="performance" />
+            <label for="info-performance">Performance</label>
+          </div>
+        </fieldset>
+      </section>
       <section id="cache_versions"></section>
-      <section id="bottom"></section>
+      <section id="bottom">
+        <div>&downarrow;</div>
+        <span id="info"></span>
+      </section>
     </section>
     </div>
     <ul id="start_menu" class="menu">
