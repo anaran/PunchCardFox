@@ -1029,22 +1029,6 @@ document.addEventListener('readystatechange', (event) => {
               var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
               entry.classList.add('deleted');
             }
-            false && otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-              // infojs.info({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-              db.get(otherDoc[0].ok._id, {
-                open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-              }).then(function (otherDoc) {
-                // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-                if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-                  // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-                }
-                else {
-                }
-                infojs.info({ 'rev': otherDoc }, entries);
-              }).catch(function (err) {
-                infojs.error(err, document.getElementById(id).parentElement);
-              });
-            });
           }).catch(function (err) {
             infojs.error(err, document.getElementById(id).parentElement);
           });

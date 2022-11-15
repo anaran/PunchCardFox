@@ -57,13 +57,7 @@ try {
       //                     }};
       var myXHR = function () {
         var request;
-        if (false && /* false && */window.location.protocol == "app:") {
-          request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
-        }
-        else {
-          request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
-          // request = new XMLHttpRequest();
-        }
+        request = new XMLHttpRequest();
         return request;
       }
       var opts = {

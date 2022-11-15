@@ -381,15 +381,6 @@ export class NewEntryUI extends HTMLElement {
         //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
         //   // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         // }, false);
-        false && offset.addEventListener('mouseenter', (event) => {
-          LOG && console.log(event.type, event.touches[event.touches.length - 1].clientX, event.touches[event.touches.length - 1].clientY);
-          LOG && console.log(event.target);
-          let s = getSelection();
-          s.removeAllRanges();
-          let r = document.createRange();
-          r.selectNodeContents(offset);
-          s.addRange(r);
-        }, false);
         offset.addEventListener('touchend', (event) => {
           LOG && console.log(event.type, event.touches.length && event.touches[event.touches.length - 1].clientX, event.touches.length && event.touches[event.touches.length - 1].clientY);
           // offset.style.backgroundColor = 'white';

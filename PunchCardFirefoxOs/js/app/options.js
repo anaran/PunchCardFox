@@ -178,12 +178,7 @@ var punchcardStartButton = document.getElementById('punchcard_start_replication'
 var punchcardStopButton = document.getElementById('punchcard_stop_replication');
 var myXHR = function () {
   var request;
-  if (false && /* false && */window.location.protocol == "app:") {
-    request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
-  }
-  else {
-    request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
-    // request = new XMLHttpRequest();
+  request = new XMLHttpRequest();
   }
   return request;
 }
@@ -509,124 +504,22 @@ logout.addEventListener('click', function(e) {
   }
 });
 
-// var search = function () {
-// 
-//   // Are we searching already? Then stop that search
-//   if(request && request.abort) {
-//     request.abort();
-//   }
-// 
-//   // results.textContent = translate('searching');
-// 
-//   // We will be using the 'hidden' attribute throughout the app rather than a
-//   // 'hidden' CSS class because it enhances accessibility.
-//   // See: http://www.whatwg.org/specs/web-apps/current-work/multipage/editing.html#the-hidden-attribute
-//   results.hidden = false;
-//   errorMsg.hidden = true;
-// 
-// 
-//   var term = searchInput.value;
-//   if(term.length === 0) {
-//     term = searchInput.placeholder;
-//   }
-// 
-//   var url = term;
-//   jsonFrame.src = url;
-//   try {
-//     if (!cookie) {
-//       window.alert('Please press Login');
-//       return;
-//     }
-//     // If you don't set the mozSystem option, you'll get CORS errors (Cross Origin Resource Sharing)
-//     // You can read more about CORS here: https://developer.mozilla.org/docs/HTTP/Access_control_CORS
-//     // request = new XMLHttpRequest({ mozSystem: true, withCredentials: true });
-//     request = new XMLHttpRequest({ mozSystem: false, mozAnon: true });
-//     // request.overrideMimeType("application/json");
-//     request.open('GET', url, !!'async');
-//     request.setRequestHeader('Cookie', cookie);
-//     request.timeout = XHR_TIMEOUT_MS;
-//     request.ontimeout = onRequestError;
-//     request.onerror = onRequestError;
-//     // request.addEventListener('error', onRequestError);
-//     request.send();
-//     request.onreadystatechange = function() {
-//       if (this.readyState == request.DONE) {
-//         // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-//         // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
-//         // cookie = this.getResponseHeader('Set-Cookie').split(';')[0];
-//         // alert('request.responseText = ' + request.responseText);
-//         // alert('request.response = ' + request.response);
-//         if(request.response === null) {
-//           // showError(translate('searching_error'));
-//           showError('searching_error');
-//           return;
-//         }
-//         jsonText.textContent = request.response;
-//         reportError(jsonText);
-//       }
-//     }
-//   } catch (e) {
-//     infojs.error(e, infoNode);
-//   }
-// };
-//   }
-// });
 export let sessionLogin = function (url, username, password) {
   // Returns AuthSession header in Firefox OS App with systemXHR permission
   var request;
-  if (false && /* false && */window.location.protocol == "app:") {
-    request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
-  }
-  else {
-    request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
-    // request = new XMLHttpRequest();
-  }
+  request = new XMLHttpRequest();
   // TODO: sends username:password@ as part of the URL, exposing password in firefox net log!
   // NOTE: fauxton uses Authorization Basic
   // request.open('POST', url, !!'async'/*, username, password*/);
   request.open('POST', url, !!'async'/*, username, password*/);
-  // if (/* false && */window.location.protocol == "app:") {
-  // }
-  // else {
-  // }
-  // request.withCredentials = true;
   request.setRequestHeader('Authorization', 'Basic ' + btoa(username + ':' + password));
-  // request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-  // request.open('POST', url, !!'async', username, password);
-  // request.open('POST', url, !!'async', '_', '_');
-  // Required both in Firefox OS and Web App
-  // request.setRequestHeader('X-PINGOTHER', 'pingpong');
-  if (false && /* false && */window.location.protocol == "app:") {
-  }
-  else {
-    request.withCredentials = true;
-  }
-  // request.setRequestHeader('Access-Control-Expose-Headers', 'Cookie, Set-Cookie');
-  // request.setRequestHeader('Access-Control-Request-Headers', 'authorization,content-type,Set-Cookie');
+  request.withCredentials = true;
   request.timeout = XHR_TIMEOUT_MS;
   request.ontimeout = onRequestError;
   request.onerror = onRequestError;
-  // request.setRequestHeader('Content-Type', 'text/plain');
   request.setRequestHeader('Content-Type', 'application/json');
-  // request.setRequestHeader('Accept', 'application/json, text/javascript, */*; q=0.01');
-  // request.setRequestHeader('Accept', 'application/json');
-  //request.setRequestHeader('Access-Control-Allow-Credentials', 'true');
-  // Seems to be equivalent to state request.DONE
-  // request.onload = function() {
-  //     var infoNode = document.getElementById('replication_info');
-  //     infojs.info('request.onloadend ... ', infoNode);
-  //     infojs.info('this.readyState = ' + this.readyState, infoNode);
-  //     infojs.info('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
-  //     infojs.info('request.responseText = ' + request.responseText, infoNode);
-  //     infojs.info('request.response = ' + request.response, infoNode);
-  // };
-  // request.onreadystatechange = function() {
-  // request.onprogress = function() {
   request.onload = function() {
-    // if (this.status == 401 || this.status == 0) {
-    //   this.abort();
-    // }
-    if (/*true || */this.readyState == request.DONE) {
+    if (this.readyState == request.DONE) {
       if (this.statusText != 'OK') {
         infojs.error(request.responseText);
       }
@@ -658,21 +551,9 @@ export let sessionLogin = function (url, username, password) {
 };
 export let sessionLogout = function (url) {
   var request;
-  if (false && /* false && */window.location.protocol == "app:") {
-    request = new XMLHttpRequest({ mozSystem: true, mozAnon: true });
-  }
-  else {
-    request = new XMLHttpRequest({ mozSystem: false, mozAnon: false });
-    // request = new XMLHttpRequest();
-  }
+  request = new XMLHttpRequest();
   request.open('DELETE', url, !!'async');
-  if (false && /* false && */window.location.protocol == "app:") {
-    request.setRequestHeader('Cookie', cookie);
-    cookie = "";
-  }
-  else {
-    request.withCredentials = true;
-  }
+  request.withCredentials = true;
   // request.setRequestHeader('Authorization', 'Basic ' + btoa(document.getElementById('user').value + ':' + document.getElementById('pass').value));
   // Verified to be necessary in Firefox OS to delete cookie.
   request.timeout = XHR_TIMEOUT_MS;
@@ -681,7 +562,7 @@ export let sessionLogout = function (url) {
   // request.onreadystatechange = function() {
   // request.onprogress = function() {
   request.onload = function() {
-    if (/* true || */this.readyState == request.DONE) {
+    if (this.readyState == request.DONE) {
       if (this.statusText != 'OK') {
         infojs.info(this.statusText);
         infojs.info(request.responseText);
@@ -719,6 +600,7 @@ var showError = function (text) {
   // errorMsg.hidden = false;
   // results.hidden = true;
 };
+
 var start = function () {
 
   var message = document.getElementById('message');
@@ -727,15 +609,6 @@ var start = function () {
   // https://developer.mozilla.org/Web/API/Element.innerHTML#Security_considerations
   // message.textContent = translate('message');
   message.textContent = 'message';
-
 };
-// document.body.style.display = 'none';
-// export default {
-//   sessionLogin,
-//   sessionLogout
-// };
-// }
-// catch (e) {
-//   window.alert(e.message + '\n' + e.stack);
-// }
+
 infojs.timeEnd('options.js');
