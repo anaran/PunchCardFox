@@ -179,7 +179,6 @@ var punchcardStopButton = document.getElementById('punchcard_stop_replication');
 var myXHR = function () {
   var request;
   request = new XMLHttpRequest();
-  }
   return request;
 }
 var opts = {
