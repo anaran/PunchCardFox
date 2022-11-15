@@ -1,6 +1,10 @@
 'use strict';
 
-import { infojs } from './info.js';
+import * as infojs from './info.js';
+
+export let getRandom12HexDigits = () => {
+  return (Math.floor(Math.random() * (2**48 - 1))).toString(16).padStart(12, '0');
+};
 
 // >> (new Date()).toLocaleString(navigator.languages, {
 //      month: 'short',
@@ -166,7 +170,7 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     // }).then(function (otherDoc) {
     //   revisions.textContent = otherDoc[0].ok._revisions.ids.length + ' revs';
     //   // otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-    //   //   // infojs({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+    //   //   // infojs.info({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
     //   //   db.get(otherDoc[0].ok._id, {
     //   //     open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
     //   //   }).then(function (otherDoc) {
@@ -176,13 +180,13 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     //   //     }
     //   //     else {
     //   //     }
-    //   //     infojs({ 'rev': otherDoc }, entries);
+    //   //     infojs.info({ 'rev': otherDoc }, entries);
     //   //   }).catch(function (err) {
-    //   //     infojs({rev_error: err}, entries);
+    //   //     infojs.info({rev_error: err}, entries);
     //   //   });
     //   // });
     // }).catch(function (err) {
-    //   infojs({get_error:err}, entries);
+    //   infojs.error({get_error:err}, entries);
     // });
     if (before) {
       // Insert before the first entry we find, if any.
@@ -193,11 +197,11 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     }
     return entry;
   }
-  catch (e) {
+  catch (err) {
     // stack is a non-standard property!
     // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Stack
-    // { get_error: [ e.message, e.stack.split('\n') ] }
-    infojs(e, entries);
+    // { get_error: [ err.message, err.stack.split('\n') ] }
+    infojs.error(err, entries);
   }
 }
 

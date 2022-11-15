@@ -1,6 +1,6 @@
 'use strict';
 
-import { infojs } from './info.js';
+import * as infojs from './info.js';
 import * as readmejs from './readme.js';
 // import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 // import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
@@ -18,7 +18,6 @@ import { PouchdbUI } from './pouchdb-ui.js';
 // We'll ask the browser to use strict code to help us catch errors earlier.
 // https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
 'use strict';
-var DEBUG = false;
 
 var databasesLinkNode = document.getElementById('databases_link');
 var applicationLinkNode = document.getElementById('application_link');
@@ -76,21 +75,21 @@ try {
       };
       PouchDB.allDbs().then(function (dbs) {
         // dbs is an array of strings, e.g. ['mydb1', 'mydb2']
-        DEBUG && console.log('dbs', dbs, 'destination', destination);
+        infojs.info({ 'dbs': dbs, 'destination': destination });
         if (dbs.length) {
           Array.prototype.forEach.call(dbs, function (db) {
             let localDB = new PouchDB(db);
             // let remoteDB = new PouchDB(destination + db, opts);
             localDB.info().then(function (info) {
-              infojs(info, databasesInfoNode);
+              infojs.infojs(info, databasesInfoNode);
             }).catch(function (err) {
-              infojs(err, databasesInfoNode);
+              infojs.error(err, databasesInfoNode);
               // handle err
             });
             // remoteDB.info().then(function (info) {
-            //   infojs(info, databasesInfoNode);
+            //   infojs.info(info, databasesInfoNode);
             // }).catch(function (err) {
-            //   infojs(err, databasesInfoNode);
+            //   infojs.error(err, databasesInfoNode);
             //   // handle err
             // });
             if (!databasesInfoNode.querySelector (`[db_name="${db}"]`)) {
@@ -102,7 +101,7 @@ try {
           });
         }
       }).catch(function (err) {
-        infojs(err, databasesInfoNode);
+        infojs.error(err, databasesInfoNode);
         // handle err
       });
       var remoteOptionsDatabaseName = document.getElementById('options_db_name').value;
@@ -110,20 +109,20 @@ try {
       var remoteOptionsDB = new PouchDB(destination + remoteOptionsDatabaseName, opts);
       var remotePunchcardDB = new PouchDB(destination + remotePunchcardDatabaseName, opts);
       remoteOptionsDB.info().then(function (info) {
-        infojs(info, databasesInfoNode);
+        infojs.infojs(info, databasesInfoNode);
       }).catch(function (err) {
-        infojs(err, databasesInfoNode);
+        infojs.error(err, databasesInfoNode);
         // handle err
       });
       remotePunchcardDB.info().then(function (info) {
-        infojs(info, databasesInfoNode);
+        infojs.infojs(info, databasesInfoNode);
       }).catch(function (err) {
-        infojs(err, databasesInfoNode);
+        infojs.error(err, databasesInfoNode);
         // handle err
       });
     }
     catch(err) {
-      infojs(err, databasesInfoNode);
+      infojs.error(err, databasesInfoNode);
     }
   });
   applicationLinkNode.addEventListener('click', function (event) {
@@ -131,25 +130,27 @@ try {
     event.preventDefault();
     // event.stopPropagation();
     // Force exception:   "message": "cyclic object value"
-    // infojs(window, applicationInfoNode);
-    infojs(window.location, applicationInfoNode);
-    infojs(document.head.querySelector('link[rel=manifest]').href, applicationInfoNode);
+    // infojs.info(window, applicationInfoNode);
+    infojs.infojs(window.location, applicationInfoNode);
+    infojs.infojs(window.navigator.userAgent, applicationInfoNode);
+    infojs.infojs(document.head.querySelector('link[rel=manifest]').href, applicationInfoNode);
     // NOTE: Only availabe for Firefox OS packaged apps:
     if ('mozApps' in window.navigator) {
       var request = window.navigator.mozApps.getSelf();
       request.onsuccess = function() {
         if (request.result) {
           // Pull the name of the app out of the App object
-          infojs(request.result.manifest, applicationInfoNode);
-          // infojs(request.result.manifest, applicationInfoNode);
+          infojs.info(request.result.manifest, applicationInfoNode);
+          // infojs.info(request.result.manifest, applicationInfoNode);
         } else {
           // alert("Called from outside of an app");
-          infojs(["Called from outside of an app"], applicationInfoNode);
+          infojs.info(["Called from outside of an app"], applicationInfoNode);
         }
       };
       request.onerror = function() {
         // Display error name from the DOMError object
-        alert("Error: " + request.error.name);
+        alert(`Error: ${request.error.name}`);
+        infojs.error(`Error: ${request.error.name}`);
       };
     }
   });
@@ -202,5 +203,5 @@ try {
   }
 }
 catch(err) {
-  infojs(err, databasesInfoNode);
+  infojs.error(err, databasesInfoNode);
 }

@@ -2,7 +2,6 @@
 
 import '../../bower_components/marked/lib/marked.js';
 
-var DEBUG = false;
 var XHR_TIMEOUT_MS = 0;
 export let init = function (url, renderElement, editElement, toggleElement) {
   return new Promise(function(resolve, reject) {
@@ -127,9 +126,6 @@ export let init = function (url, renderElement, editElement, toggleElement) {
             });
             tocHTML += '</ul>\n';
             render.innerHTML = html + tocHTML;
-            DEBUG && window.alert(tocHTML);
-            DEBUG && window.alert(html);
-            DEBUG && window.alert(JSON.stringify(toc, null, 2));
           } else {
             // render.innerHTML = (new Remarkable('commonmark')).render(request.response);
             render.innerHTML = (new Remarkable('full')).render(request.response);

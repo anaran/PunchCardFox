@@ -22,12 +22,16 @@
     <input-ui class="persistent" type="password" id="user" data-l10n-id="user" placeholder="user"></input-ui>
     <input-ui type="password" id="pass" data-l10n-id="pass" placeholder="pass"></input-ui>
     <input-ui class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path/"></input-ui>
-  <h1 data-l10n-id="options_db_title">Options Database</h1>
-      <select id="options_sync_type">
-        <option>Replicate from</option>
-        <option>Replicate to</option>
-        <option selected>Sync with</option>
-      </select>
+    <h1 data-l10n-id="options_db_title">Options Database</h1>
+    <p>
+      <input type="button" id="load" data-l10n-id="load" value="Load"/>
+      <input type="button" id="save" data-l10n-id="save" value="Save"/>
+    </p>
+    <select id="options_sync_type">
+      <option>Replicate from</option>
+      <option>Replicate to</option>
+      <option selected>Sync with</option>
+    </select>
     <input-ui class="persistent" type="text" id="options_db_name" placeholder="options db name"></input-ui>
     <input type="button" id="options_start_replication" data-l10n-id="options_start_replication" value="now">
     <input type="checkbox" id="options_live_sync">

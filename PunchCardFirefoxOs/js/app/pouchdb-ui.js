@@ -5,7 +5,7 @@
 import '../../bower_components/pouchdb/dist/pouchdb.js';
 import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
 
-import { infojs } from './info.js';
+import * as infojs from './info.js';
 
 export class PouchdbUI extends HTMLElement {
   constructor() {
@@ -116,7 +116,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
       close.addEventListener('click', event => {
         div.parentElement.removeChild(div);
       });
-      infojs(text, div);
+      infojs.info(text, div);
       element.appendChild(div);
     };
     let addDownloadLink = (element, obj, text, filename) => {
@@ -214,7 +214,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
                         `Download all ${result.total_rows} doc exported at ${exportDate.toLocaleString()}`,
                         `${this.db.name}-${result.total_rows}-${exportDate.getTime()}.txt`);
       }).catch(function (err) {
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+        infojs.error(err);
       });
       // this.parentElement.removeChild(this);
     });
@@ -227,7 +227,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
         this.db.destroy().then(response => {
           console.log('deleted database', this.db.name);
         }).catch(function (err) {
-          console.log(err);
+          infojs.error(err);
         });
       }
     });
@@ -243,7 +243,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
       break;
     }
     default: {
-      console.error(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
+      infojs.error(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
     }
     }
   }

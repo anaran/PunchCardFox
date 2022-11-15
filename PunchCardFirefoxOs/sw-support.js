@@ -1,43 +1,32 @@
 'use strict';
 
-import { infojs } from './js/app/info.js';
+import * as infojs from './js/app/info.js';
 
-let TIME = true;
-let DEBUG = true;
-let times = [];
 let cachedVersion = undefined;
 
 if ('serviceWorker' in navigator) {
   document.addEventListener('readystatechange', function (event) {
-    TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+    infojs.time('readystatechange');
     if (document.readyState == 'complete') {
       let infoNode = document.getElementById('replication_info');
-      // DEBUG && console.log('Document Ready navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
-      // navigator.serviceWorker.ready.then(res => {
-      //   DEBUG && console.log('SERVICEWORKER READY', res);
-      // }).catch(err => {
-      //   DEBUG && console.log('ready should never fail');
-      // });
-      TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+      infojs.time('complete');
       let sw = '../service-worker.js';
       navigator.serviceWorker.register(sw, {
-        scope: '../'
+        scope: '../',
+        type: 'module'
       }).then(function(registration) {
-        DEBUG && console.log('ServiceWorker registration successful', registration);
-        DEBUG && infojs('ServiceWorker registration successful', infoNode);
-        DEBUG && infojs(registration, infoNode);
+        infojs.info('ServiceWorker registration successful', infoNode);
+        infojs.info(registration, infoNode);
+        localStorage.setItem('serviceworker-scope', registration.scope);
         if(registration.installing) {
-          DEBUG && console.log('ServiceWorker installing', registration.installing);
-          DEBUG && infojs('ServiceWorker installing', infoNode);
-          DEBUG && infojs(registration.installing, infoNode);
+          infojs.info('ServiceWorker installing', infoNode);
+          infojs.info(registration.installing, infoNode);
         } else if(registration.waiting) {
-          DEBUG && console.log('ServiceWorker (installed and) waiting', registration.waiting);
-          DEBUG && infojs('ServiceWorker (installed and) waiting', infoNode);
-          DEBUG && infojs(registration.waiting, infoNode);
+          infojs.info('ServiceWorker (installed and) waiting', infoNode);
+          infojs.info(registration.waiting, infoNode);
         } else if(registration.active) {
-          DEBUG && console.log('ServiceWorker active', registration.active);
-          DEBUG && infojs('ServiceWorker active', infoNode);
-          DEBUG && infojs(registration.active, infoNode);
+          infojs.info('ServiceWorker active', infoNode);
+          infojs.info(registration.active, infoNode);
           registration.active.postMessage({
             request: 'caches'
           });
@@ -53,35 +42,23 @@ if ('serviceWorker' in navigator) {
               request: 'version'
             });
           }
-          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-          // if (navigator.serviceWorker.controller) {
-          // }
-          // else {
-          //   // DEBUG && console.log('NO CONTROLLER', registration);
-          // }
         }
-        // DEBUG && console.log('Register navigator.serviceWorker.controller: ', navigator.serviceWorker.controller);
       }).catch(err => {
-        DEBUG && console.log('Service-Worker registration failed with error', err);
-        DEBUG && infojs('Service-Worker registration failed with error', infoNode);
-        DEBUG && infojs(err, infoNode);
+        infojs.infojs('Service-Worker registration failed with error', infoNode);
+        infojs.error(err, infoNode);
       });
+
       // navigator.serviceWorker.addEventListener('controllerchange', function(e) {
-      //   DEBUG && console.log(`[ServiceWorker] : controllerchange`, e);
+      //   console.log(`[ServiceWorker] : controllerchange`, e);
       //   navigator.serviceWorker.controller.addEventListener('statechange', function(e) {
-      //     DEBUG && console.log(`[ServiceWorker] statechange ${e.target.state}`, e);
+      //     console.log(`[ServiceWorker] statechange ${e.target.state}`, e);
       //   });
       // });
       navigator.serviceWorker.addEventListener('message', function(e) {
         let infoNode = document.getElementById('replication_info');
-        TIME && times.reduce((prevValue, currValue, currIndex, object) => {
-          infojs(
-            `${(currValue[1] - prevValue[1])/1000} seconds spent from ${prevValue[0]} to ${currValue[0]}`,
-            infoNode);
-          return currValue;
-        });
-        DEBUG && console.log(`ServiceWorker message received: `, e);
-        DEBUG && infojs(e.data, infoNode);
+        infojs.timeEnd('readystatechange');
+        infojs.timeEnd('complete');
+        infojs.info(e.data, infoNode);
         switch (e.data.request) {
         case 'caches': {
           JSON.parse(e.data.message).forEach((value, index, object) => {

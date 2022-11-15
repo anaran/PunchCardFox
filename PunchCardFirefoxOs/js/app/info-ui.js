@@ -1,7 +1,5 @@
 'use strict';
 
-// import { infojs } from './info.js';
-
 export class InfoUI extends HTMLElement {
   constructor() {
     try {
@@ -32,7 +30,6 @@ pre.selected {
     }
     catch (e) {
       window.alert(JSON.stringify(e, null, 2));
-      // infojs(e, document.body, "append");
     }
   }
   connectedCallback() {
@@ -43,6 +40,8 @@ pre.selected {
         }
         else {
           event.target.classList.add('selected');
+          // Too invasive. Todo: Add way to select all via button or similar.
+          // window.getSelection().selectAllChildren(event.target);
         }
         this.pre.contentEditable = false;
         // let s = window.getSelection();
@@ -51,7 +50,6 @@ pre.selected {
     }
     catch (e) {
       window.alert(JSON.stringify(e, null, 2));
-      // infojs(e, document.body, "append");
     }
   }
   static get observedAttributes() {
@@ -65,7 +63,6 @@ pre.selected {
     }
     catch (e) {
       window.alert(JSON.stringify(e, null, 2));
-      // infojs(e, document.body, "append");
     }
   }
   get textContent() {
@@ -74,7 +71,6 @@ pre.selected {
     }
     catch (e) {
       window.alert(JSON.stringify(e, null, 2));
-      // infojs(e, document.body, "append");
     }
   }
   set textContent(newContent) {

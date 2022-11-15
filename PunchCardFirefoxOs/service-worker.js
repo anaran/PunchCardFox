@@ -3,43 +3,7 @@
 let version = 'Punchcard v46';
 let cachedVersion = undefined;
 
-let DEBUG = false;
-let evaluatedExpression = (str) => { return `${str[0]}:${`${eval(str[0])}`}`; }
-
-DEBUG && console.log('begin', version, (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);
-
-// self.clients.matchAll({
-//   includeUncontrolled: true
-// }).then(function(clientList) {
-//   clientList.map(function(client) {
-//     // client.postMessage({
-//     //   message: `Claiming clients for version ${version}`
-//     // });
-//     caches.keys().then((cacheNames) => {
-//       return Promise.all(
-//         cacheNames.map(function(cacheName) {
-//           return cacheName;
-//         })
-//       )}).then((names) => {
-//         client.postMessage({
-//           request: 'caches',
-//           message: JSON.stringify(names)
-//         });
-//       });
-//     client.postMessage({
-//       request: 'claim',
-//       message: version
-//     });
-//     // DEBUG && console.log(`[ServiceWorker] Claiming client for version ${version}`, client.id, client.type, client.url, client);
-//     // DEBUG && console.log(evaluatedExpression`JSON.stringify(client)`);
-//   });
-//   // return self.clients.claim();
-// }).catch(err => {
-//   DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
-// });
-
 self.addEventListener('install', function(event) {
-  DEBUG && console.log('[ServiceWorker] install (Skip waiting)');
   event.waitUntil(self.skipWaiting());
 });
 
@@ -49,15 +13,6 @@ self.addEventListener('install', function(event) {
 // got refreshed. Since we call `skipWaiting()` in `oninstall`, `onactivate` is
 // called immediately.
 self.addEventListener('activate', function(event) {
-  DEBUG && console.log ('[ServiceWorker] activate');
-  // self.clients.matchAll({
-  //   includeUncontrolled: true
-  // }).then(function(clientList) {
-  //   let urls = clientList.map(function(client) {
-  //     return client.url;
-  //   });
-  //   DEBUG && console.log('[ServiceWorker] Matching clients:', urls.join(', '));
-  // }).catch(err => DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2)));
   event.waitUntil(
     // `claim()` sets this worker as the active worker for all clients that
     // match the worker's scope and triggers an `oncontrollerchange` event for
@@ -66,26 +21,10 @@ self.addEventListener('activate', function(event) {
       includeUncontrolled: true
     }).then(function(clientList) {
       clientList.map(function(client) {
-        // client.postMessage({
-        //   message: `Claiming clients for version ${version}`
-        // });
-        // caches.keys().then((cacheNames) => {
-        //   return Promise.all(
-        //     cacheNames.map(function(cacheName) {
-        //       return cacheName;
-        //     })
-        //   )}).then((names) => {
-        //     client.postMessage({
-        //       request: 'caches',
-        //       message: JSON.stringify(names)
-        //     });
-        //   });
         client.postMessage({
           request: 'claim',
           message: version
         });
-        // DEBUG && console.log(`[ServiceWorker] Claiming client for version ${version}`, client.id, client.type, client.url, client);
-        // DEBUG && console.log(evaluatedExpression`JSON.stringify(client)`);
       });
       return self.clients.claim();
     }).catch(err => {
@@ -93,7 +32,6 @@ self.addEventListener('activate', function(event) {
         request: 'error',
         message: err
       });
-      DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
     }));
 });
 
@@ -124,7 +62,6 @@ self.addEventListener('fetch', function(event) {
               scope: self.registration.scope
             });
           });
-          DEBUG && console.log(msg);
         }, fetchTimeout);
         return fetch(event.request, {signal}).then(response => {
           clearTimeout(timeout);
@@ -138,16 +75,13 @@ self.addEventListener('fetch', function(event) {
             cache.put(event.request, response.clone());
           }
           else {
-            DEBUG && console.log(`NOT put fetched ${event.request.url} response ${response.status} in ${version}`);
           }
           if (!response) {
-            DEBUG && console.log(`NO RESPONSE for ${event.request.url} in ${version}`, request, response);
           }
           else {
             return response;
           }
         }).catch(err => {
-          DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2), event);
           self.clients.get(event.clientId).then((client) => {
             client.postMessage({
               request: 'error',
@@ -157,7 +91,6 @@ self.addEventListener('fetch', function(event) {
           });
         });
       }).catch(err => {
-        DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
         self.clients.get(event.clientId).then((client) => {
           client.postMessage({
             request: 'error',
@@ -166,7 +99,6 @@ self.addEventListener('fetch', function(event) {
         });
       });
     }).catch(err => {
-      DEBUG && console.log(JSON.stringify(err, Object.getOwnPropertyNames(Error.prototype), 2));
       self.clients.get(event.clientId).then((client) => {
         client.postMessage({
           request: 'error',
@@ -178,7 +110,6 @@ self.addEventListener('fetch', function(event) {
 
 self.addEventListener("message", function(e) {
   // e.source is a client object
-  DEBUG && console.log(`[ServiceWorker] message for ${version}`, e.source, e.data);
   switch (e.data.request) {
   case 'caches': {
     caches.keys().then((cacheNames) => {
@@ -208,10 +139,8 @@ self.addEventListener("message", function(e) {
   case 'use cache': {
     cachedVersion = e.data.cache;
     if (cachedVersion) {
-      DEBUG && console.log(`fetch will now use cachedVersion ${cachedVersion} instead of version ${version}`);
     }
     else {
-      DEBUG && console.log(`fetch will now use version ${version} instead of cachedVersion`);
     }
     e.source.postMessage({
       request: 'version',
@@ -221,5 +150,3 @@ self.addEventListener("message", function(e) {
   }
   }
 });
-
-DEBUG && console.log('end', (new Error()).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]);

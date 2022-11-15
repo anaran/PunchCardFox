@@ -1,11 +1,10 @@
 'use strict';
 
-import { infojs } from './info.js';
+import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
 // import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 // import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
 
-let DEBUG = false;
 let LOG = false;
 
 export class NewEntryUI extends HTMLElement {
@@ -14,7 +13,6 @@ export class NewEntryUI extends HTMLElement {
   // for constuctor arguments
   constructor(databaseID, copy) {
     super();
-    DEBUG && console.log(`new NewEntryUI(${databaseID})`);
     this.databaseID = databaseID;
     this.copy = copy;
     this.shadow = this.attachShadow({ mode: 'open' });
@@ -183,12 +181,11 @@ export class NewEntryUI extends HTMLElement {
       event.preventDefault();
       event.stopPropagation();
       let res = this.save();
-      DEBUG && console.log(res);
       res && res.then((result) => {
         this.scrollView.removeChild(this);
         document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView({block: "center", inline: "center"});
       }).catch((err) => {
-        infojs(err, this.shadow.firstElementChild, 'append');
+        infojs.error(err);
       });
     }
     this.shadow.querySelector ('#quit_edit').addEventListener('click', quitEdit, 'capture');
@@ -223,7 +220,6 @@ export class NewEntryUI extends HTMLElement {
       //     start: startDateTime,
       //     end: endDateTime
       //   };
-      //   DEBUG && window.alert(JSON.stringify(entry, null, 2));
       //   this.db.post(entry).then((response) => {
       //     // saveLink.click();
       //     event.returnValue = 'saved';
@@ -261,7 +257,7 @@ export class NewEntryUI extends HTMLElement {
           }
           if (Number.isNaN(newDateTime.getMilliseconds())) {
             // window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
-            infojs('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).', this.shadow.firstElementChild, 'append');
+            infojs.error('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).');
           }
           else {
             elementUpdater(newDateTime);
@@ -448,7 +444,7 @@ export class NewEntryUI extends HTMLElement {
           // actually just a click before we remove the click
           // listener.
           if (firstMove && deltaX && deltaY) {
-          offset.classList.add('changed');
+            offset.classList.add('changed');
             LOG && console.log(event.type, 'remove click and click input element');
             true && offset.removeEventListener('click', clickListener, false);
             element.click();
@@ -624,7 +620,7 @@ export class NewEntryUI extends HTMLElement {
           }
         }, this);
         // if (!found) {
-        //   infojs(callback.toString() + ' was never registered', this.entries);
+        //   infojs.info(callback.toString() + ' was never registered', this.entries);
         // }
         return found;
       }
@@ -671,7 +667,6 @@ export class NewEntryUI extends HTMLElement {
       break;
     }
     default: {
-      DEBUG && console.log(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
     }
     }
   }
@@ -706,7 +701,7 @@ export class NewEntryUI extends HTMLElement {
           this.endUpdater(end);
         }
       }).catch((err) => {
-        infojs(err, this.shadow.firstElementChild, 'append');
+        infojs.error(err);
       });
     }
     else {
@@ -768,7 +763,7 @@ export class NewEntryUI extends HTMLElement {
               this.db.put(otherDoc).then((response) => {
                 document.getElementById(response.id).classList.add('deleted');
               }).catch((err) => {
-                infojs(err, this.shadow.firstElementChild, 'append');
+                infojs.error(err);
                 reject('Cannot delete entry with old start time.\nDiscard edit?'
                        + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
               });
@@ -777,7 +772,7 @@ export class NewEntryUI extends HTMLElement {
               delete otherDoc._deleted;
               // NOTE: Remove _rev property before new doc is put into db!
               delete otherDoc._rev;
-              otherDoc._id = startDate.toJSON() + Math.random().toString(16).substring(3, 15);
+              otherDoc._id = startDate.toJSON() + utilsjs.getRandom12HexDigits();
             }
           }
           else {
@@ -808,7 +803,7 @@ export class NewEntryUI extends HTMLElement {
               // TO be set by caller
               // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
             }).catch((err) => {
-              infojs(err, this.shadow.firstElementChild, 'append');
+              infojs.error(err);
               reject('Cannot save modified entry.\nDiscard edit?'
                      + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
@@ -818,7 +813,7 @@ export class NewEntryUI extends HTMLElement {
                    + JSON.stringify(otherDoc, Object.getOwnPropertyNames(otherDoc), 2));
           }
         }).catch((err) => {
-          infojs(err, this.shadow.firstElementChild, 'append');
+          infojs.error(err);
           reject('Cannot get entry to be modified.\nDiscard edit?'
                  + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
@@ -827,7 +822,7 @@ export class NewEntryUI extends HTMLElement {
         var entry = {
           // activity: activity.textContent,
           activity: this.activity.value,
-          _id: this.getDateTime(this.start).toJSON() + Math.random().toString(16).substring(3, 15),
+          _id: this.getDateTime(this.start).toJSON() + utilsjs.getRandom12HexDigits(),
         };
         // end may be left empty.
         if (this.end.value.length) {
@@ -854,14 +849,14 @@ export class NewEntryUI extends HTMLElement {
             resolve({ new: response });
           }).catch((err) => {
             //errors
-            infojs(err, this.shadow.firstElementChild, 'append');
+            infojs.error(err);
             reject('New entry is valid but cannot be saved.\nDiscard edit?'
                    + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
         }
         else {
           // window.alert('saving entry failed, please review values of start, end, activity.');
-          infojs(entry, this.shadow.firstElementChild, 'append');
+          infojs.info(entry);
           var newEntry = document.querySelector('new-entry');
           newEntry.scrollIntoView({block: "center", inline: "center"});
           reject('New entry has invalid times or empty activity.\nDiscard edit?'

@@ -6,32 +6,43 @@ import * as utilsjs from './utils.js';
 import '../../bower_components/pouchdb/dist/pouchdb.js';
 
 // try {
-let times = [];
-let DEBUG = false;
-let TIME = false;
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-// define(['require', 'info', 'gaia-header', 'template!../new_entry.html'], function (require, info, gh, newElement) {
-// DOMContentLoaded is fired once the document has been loaded and parsed,
-// but without waiting for other external resources to load (css/images/etc)
-// That makes the app more responsive and perceived as faster.
-// https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
-// NOTE TEmporarily comment out event listener to understand why code does not run when loaded by alameda (requirejs).
-// TODO See also https://github.com/jrburke/requirejs/issues/463
-// window.addEventListener('DOMContentLoaded', function() {
-// We'll ask the browser to use strict code to help us catch errors earlier.
-// https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
-// typeof document != 'undefined' && document.addEventListener('readystatechange', function (event) {
-//   // DEBUG_ADDON && console.log('document.readyState', document.readyState);
-//   if (document.readyState == 'complete') {
-var addReadOnlyInfo = infojs.infojs;
+infojs.time('options.js');
 var infoNode = document.getElementById('replication_info');
 var XHR_TIMEOUT_MS = 65000;
 var cookie;
 var setCookie;
+let loadButton = document.querySelector('#load');
+let saveButton = document.querySelector('#save');
 // No need to keep a lot of history for user options.
+infojs.time('new Pouchdb options');
 var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
+infojs.timeEnd('new Pouchdb options');
+infojs.time('new Pouchdb punchcard');
 var punchcardDB = new PouchDB('punchcard');
-var persistentNodeList = document.querySelectorAll('.persistent');
+infojs.timeEnd('new Pouchdb punchcard');
+document.addEventListener('readystatechange', (event) => {
+  if (event.target.readyState !== 'complete') {
+    return;
+  }
+  document.querySelectorAll('.persistent').forEach((item) => {
+    infojs.time(`load ${item.id} from localStorage`);
+    if (item.type == 'checkbox') {
+      item.checked = (localStorage.getItem(item.id) == 'true');
+    }
+    else {
+      item.value = localStorage.getItem(item.id);
+    }
+    infojs.timeEnd(`load ${item.id} from localStorage`);
+    // Note: Unlike blur this only fires when value has actually changed.
+    item.addEventListener('change', function (event) {
+      var element = event.target;
+      infojs.time(`save changed ${element.id}`);
+      var value = element.type == 'checkbox' ? element.checked : element.value;
+      localStorage.setItem(element.id, value);
+      infojs.timeEnd(`save changed ${element.id}`);
+    });
+  });
+});
 let fontSizeSelect = document.getElementById ('punchcard_font_size_select');
 let changeFontSize = (element) => {
   document.documentElement.style.fontSize = element.value;
@@ -62,131 +73,98 @@ let changeTheme = (element) => {
 };
 changeTheme(themeSelect);
 themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-Array.prototype.forEach.call(persistentNodeList, function (element) {
-  optionsDB.get(element.id, {
-    conflicts: true
-  }).then(function(otherDoc) {
-    TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-    if (otherDoc._conflicts) {
-      addReadOnlyInfo({ conflicts: otherDoc._conflicts }, infoNode);
-      // FIXME: just delete conflict for now for options.
-      // DON'T DO THIS FOR VALUABLE DOCUMENTS!
-      otherDoc._conflicts.forEach(function (conflict) {
-        optionsDB.put({
-          _id: otherDoc._id,
-          _rev: conflict,
-          _deleted: true
-        }).then(function(response) {
-          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-          console.log('conflict deleted', response);
-          // document.location.reload('force');
-          // saveLink.click();
-        }).catch(function(err) {
-          TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
-          //errors
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-        });
-      });
-    }
-    if (element.type == 'checkbox') {
-      element.checked = otherDoc.value;
-    }
-    else {
-      element.value = otherDoc.value;
-    }
-  }).catch(function(err) {
-    //errors
-    console.log(err, element);
-    var value = element.type == 'checkbox' ? element.checked : element.value;
-    if (element.id) {
-      optionsDB.put({ _id: element.id, value: value });
-    }
-    else {
-      console.log("no id for saving options doc", element);
-    }
+
+loadButton.addEventListener('click', (event) => {
+  infojs.time('optionsDB.allDocs');
+  optionsDB.allDocs({
+    include_docs: true,
+  }).then(function (result) {
+    infojs.time('delete no longer used options in optionsDB');
+    result.rows && result.rows.forEach(function (row) {
+      let element = document.getElementById(row.key);
+      if (!element) {
+        if (!row.key.startsWith("_design/")) {
+          optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
+            infojs.warn(`deleted no longer used ${row.key}, ${row.value.rev}`);
+          }).catch(function(err) {
+            infojs.error(err);
+          });
+        }
+      }
+      else {
+        localStorage.setItem(row.key, row.doc.value);
+        if (element.type == 'checkbox') {
+          element.checked = row.doc.value;
+        }
+        else {
+          element.value = row.doc.value;
+        }
+      }
+    });
+    infojs.timeEnd('delete no longer used options in optionsDB');
+    infojs.timeEnd('optionsDB.allDocs');
   });
-  // Note: Unlike blur this only fires when value has actually changed.
-  element.addEventListener('change', function (event) {
-    var element = event.target;
-    console.log(element.id, 'changed');
-    var value = element.type == 'checkbox' ? element.checked : element.value;
-    optionsDB.get(element.id).then(function(otherDoc) {
-      otherDoc.value = value;
-      optionsDB.put(otherDoc).then(function(response) {
-        console.log('saved changed option', response);
-        // document.location.reload('force');
-        // saveLink.click();
-      }).catch(function(err) {
-        //errors
-        console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-      });
-    }).catch(function(err) {
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-      if (element.id) {
-        optionsDB.put({ _id: element.id, value: value }).catch(function(err) {
-          //errors
-          console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+  infojs.time('optionsDB.info()');
+  optionsDB.info().then(function (info) {
+    infojs.info(info);
+    infojs.timeEnd('optionsDB.info()');
+  }).catch(function (err) {
+    infojs.error(err);
+  });
+});
+
+saveButton.addEventListener('click', (event) => {
+  infojs.time('delete optionsDB conflicts');
+  document.querySelectorAll('.persistent').forEach((element) => {
+    optionsDB.get(element.id, {
+      conflicts: true
+    }).then(function(otherDoc) {
+      if (otherDoc._conflicts) {
+        infojs.info({ conflicts: otherDoc._conflicts }, infoNode);
+        // FIXME: just delete conflict for now for options.
+        // DON'T DO THIS FOR VALUABLE DOCUMENTS!
+        otherDoc._conflicts.forEach(function (conflict) {
+          optionsDB.put({
+            _id: otherDoc._id,
+            _rev: conflict,
+            _deleted: true
+          }).then(function(response) {
+            infojs.info('options db conflict deleted');
+            infojs.info(response);
+            // document.location.reload('force');
+            // saveLink.click();
+          }).catch(function(err) {
+            infojs.error(err);
+          });
         });
+      }
+      if (element.type == 'checkbox') {
+        otherDoc.value = element.checked;
+      }
+      else {
+        otherDoc.value = element.value;
+      }
+    }).catch(function(err) {
+      //errors
+      console.log(err, element);
+      var value = element.type == 'checkbox' ? element.checked : element.value;
+      if (element.id) {
+        optionsDB.put({ _id: element.id, value: value });
       }
       else {
         console.log("no id for saving options doc", element);
       }
     });
   });
+  infojs.timeEnd('delete optionsDB conflicts');
 });
-optionsDB.allDocs({
-  include_docs: false
-}).then(function (result) {
-  result.rows && result.rows.forEach(function (row) {
-    if (!Array.prototype.map.call(persistentNodeList, function (element) {
-      return element.id
-    }).includes(row.key)) {
-      if (!row.key.startsWith("_design/")) {
-        optionsDB.remove({ _id: row.key, _rev: row.value.rev }).then(function(result) {
-          console.log('deleted no longer used', row.key, row.value.rev);
-        }).catch(function(err) {
-          console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-        });
-      }
-    }
-  });
-});
-// var options = [
-//   'protocol',
-//   'user',
-//   'pass',
-//   'hostportpath'
-// ];
-// options.forEach(function (option) {
-//   optionsDB.get(option, function (err, doc) {
-//     var input = document.getElementById(option);
-//     input.addEventListener('blur', function (event) {
-//       optionsDB.put({ value: event.target.value }, option, err ? undefined : doc._rev);
-//     });
-//     if (err) {
-//       // window.alert(JSON.stringify(err, null, 2));
-//     }
-//     if (doc.value) {
-//       // window.alert(JSON.stringify(doc, null, 2));
-//       input.value = doc.value;
-//     }
-//     // DEBUG && console.log(doc);
-//   });
-// });
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+
 var infoNode = document.getElementById('replication_info');
 var clearNode = document.getElementById('clear_replication_info');
 clearNode.addEventListener('click', function (event) {
   // NOTE Do not go to link, which is somewhat disruptive.
   event.preventDefault();
   if (!infoNode.childElementCount) {
-    TIME && times.reduce((prevValue, currValue, currIndex, object) => {
-      addReadOnlyInfo(
-        `${(currValue[1] - prevValue[1])/1000} seconds spent between ${prevValue[0]} and ${currValue[0]}`,
-        infoNode)
-      return currValue;
-    });
   }
   else {
     Array.prototype.forEach.call(infoNode.querySelectorAll('info-ui'), function(elem) {
@@ -194,7 +172,6 @@ clearNode.addEventListener('click', function (event) {
     });
   }
 });
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var optionsStartButton = document.getElementById('options_start_replication');
 var optionsStopButton = document.getElementById('options_stop_replication');
 var punchcardStartButton = document.getElementById('punchcard_start_replication');
@@ -229,7 +206,6 @@ var syncOptions = {
   //   return delay * 3;
   // }
 };
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 let setupRemoteSync = function _setupRemoteSync(opt) {
   opt.startButton.addEventListener('click', function (event) {
     let dbSync;
@@ -256,7 +232,6 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         }
       }
     }
-    TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
     if (true) {
       switch (syncType) {
       case 'Replicate from': {
@@ -276,7 +251,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         break;
       }
       default:
-        addReadOnlyInfo({ 'unknown sync type': syncType }, infoNode);
+        infojs.info({ 'unknown sync type': syncType }, infoNode);
       }
       var myInfo = {};
       dbSync.on('change', function (info) {
@@ -290,38 +265,38 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         }
         if (verbositySelect.value != 'silent') {
           myInfo[localDbName] = info;
-          addReadOnlyInfo(myInfo, infoNode);
+          infojs.info(myInfo, infoNode);
         }
       })
         .on('paused', function () {
           // replication paused (e.g. user went offline)
           if (verbositySelect.value == 'verbose') {
             myInfo[localDbName] = "replication paused (e.g. user went offline)";
-            addReadOnlyInfo(myInfo, infoNode);
+            infojs.info(myInfo, infoNode);
           }
         })
         .on('active', function () {
           // replicate resumed (e.g. user went back online)
           if (verbositySelect.value == 'verbose') {
             myInfo[localDbName] = "replicate resumed (e.g. user went back online)";
-            addReadOnlyInfo(myInfo, infoNode);
+            infojs.info(myInfo, infoNode);
           }
         })
         .on('denied', function (info) {
           // a document failed to replicate, e.g. due to permissions
           if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = info;
-            addReadOnlyInfo(myInfo, infoNode);
+            infojs.info(myInfo, infoNode);
           }
         })
         .on('complete', function (info) {
           if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = info;
-            addReadOnlyInfo(myInfo, infoNode);
+            infojs.info(myInfo, infoNode);
             remoteDB.info().then(function (info) {
-              addReadOnlyInfo(info, infoNode);
+              infojs.info(info, infoNode);
             }).catch(function (err) {
-              addReadOnlyInfo(err, infoNode);
+              infojs.error(err, infoNode);
             });
           }
           startButton.removeAttribute('disabled');
@@ -329,11 +304,11 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         })
         .on('uptodate', function (info) {
           myInfo[localDbName] = info;
-          addReadOnlyInfo(myInfo, infoNode);
+          infojs.info(myInfo, infoNode);
         })
         .on('error', function (err) {
           myInfo[localDbName] = err;
-          addReadOnlyInfo(myInfo, infoNode);
+          infojs.error(myInfo, infoNode);
           startButton.removeAttribute('disabled');
           stopButton.setAttribute('disabled', true);
         });
@@ -351,7 +326,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
     }
   });
 };
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+infojs.time('setupRemoteSync punchcard');
 setupRemoteSync({
   startButton: punchcardStartButton,
   stopButton: punchcardStopButton,
@@ -366,7 +341,8 @@ setupRemoteSync({
   liveId: 'punchcard_live_sync',
   activitySizeId: 'punchcard_doc_size'
 });
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+infojs.timeEnd('setupRemoteSync punchcard');
+infojs.time('setupRemoteSync options');
 setupRemoteSync({
   startButton: optionsStartButton,
   stopButton: optionsStopButton,
@@ -380,7 +356,7 @@ setupRemoteSync({
   verbositySelectId: 'verbosity',
   liveId: 'options_live_sync'
 });
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
+infojs.timeEnd('setupRemoteSync options');
 var include = document.getElementById('include');
 var exclude = document.getElementById('exclude');
 var includeCase = document.getElementById('include_case');
@@ -416,7 +392,7 @@ var searchMatchingActivities = function () {
   var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
   punchcardDB.allDocs({ limit: 4500, include_docs: true, descending: true }, function(err, doc) {
     if (err) {
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+      infojs.error(err);
     } else {
       var search = document.getElementById('search');
       search && include.parentElement.removeChild(search);
@@ -446,12 +422,10 @@ var searchMatchingActivities = function () {
             start: (new Date).toJSON(),
             end: (new Date).toJSON()
           };
-          DEBUG && console.log(JSON.stringify(entry, null, 2));
           punchcardDB.post(entry).then(function(response) {
             document.querySelector('a.save').click();
           }).catch(function(err) {
-            //errors
-            console.error(JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+            infojs.error(err);
           });
         });
         var edit = document.createElement('a');
@@ -592,12 +566,11 @@ logout.addEventListener('click', function(e) {
 //       }
 //     }
 //   } catch (e) {
-//     addReadOnlyInfo(e, infoNode);
+//     infojs.error(e, infoNode);
 //   }
 // };
 //   }
 // });
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 export let sessionLogin = function (url, username, password) {
   // Returns AuthSession header in Firefox OS App with systemXHR permission
   var request;
@@ -641,11 +614,11 @@ export let sessionLogin = function (url, username, password) {
   // Seems to be equivalent to state request.DONE
   // request.onload = function() {
   //     var infoNode = document.getElementById('replication_info');
-  //     addReadOnlyInfo('request.onloadend ... ', infoNode);
-  //     addReadOnlyInfo('this.readyState = ' + this.readyState, infoNode);
-  //     addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
-  //     addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
-  //     addReadOnlyInfo('request.response = ' + request.response, infoNode);
+  //     infojs.info('request.onloadend ... ', infoNode);
+  //     infojs.info('this.readyState = ' + this.readyState, infoNode);
+  //     infojs.info('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
+  //     infojs.info('request.responseText = ' + request.responseText, infoNode);
+  //     infojs.info('request.response = ' + request.response, infoNode);
   // };
   // request.onreadystatechange = function() {
   // request.onprogress = function() {
@@ -654,21 +627,24 @@ export let sessionLogin = function (url, username, password) {
     //   this.abort();
     // }
     if (/*true || */this.readyState == request.DONE) {
+      if (this.statusText != 'OK') {
+        infojs.error(request.responseText);
+      }
       var infoNode = document.getElementById('replication_info');
-      addReadOnlyInfo('this.readyState = ' + this.readyState, infoNode);
-      addReadOnlyInfo('this.status = ' + this.status, infoNode);
-      addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
-      addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
-      addReadOnlyInfo('request.response = ' + request.response, infoNode);
-      addReadOnlyInfo('request.response.cookies = ' + request.response.cookies, infoNode);
+      infojs.info('this.readyState = ' + this.readyState, infoNode);
+      infojs.info('this.status = ' + this.status, infoNode);
+      infojs.info('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
+      infojs.info('request.responseText = ' + request.responseText, infoNode);
+      infojs.info('request.response = ' + request.response, infoNode);
+      infojs.info('request.response.cookies = ' + request.response.cookies, infoNode);
       // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
-      addReadOnlyInfo('this.getResponseHeader("Cookie") = ' + this.getResponseHeader('Cookie'), infoNode);
-      addReadOnlyInfo('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'), infoNode);
+      infojs.info('this.getResponseHeader("Cookie") = ' + this.getResponseHeader('Cookie'), infoNode);
+      infojs.info('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'), infoNode);
       setCookie = this.getResponseHeader('Set-Cookie');
       if (setCookie) {
         cookie = 
           setCookie.split(';')[0];
-        addReadOnlyInfo(cookie, infoNode);
+        infojs.info(cookie, infoNode);
         // load.removeAttribute('disabled');
       }
       // alert('request.responseText = ' + request.responseText);
@@ -680,7 +656,6 @@ export let sessionLogin = function (url, username, password) {
   // FIXME: async!
   // return cookie;
 };
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 export let sessionLogout = function (url) {
   var request;
   if (false && /* false && */window.location.protocol == "app:") {
@@ -707,10 +682,14 @@ export let sessionLogout = function (url) {
   // request.onprogress = function() {
   request.onload = function() {
     if (/* true || */this.readyState == request.DONE) {
+      if (this.statusText != 'OK') {
+        infojs.info(this.statusText);
+        infojs.info(request.responseText);
+      }
       var infoNode = document.getElementById('replication_info');
-      addReadOnlyInfo('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
-      addReadOnlyInfo('request.responseText = ' + request.responseText, infoNode);
-      addReadOnlyInfo('request.response = ' + request.response, infoNode);
+      infojs.info('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders(), infoNode);
+      infojs.info('request.responseText = ' + request.responseText, infoNode);
+      infojs.info('request.response = ' + request.response, infoNode);
       // alert('this.getAllResponseHeaders() = ' + this.getAllResponseHeaders());
       // alert('this.getResponseHeader("Set-Cookie") = ' + this.getResponseHeader('Set-Cookie'));
       var data = request.response && JSON.parse(request.response);
@@ -725,24 +704,21 @@ export let sessionLogout = function (url) {
   // FIXME: async!
   // return false;
 };
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var onRequestError = function (event) {
   var errorMessage = JSON.stringify(event, [ 'type', 'lengthComputable', 'loaded', 'total' ], 2);
   if (event.type == 'error') {
-    window.alert('Please press Login');
+    infojs.error(`Network request failed. Browser is ${window.navigator.onLine ? 'online' : 'offline'}`);
   }
-  // alert(errorMessage);
   showError(errorMessage);
 };
 
 var showError = function (text) {
   var infoNode = document.getElementById('replication_info');
-  addReadOnlyInfo(text, infoNode);
+  infojs.error(text, infoNode);
   // errorMsg.textContent = text;
   // errorMsg.hidden = false;
   // results.hidden = true;
 };
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 var start = function () {
 
   var message = document.getElementById('message');
@@ -753,7 +729,6 @@ var start = function () {
   message.textContent = 'message';
 
 };
-TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.now()]);
 // document.body.style.display = 'none';
 // export default {
 //   sessionLogin,
@@ -763,3 +738,4 @@ TIME && times.push([(new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2], Date.no
 // catch (e) {
 //   window.alert(e.message + '\n' + e.stack);
 // }
+infojs.timeEnd('options.js');

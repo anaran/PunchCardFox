@@ -1,6 +1,6 @@
 'use strict';
 
-import { infojs } from './info.js';
+import * as infojs from './info.js';
 
 export class InputUI extends HTMLElement {
   constructor() {
@@ -53,8 +53,8 @@ input.empty + input.undo.undoable + input.erase {
       this.undo = this.shadow.querySelector('input.undo');
       this.inp = this.shadow.querySelector('input.val');
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   connectedCallback() {
@@ -139,8 +139,8 @@ input.empty + input.undo.undoable + input.erase {
       //   }
       // });
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   static get observedAttributes() {
@@ -180,16 +180,16 @@ input.empty + input.undo.undoable + input.erase {
       // }
       // }
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   get type() {
     try {
       return this.inp.getAttribute('type');
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   set type(newType) {
@@ -200,8 +200,8 @@ input.empty + input.undo.undoable + input.erase {
     try {
       return this.inp.value;
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   set value(newValue) {
@@ -209,24 +209,24 @@ input.empty + input.undo.undoable + input.erase {
       this.setAttribute('value', newValue);
       this.inp.value = newValue;
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   get valueAsDate() {
     try {
       return this.inp.valueAsDate;
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   addEventListener(...args) {
     try {
       this.inp.addEventListener(...args);
     }
-    catch (e) {
-      infojs(e, document.body, "append");
+    catch (err) {
+      infojs.error(err, document.body, "append");
     }
   }
   blur() {
