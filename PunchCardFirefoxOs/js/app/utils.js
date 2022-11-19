@@ -204,12 +204,3 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     infojs.error(err, entries);
   }
 }
-
-// export default {
-//     formatEndDate,
-//     formatStartDate,
-//     updateEntriesElement,
-//     pad,
-//     reportDateTimeDiff,
-//     addNewEntry
-//   };

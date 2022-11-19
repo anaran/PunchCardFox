@@ -169,13 +169,25 @@ export class NewEntryUI extends HTMLElement {
     this.db = new PouchDB('punchcard');
     this.scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     this.entries = document.querySelector('div#new_entries');
-    // var id = document.location.hash.substring(1);
+    let removeAutosave = () => {
+      let autosavesJSON = localStorage.getItem('autosaves');
+      let autosaves = {};
+      if (autosavesJSON) {
+        autosaves = JSON.parse(autosavesJSON);
+      }
+      localStorage.removeItem(this.autosaveID);
+      infojs.info(`removing autosave ${this.autosaveID}`);
+      delete autosaves[this.autosaveID];
+      localStorage.setItem('autosaves', JSON.stringify(autosaves));
+      infojs.info(`${Object.keys(autosaves).length} entries in autosaves ${JSON.stringify(autosaves, null, 2)}`);
+    }
     let quitEdit = (event) => {
       event.preventDefault();
       event.stopPropagation();
       if (!this.activity.value.trim().length || window.confirm("Discard edits?")) {
         this.scrollView.removeChild(this);
       }
+      removeAutosave();
     }
     let saveEdit = (event) => {
       event.preventDefault();
@@ -184,6 +196,7 @@ export class NewEntryUI extends HTMLElement {
       res && res.then((result) => {
         this.scrollView.removeChild(this);
         document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView({block: "center", inline: "center"});
+        removeAutosave();
       }).catch((err) => {
         infojs.error(err);
       });
@@ -194,75 +207,35 @@ export class NewEntryUI extends HTMLElement {
     this.endDateTime = new Date;
     // NOTE: prompt user whether to reload page even when an entry is being edited.
     window.addEventListener("beforeunload", (event) => {
-      // event.preventDefault();
-      // maybeSave();
-      // if (id) {
-      //   this.db.get(id).then((otherDoc) => {
-      //     otherDoc.activity = activity.textContent;
-      //     otherDoc.start = startDateTime;
-      //     otherDoc.end = endDateTime;
-      //     return this.db.put(otherDoc).then((response) => {
-      //       // saveLink.click();
-      //       event.returnValue = 'saved';
-      //     }).catch((err) => {
-      //       //errors
-      //       window.alert(err);
-      //     });
-      //   }).catch((err) => {
-      //     //errors
-      //     window.alert(err);
-      //   });
-      // }
-      // else {
-      //   var entry = {
-      //     // _id: this.db.post(),
-      //     activity: activity.textContent,
-      //     start: startDateTime,
-      //     end: endDateTime
-      //   };
-      //   this.db.post(entry).then((response) => {
-      //     // saveLink.click();
-      //     event.returnValue = 'saved';
-      //   }).catch((err) => {
-      //     //errors
-      //     window.alert(err);
-      //   });
-      // }
-      // var confirmationMessage = "too bad! \o/";
-      // (event || window.event).returnValue = confirmationMessage;     //Gecko + IE
-      // return confirmationMessage;                                //Webkit, Safari, Chrome etc.
-      // this.newEntry = document.querySelector('new-entry');
-      // if (newEntry.style.display != 'none') {
       if (document.querySelector('new-entry')) {
         event.returnValue = "unsaved";
       }
-      // }
     });
     this.setDateFromStringOrNumber = (ticker, elementUpdater) => {
       return (event) => {
-        if (event.key == 'Enter') {
-          event.preventDefault();
+        // setupAutosave(event);
+        // space
+        if (event.data == ' ') {
+          // event.preventDefault();
+          // event.stopPropagation();
           ticker();
           let newDateTime;
-          // Note: Number.parseFloat would parse an ISO date string to the numeric value of its year component!
+          // Note: Number.parseFloat would parse an ISO date string to
+          // the numeric value of its year component!
           // "2015-03-07..." => 2015
           // var milliSeconds = Number(event.target.textContent);
           let milliSeconds = Number(event.target.value);
           if (Number.isNaN(milliSeconds)) {
-            // newDateTime = new Date(event.target.textContent);
             newDateTime = new Date(event.target.value);
           }
           else {
             newDateTime = new Date(milliSeconds);
           }
           if (Number.isNaN(newDateTime.getMilliseconds())) {
-            // window.alert('Ignoring ' + event.target.textContent + ' (cannot convert to a valid Date).');
             infojs.error('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).');
           }
           else {
             elementUpdater(newDateTime);
-            // Update weekday, in case user did not do it.
-            // event.target.value = newDateTime;
           }
         }
       };
@@ -316,74 +289,33 @@ export class NewEntryUI extends HTMLElement {
           // event.dataTransfer.effectAllowed = "all";
           // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         }, false);
-        // Firefox on a Dell XPS 13 9343 receives mouse events from touch screen, not touch events!
-        // No contextmenu event is raised in this configuration, therefor we handle click events to reset offset to 0 as well.
+        // Firefox on a Dell XPS 13 9343 receives mouse events from
+        // touch screen, not touch events!
+        // No contextmenu event is raised in this configuration,
+        // therefor we handle click events to reset offset to 0 as
+        // well.
         let clickListener = (event) => {
           event.preventDefault();
           event.stopPropagation();
           LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
           LOG && console.log(event);
-          // NOTE: Cannot distinguish between mouse click with and without mouse move.
-          // Therefor we only reset value for single click on touch device.
-          // if ("touches" in event) {
-          // offset.style.backgroundColor = 'white';
           offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
           offset.classList.remove('changed');
           updateDateTimeGui();
-          // }
-          // prevX = event.touches[event.touches.length - 1].clientX;
-          // prevY = event.touches[event.touches.length - 1].clientY;
-          // event.dataTransfer.effectAllowed = "all";
-          // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         };
         true && offset.addEventListener('contextmenu', (event) => {
           event.preventDefault();
           event.stopPropagation();
           LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
           LOG && console.log(event);
-          // NOTE: Cannot distinguish between mouse click with and without mouse move.
-          // Therefor we only reset value for single click on touch device.
-          // if ("touches" in event) {
-          // offset.style.backgroundColor = 'white';
           offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
           prevX = prevY = deltaX = deltaY = deltaSum = 0;
           offset.classList.remove('changed');
           updateDateTimeGui();
-          // }
-          // prevX = event.touches[event.touches.length - 1].clientX;
-          // prevY = event.touches[event.touches.length - 1].clientY;
-          // event.dataTransfer.effectAllowed = "all";
-          // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
         }, false);
-        // NOTE: We use double click to reset value for mouse clicks to be sure there was no associated mouse move.
-        // true && offset.addEventListener('dblclick', (event) => {
-        //   event.preventDefault();
-        //   event.stopPropagation();
-        //   LOG && console.log(event.type, event.touches ? event.touches[event.touches.length - 1].clientX : event.clientX, event.touches ? event.touches[event.touches.length - 1].clientY : event.clientY);
-        //   LOG && console.log(event);
-        //   offset.style.backgroundColor = 'white';
-        //   offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
-        //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
-        //   updateDateTimeGui();
-        //   // prevX = event.touches[event.touches.length - 1].clientX;
-        //   // prevY = event.touches[event.touches.length - 1].clientY;
-        //   // event.dataTransfer.effectAllowed = "all";
-        //   // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
-        // }, false);
-        // offset.addEventListener('click', (event) => {
-        //   event.preventDefault();
-        //   event.stopPropagation();
-        //   LOG && console.log(event.type);
-        //   offset.textContent = '-' + utilsjs.pad('0', padwidth, '0');
-        //   // timeFromDeltaUpdater(this.getDateTime(), Math.round(-deltaSum));
-        //   elementUpdater(this.getDateTime());
-        //   prevX = prevY = deltaX = deltaY = deltaSum = 0;
-        //   // event.dataTransfer.setData('text/plain', 'This text may be dragged');                        deltaSum = Number(offset.textContent);
-        // }, false);
         offset.addEventListener('touchend', (event) => {
           LOG && console.log(event.type, event.touches.length && event.touches[event.touches.length - 1].clientX, event.touches.length && event.touches[event.touches.length - 1].clientY);
-          // offset.style.backgroundColor = 'white';
         }, false);
         offset.addEventListener('touchmove', (event) => {
           event.preventDefault();
@@ -403,23 +335,16 @@ export class NewEntryUI extends HTMLElement {
           if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
             if (Math.abs(deltaX) > Math.abs(deltaY)) {
               //     Slow mode
-              // offset.style.backgroundColor = 'lightcyan';
-              // deltaSum += deltaX;
               deltaSum += deltaX > 0 ? 0.1 : -0.1;
               offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
             }
             if (Math.abs(deltaY) > Math.abs(deltaX)) {
               //     Fast mode
-              // offset.style.backgroundColor = 'lightpink';
-              // deltaSum += deltaY * 5;
               deltaSum += deltaY > 0 ? 0.5 : -0.5;
-              // TODO Please note toFixed() also produces -0 values.
               offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
             }
           }
           LOG && console.log(deltaX, deltaY, offset.textContent);
-          // let d = timeFromDeltaUpdater(this.getDateTime(), Math.round(deltaSum));
-          // elementUpdater(d);
           updateDateTimeGui();
           prevX = event.touches[event.touches.length - 1].clientX;
           prevY = event.touches[event.touches.length - 1].clientY;
@@ -429,7 +354,8 @@ export class NewEntryUI extends HTMLElement {
           event.stopPropagation();
           deltaX = event.clientX - prevX;
           deltaY = prevY - event.clientY;
-          // Firefox on a Dell XPS 13 9343 receives mouse events from touch screen, not touch events!
+          // Firefox on a Dell XPS 13 9343 receives mouse events from
+          // touch screen, not touch events!
           // Clicking the touchscreen also generates mousemove event.
           // We have to check the deltas to see whether it was
           // actually just a click before we remove the click
@@ -441,30 +367,20 @@ export class NewEntryUI extends HTMLElement {
             element.click();
             firstMove = false;
           }
-          // if (event.buttons == 0) {
-          //   prevX = event.clientX;
-          //   prevY = event.clientY;
-          // }
-          // if (event.buttons == 1) {
           if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
             if (Math.abs(deltaX) * 2 > Math.abs(deltaY)) {
               //     Slow mode
-              // offset.style.backgroundColor = 'lightcyan';
               deltaSum += deltaX / 8;
               deltaSum += 0.1;
               offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
             }
             if (Math.abs(deltaY) * 2 > Math.abs(deltaX)) {
               //     Fast mode
-              // offset.style.backgroundColor = 'lightpink';
               deltaSum += deltaY;
               deltaSum += 0.1;
-              // TODO Please note toFixed() also produces -0 values.
               offset.textContent = (deltaSum > 0 ? '+' : '-') + utilsjs.pad(Math.abs(Math.round(deltaSum)), padwidth, '0');
             }
           }
-          // let d = timeFromDeltaUpdater(this.getDateTime(), Math.round(deltaSum));
-          // elementUpdater(d);
           updateDateTimeGui();
           LOG && console.log(deltaX, deltaY, offset.textContent);
           prevX = event.clientX;
@@ -472,11 +388,12 @@ export class NewEntryUI extends HTMLElement {
           LOG && console.log(event.type, event.clientX, event.clientY);
           LOG && console.log(event);
           LOG && console.log(event.buttons);
-          // }
         };
-        // Firefox on a Dell XPS 13 9343 receives mouse events from touch screen, not touch events!
-        // We have to add and remove listeners on the appropriate parentElement
-        // to receive mouse events when cursors leaves the current offset element.
+        // Firefox on a Dell XPS 13 9343 receives mouse events from
+        // touch screen, not touch events!
+        // We have to add and remove listeners on the appropriate
+        // parentElement to receive mouse events when cursor leaves
+        // the current offset element.
         true && offset.addEventListener('mousedown', (event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -516,21 +433,46 @@ export class NewEntryUI extends HTMLElement {
     }
 
     this.isValidEntry = (entry) => {
-      if (!!entry.activity &&
-          !!entry.activity.length &&
-          !!entry._id &&
-          entry._id.length == 36 &&
-          (!('end' in entry) ||
-           entry.end.length == 24)) {
-        return true;
-      }
-      else {
+      if (!entry.activity.length) {
+        infojs.error(`activity text is missing:\n${JSON.stringify(entry, null, 2)}`);
         return false;
       }
+      if (entry._id.length != 36) {
+        infojs.error(`start time is invalid:\n${JSON.stringify(entry, null, 2)}`);
+        return false;
+      }
+      if ('end' in entry && (!entry.end || entry.end.length != 24)) {
+        infojs.error(`end time is invalid:\n${JSON.stringify(entry, null, 2)}`);
+        return false;
+      }
+      return true;
     }
-
+    this.autosaveEntry = () => {
+      let autosave = {
+        activity: this.activity.value,
+        end: this.end.value,
+        start: this.start.value,
+      };
+      infojs.info(`autosaving to ${this.autosaveID} ${JSON.stringify(autosave, null, 2)}`);
+      localStorage.setItem(this.autosaveID, JSON.stringify(autosave));
+    };
     this.activity = this.shadow.querySelector('#activity');
+    this.autosaveID = `new-${(new Date).toJSON()}`;
+    let autosavesJSON = localStorage.getItem('autosaves');
+    let autosaves = {};
+    let setupAutosave = (event) => {
+      event && infojs.info(event);
+      this.timerID && window.clearTimeout(this.timerID);
+      this.timerID = window.setTimeout(this.autosaveEntry, 3000);
+    }
+    if (autosavesJSON) {
+      autosaves = JSON.parse(autosavesJSON);
+    }
+    autosaves[this.autosaveID] = true;
+    localStorage.setItem('autosaves', JSON.stringify(autosaves));
+    this.activity.addEventListener('input', setupAutosave);
     this.start = this.shadow.querySelector('#start');
+    // this.start.addEventListener('change', setupAutosave);
     this.updateStartButton = this.shadow.querySelector('#update_start');
     this.startUpdater = this.updateDateTime(this.start);
     // let startnow = this.shadow.querySelector('#startnow');
@@ -547,16 +489,21 @@ export class NewEntryUI extends HTMLElement {
     this.updateStart = (time) => {
       this.startDateTime = time;
       this.startUpdater(time);
+      setupAutosave();
       // this.start.value = time;
     };
 
     this.updateEnd = (time) => {
       this.endDateTime = time;
       this.endUpdater(time);
+      // NOTE: Important changes to activity and start will not be
+      // autosaved if we restart autosave timer on ticking end value,
+      // which is optional anyway.
+      // setupAutosave();
       // this.end.value = time;
     };
 
-    this.start.addEventListener('keypress', this.setDateFromStringOrNumber(() => {
+    this.start.addEventListener('input', this.setDateFromStringOrNumber(() => {
       this.tack.removeCallback(this.updateStart);
     }, this.updateStart));
     this.addTouchable({
@@ -569,6 +516,7 @@ export class NewEntryUI extends HTMLElement {
       second: { selector: '.start_delta_div>.second', padwidth: 2},
       datetime: { selector: '#start', getter: this.getStartTime}});
     this.end = this.shadow.querySelector('#end');
+    // this.end.addEventListener('input', setupAutosave);
     this.updateEndButton = this.shadow.querySelector('#update_end');
     this.endUpdater = this.updateDateTime(this.end);
     // let endnow = this.shadow.querySelector('#endnow');
@@ -580,7 +528,7 @@ export class NewEntryUI extends HTMLElement {
       this.endUpdater(this.endDateTime);
     });
     this.getEndTime = () => { return this.endDateTime; };
-    this.end.addEventListener('keypress', this.setDateFromStringOrNumber(() => {
+    this.end.addEventListener('input', this.setDateFromStringOrNumber(() => {
       this.tack.removeCallback(this.updateEnd);
     }, this.updateEnd));
     this.addTouchable({
@@ -651,17 +599,30 @@ export class NewEntryUI extends HTMLElement {
     this.tack.start();
     this.init(this.databaseID);
   }
-  static get observedAttributes() {return ['db_name']; }
-  attributeChangedCallback(name, oldValue, newValue, namespace) {
-    switch (name) {
-    case 'db_name': {
-      break;
+
+  loadAutosaveGetNewID(autosaveID) {
+    let autosave = JSON.parse(localStorage.getItem(autosaveID));
+      let autosavesJSON = localStorage.getItem('autosaves');
+      let autosaves = {};
+      if (autosavesJSON) {
+        autosaves = JSON.parse(autosavesJSON);
+      }
+    if (autosave) {
+      this.tack.removeCallback(this.updateStart);
+      this.tack.removeCallback(this.updateEnd);
+      this.activity.value = autosave.activity;
+      this.end.value = autosave.end;
+      this.start.value = autosave.start;
+      delete autosaves[this.autosaveID];
+      autosaves[autosaveID] = true;
+      this.autosaveID = autosaveID;
     }
-    default: {
+    else {
+      delete autosaves[autosaveID];
     }
-    }
+    localStorage.setItem('autosaves', JSON.stringify(autosaves));
   }
-  // let id = document.location.hash.substring(1);
+
   init(id) {
     // let editorSizeToggle = this.shadow.querySelector('#resize_ta');
     // this.activity.addEventListener ('focus', event => {
@@ -676,31 +637,36 @@ export class NewEntryUI extends HTMLElement {
     //   this.activity.rows = 1;
     //   this.activity.style['text-overflow'] = 'ellipsis ellipsis';
     // }, 'capture');
-    if (id) {
-      this.activity.dataset.id = id;
-      this.db.get(id).then((otherDoc) => {
-        // activity.textContent = otherDoc.activity;
-        this.activity.value = otherDoc.activity;
-        let start = new Date(otherDoc._id.substring(0, 24));
-        this.tack.removeCallback(this.updateStart);
-        this.startDateTime = start;
-        this.startUpdater(start);
-        if ('end' in otherDoc) {
-          let end = new Date(otherDoc.end);
-          this.tack.removeCallback(this.updateEnd);
-          this.endDateTime = end;
-          this.endUpdater(end);
-        }
-      }).catch((err) => {
-        infojs.error(err);
-      });
+    try {
+      if (id) {
+        this.activity.dataset.id = id;
+        this.db.get(id).then((otherDoc) => {
+          // activity.textContent = otherDoc.activity;
+          this.activity.value = otherDoc.activity;
+          let start = new Date(otherDoc._id.substring(0, 24));
+          this.tack.removeCallback(this.updateStart);
+          this.startDateTime = start;
+          this.startUpdater(start);
+          if ('end' in otherDoc) {
+            let end = new Date(otherDoc.end);
+            this.tack.removeCallback(this.updateEnd);
+            this.endDateTime = end;
+            this.endUpdater(end);
+          }
+        }).catch((err) => {
+          infojs.error(err);
+        });
+      }
+      else {
+        this.tack.addCallback(this.updateStart);
+        this.tack.addCallback(this.updateEnd);
+      }
+      this.scrollIntoView({block: "start", inline: "start"});
+      this.activity.focus();
     }
-    else {
-      this.tack.addCallback(this.updateStart);
-      this.tack.addCallback(this.updateEnd);
+    catch(err) {
+      infojs.error(err);
     }
-    this.scrollIntoView({block: "start", inline: "start"});
-    this.activity.focus();
   }
 
   save() {
@@ -723,17 +689,18 @@ export class NewEntryUI extends HTMLElement {
         close.addEventListener('click', (event) => {
           event.preventDefault();
           this.scrollView.removeChild(this.entries);
-          // Would require export of function from app.js and import into this new-entry.js
+          // Would require export of function from app.js and import
+          // into this new-entry.js
           // updateScrollLinks();
         });
         queryInfoElement.textContent = 'New Entries';
       }
       if (this.activity.dataset.id && !this.copy) {
         var id = this.activity.dataset.id.toString();
-        // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
+        // NOTE: Make sure edit UI does not accidentally retain
+        // attribute for future edits.
         this.activity.removeAttribute('data-id');
         let oldStartString = (new Date(id.substring(0, 24))).toString();
-        // document.getElementById(id).scrollIntoView({block: "center", inline: "center"});
         this.db.get(id).then((otherDoc) => {
           let startDate = this.getDateTime(this.start);
           let endDate = this.getDateTime(this.end);
@@ -772,7 +739,7 @@ export class NewEntryUI extends HTMLElement {
             return;
           }
           // end may be left empty. endText is a valid date, else null.
-          if (endText) {
+          if (endText && endText != newStartString) {
             otherDoc.end = endText;
           }
           else {
@@ -795,17 +762,17 @@ export class NewEntryUI extends HTMLElement {
               // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
             }).catch((err) => {
               infojs.error(err);
-              reject('Cannot save modified entry.\nDiscard edit?'
+              reject('Modified entry is valid but cannot be saved.\nPlease report this error.'
                      + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
             });
           }
           else {
-            reject('Modified entry has invalid times or empty activity.\nDiscard edit?'
+            reject('Modified entry is invalid. Please make suggested corrections.'
                    + JSON.stringify(otherDoc, Object.getOwnPropertyNames(otherDoc), 2));
           }
         }).catch((err) => {
           infojs.error(err);
-          reject('Cannot get entry to be modified.\nDiscard edit?'
+          reject('Cannot get entry to be modified. Please report this error.'
                  + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
         });
       }
@@ -816,7 +783,7 @@ export class NewEntryUI extends HTMLElement {
           _id: this.getDateTime(this.start).toJSON() + utilsjs.getRandom12HexDigits(),
         };
         // end may be left empty.
-        if (this.end.value.length) {
+        if (this.end.value.length && this.end.value != this.start.value) {
           entry.end = this.getDateTime(this.end).toJSON();
         }
         if (this.isValidEntry(entry)) {
@@ -835,22 +802,22 @@ export class NewEntryUI extends HTMLElement {
             newEntry.querySelector('pre.activity').classList.add('changed');
             newEntry.querySelector('pre.start').classList.add('changed');
             newEntry.querySelector('pre.end').classList.add('changed');
-            // Too early, will scroll out of view when new entry UI is no longer displayed in caller.
+            // NOTE: Too early, will scroll out of view when new entry UI is
+            // no longer displayed in caller.
             // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
             resolve({ new: response });
           }).catch((err) => {
             //errors
             infojs.error(err);
-            reject('New entry is valid but cannot be saved.\nDiscard edit?'
+            reject('New entry is valid but cannot be saved.\nPlease report this error.'
                    + JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
           });
         }
         else {
-          // window.alert('saving entry failed, please review values of start, end, activity.');
           infojs.info(entry);
           var newEntry = document.querySelector('new-entry');
           newEntry.scrollIntoView({block: "center", inline: "center"});
-          reject('New entry has invalid times or empty activity.\nDiscard edit?'
+          reject('New entry is invalid. Please make suggested corrections.'
                  + JSON.stringify(entry, Object.getOwnPropertyNames(entry), 2));
         }
       }
@@ -861,7 +828,3 @@ export class NewEntryUI extends HTMLElement {
 if (!customElements.get('new-entry')) {
   customElements.define('new-entry', NewEntryUI);
 }
-
-// export default {
-//   NewEntryUI
-// };

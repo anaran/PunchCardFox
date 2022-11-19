@@ -11,8 +11,6 @@ import * as optionsjs from './options.js';
 // That makes the app more responsive and perceived as faster.
 // https://developer.mozilla.org/Web/Reference/Events/DOMContentLoaded
 // window.addEventListener('DOMContentLoaded', function(event) {
-// We'll ask the browser to use strict code to help us catch errors earlier.
-// https://developer.mozilla.org/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode
 infojs.time('appjs to readyState complete');
 document.addEventListener('readystatechange', (event) => {
   if (event.target.readyState !== 'complete') {
@@ -87,21 +85,20 @@ document.addEventListener('readystatechange', (event) => {
       infojs.info(event);
     });
 
+    let loadAutosavedEntries = () => {
+      let autosavesJSON = localStorage.getItem('autosaves');
+      let autosaves = {};
+      if (autosavesJSON) {
+        autosaves = JSON.parse(autosavesJSON);
+        Object.keys(autosaves).forEach((autosaveID) => {
+          let neu = new NewEntryUI();
+          document.querySelector('#filter').insertAdjacentElement('afterend', neu);
+          neu.loadAutosaveGetNewID(autosaveID);
+        });
+      }
+    };
+    loadAutosavedEntries();
     let filter = document.querySelector('#filter input-ui');
-    // let erase = document.querySelector('span.erase');
-    // erase.addEventListener('click', event => {
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    //   if (filter && filter.value) {
-    //     filter.classList.add('empty');
-    //     filter.value = '';
-    //     // let changeEvent = new Event("change", {"bubbles":true, "cancelable":false});
-    //     // filter.dispatchEvent(changeEvent);
-    //   }
-    //   filter.focus();
-    // });
-    // let filter = document.querySelector('gaia-text-input#filter');
-    // let filter = document.querySelector('input#filter');
     filter.minLength = 4;
 
     let setBackgroundColor = color => {
@@ -111,14 +108,8 @@ document.addEventListener('readystatechange', (event) => {
     };
 
     let updateFilter = function(event) {
-      // let originalColor = window.getComputedStyle(document.body, null)['background-color'];
-      // window.requestAnimationFrame(function (timestamp) {
-      // document.body.style['background-color'] = 'blue';
-      // setBackgroundColor('blue');
-      // });
       event.target.classList.add('updating');
       infojs.time('updating');
-      // filter.style['display'] = 'none';
       let entryNodes = scrollView.querySelectorAll('.entry');
       let regexp = stringToRegexp(event.target.value.trim());
       if (regexp) {
@@ -137,22 +128,13 @@ document.addEventListener('readystatechange', (event) => {
           node.classList.remove('filtered');
         });
       }
-      // filter.blur();
-      // querySelector returns only the first matching node, which is what we want.
-      // scrollView.querySelector('.entry:not(.filtered)').scrollIntoView({block: "center", inline: "center"});
       toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
         document.querySelector('.entry:not(.filtered)').scrollIntoView({block: "center", inline: "center"});
       });
-      // scrollView.querySelector('.entry:not(.filtered)').scrollIntoView();
-      // window.requestAnimationFrame(function (timestamp) {
-      // document.body.style['background-color'] = originalColor;
-      // document.body.style.backgroundColor = originalColor;
-      // setBackgroundColor(originalColor);
       event.target.classList.remove('updating');
       infojs.timeEnd('updating');
-      // });
     };
     let timeoutId;
     filter.addEventListener('input', event => {
@@ -164,12 +146,13 @@ document.addEventListener('readystatechange', (event) => {
       }
     });
     filter.addEventListener('keyup', event => {
-      // timeoutId && clearTimeout(timeoutId);
-      // timeoutId = setTimeout(function () {
+      // infojs.info('^- updating filter -^');
+      // infojs.info(event);
+      // Brave on Android only receives Enter for input type='search',
+      // which we use as workaround.
       if (event.key == 'Enter') {
         updateFilter(event);
       }
-      // }, 1000);
     });
 
     let pendingFrame = false;

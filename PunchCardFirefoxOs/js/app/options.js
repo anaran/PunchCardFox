@@ -25,21 +25,17 @@ document.addEventListener('readystatechange', (event) => {
     return;
   }
   document.querySelectorAll('.persistent').forEach((item) => {
-    infojs.time(`load ${item.id} from localStorage`);
     if (item.type == 'checkbox') {
       item.checked = (localStorage.getItem(item.id) == 'true');
     }
     else {
       item.value = localStorage.getItem(item.id);
     }
-    infojs.timeEnd(`load ${item.id} from localStorage`);
     // Note: Unlike blur this only fires when value has actually changed.
     item.addEventListener('change', function (event) {
       var element = event.target;
-      infojs.time(`save changed ${element.id}`);
       var value = element.type == 'checkbox' ? element.checked : element.value;
       localStorage.setItem(element.id, value);
-      infojs.timeEnd(`save changed ${element.id}`);
     });
   });
 });
