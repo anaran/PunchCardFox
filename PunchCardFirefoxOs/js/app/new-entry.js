@@ -213,7 +213,6 @@ export class NewEntryUI extends HTMLElement {
     });
     this.setDateFromStringOrNumber = (ticker, elementUpdater) => {
       return (event) => {
-        // setupAutosave(event);
         // space
         if (event.data == ' ') {
           // event.preventDefault();
@@ -460,10 +459,16 @@ export class NewEntryUI extends HTMLElement {
     this.autosaveID = `new-${(new Date).toJSON()}`;
     let autosavesJSON = localStorage.getItem('autosaves');
     let autosaves = {};
+    // WeakMap keeps track of timer id per event.target (activity, end, start).
+    const wm = new WeakMap();
     let setupAutosave = (event) => {
-      event && infojs.info(event);
-      this.timerID && window.clearTimeout(this.timerID);
-      this.timerID = window.setTimeout(this.autosaveEntry, 3000);
+      // Causes Permission to access toJSON on click event.
+      // event && infojs.info(event);
+      // Only clear timeout if weak map has one set for this event target.
+      // This prevents a restart of the timeout by an event.target
+      // which did not initiate the timeout.
+      window.clearTimeout(wm.get(event.target));
+      wm.set(event.target, window.setTimeout(this.autosaveEntry, 3000));
     }
     if (autosavesJSON) {
       autosaves = JSON.parse(autosavesJSON);
@@ -472,12 +477,12 @@ export class NewEntryUI extends HTMLElement {
     localStorage.setItem('autosaves', JSON.stringify(autosaves));
     this.activity.addEventListener('input', setupAutosave);
     this.start = this.shadow.querySelector('#start');
-    // this.start.addEventListener('change', setupAutosave);
     this.updateStartButton = this.shadow.querySelector('#update_start');
     this.startUpdater = this.updateDateTime(this.start);
     // let startnow = this.shadow.querySelector('#startnow');
     this.startAtEnd = this.shadow.querySelector('input.start_at_end');
     this.startAtEnd.addEventListener('click', (event) => {
+      setupAutosave(event);
       this.updateStartButton.removeAttribute('disabled');
       this.tack.removeCallback(this.updateStart);
       this.startDateTime = this.getDateTime(this.end);
@@ -489,18 +494,11 @@ export class NewEntryUI extends HTMLElement {
     this.updateStart = (time) => {
       this.startDateTime = time;
       this.startUpdater(time);
-      setupAutosave();
-      // this.start.value = time;
     };
 
     this.updateEnd = (time) => {
       this.endDateTime = time;
       this.endUpdater(time);
-      // NOTE: Important changes to activity and start will not be
-      // autosaved if we restart autosave timer on ticking end value,
-      // which is optional anyway.
-      // setupAutosave();
-      // this.end.value = time;
     };
 
     this.start.addEventListener('input', this.setDateFromStringOrNumber(() => {
@@ -516,12 +514,12 @@ export class NewEntryUI extends HTMLElement {
       second: { selector: '.start_delta_div>.second', padwidth: 2},
       datetime: { selector: '#start', getter: this.getStartTime}});
     this.end = this.shadow.querySelector('#end');
-    // this.end.addEventListener('input', setupAutosave);
     this.updateEndButton = this.shadow.querySelector('#update_end');
     this.endUpdater = this.updateDateTime(this.end);
     // let endnow = this.shadow.querySelector('#endnow');
     this.endAtStart = this.shadow.querySelector('input.end_at_start');
     this.endAtStart.addEventListener('click', (event) => {
+      setupAutosave(event);
       this.updateEndButton.removeAttribute('disabled');
       this.tack.removeCallback(this.updateEnd);
       this.endDateTime = this.getDateTime(this.start);
@@ -581,10 +579,12 @@ export class NewEntryUI extends HTMLElement {
     this.tack = new Tacker();
 
     this.start.addEventListener('click', ((event) => {
+      setupAutosave(event);
       this.tack.removeCallback.bind(this.tack)(this.updateStart);
       this.updateStartButton.removeAttribute('disabled');
     }));
     this.end.addEventListener('click', ((event) => {
+      setupAutosave(event);
       this.tack.removeCallback.bind(this.tack)(this.updateEnd);
       this.updateEndButton.removeAttribute('disabled');
     }));
@@ -613,6 +613,8 @@ export class NewEntryUI extends HTMLElement {
       this.activity.value = autosave.activity;
       this.end.value = autosave.end;
       this.start.value = autosave.start;
+      this.updateEndButton.removeAttribute('disabled');
+      this.updateStartButton.removeAttribute('disabled');
       delete autosaves[this.autosaveID];
       autosaves[autosaveID] = true;
       this.autosaveID = autosaveID;
