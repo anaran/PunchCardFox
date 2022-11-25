@@ -109,6 +109,7 @@ input.empty + input.undo.undoable + input.erase {
   static get observedAttributes() {
     return [
       'autofocus',
+      'checked',
       'class',
       'id',
       'pattern',

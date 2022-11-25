@@ -409,13 +409,13 @@ top: 6.8rem;
 https://developer.mozilla.org/en-US/Apps/Design/Firefox_OS_building_blocks/Scrolling/2.0 */
 
 #bottom {
-    background-color: black;
-    color: white;
+    background-color: white;
+    color: black;
     /* Trigger transition in combination with info.js */
     top: 100%;
 }
 
 .dark_theme #bottom {
-    background-color: white;
-    color: black;
+    background-color: black;
+    color: white;
 }

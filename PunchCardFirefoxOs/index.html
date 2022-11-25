@@ -109,7 +109,9 @@ own language (as long as you provide translations).
       </section>
       <link rel="import" href="options.html">
       <link rel="import" href="about.html">
-      <section id="info_section">
+      <section id="cache_versions"></section>
+      <section id="bottom">
+        <div>&downarrow;</div>
         <fieldset id="info_categories">
           <legend>Information Logging Categories</legend>
           <div>
@@ -128,13 +130,9 @@ own language (as long as you provide translations).
             <label for="info-performance">Performance</label>
           </div>
         </fieldset>
-      </section>
-      <section id="cache_versions"></section>
-      <section id="bottom">
-        <div>&downarrow;</div>
         <span id="info"></span>
       </section>
-    </section>
+      </section>
     </div>
     <ul id="start_menu" class="menu">
       <li><button id="start_now">start now</button></li>
@@ -153,11 +151,11 @@ own language (as long as you provide translations).
       <li><button id="repeat_now">repeat now</button></li>
       <li><button id="copy_to_editor">copy to editor</button></li>
       <li><button id="delete">delete</button></li>
-      <!--                                 <li><a>edit</a></li>
-<li><a>insert parallel activity</a></li>
-<li><a>show only this activity</a></li>
-<li><a>show all activities</a></li> -->
-      <!--                         </menu> -->
+    </ul>
+    <ul id="operation_menu" class="menu">
+      <li><button id="query_week">query week around entry</button></li>
+      <li><button id="query_month">query month around entry</button></li>
+      <li><button disabled=true id="fill_gap">fill gap</button></li>
     </ul>
     <script type="module" src="./js/app/app.js"></script>
     <link rel="import" href="templates.html">
