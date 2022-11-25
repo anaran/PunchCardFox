@@ -47,7 +47,6 @@ if ('serviceWorker' in navigator) {
         infojs.infojs('Service-Worker registration failed with error', infoNode);
         infojs.error(err, infoNode);
       });
-
       // navigator.serviceWorker.addEventListener('controllerchange', function(e) {
       //   console.log(`[ServiceWorker] : controllerchange`, e);
       //   navigator.serviceWorker.controller.addEventListener('statechange', function(e) {
@@ -61,6 +60,7 @@ if ('serviceWorker' in navigator) {
         infojs.info(e.data, infoNode);
         switch (e.data.request) {
         case 'caches': {
+          let cacheVersions = document.getElementById('cache_versions');
           JSON.parse(e.data.message).forEach((value, index, object) => {
             let cacheContainer = document.createElement('div');
             let checkbox = document.createElement('input');
@@ -81,8 +81,8 @@ if ('serviceWorker' in navigator) {
                 event.target.checked = false;
               }
             });
-            checkbox.addEventListener('contextmenu', (event) => {
-              event.preventDefault();
+            cacheVersions.addEventListener('contextmenu', (event) => {
+              // event.preventDefault();
               Array.prototype.forEach.call(document.querySelectorAll('input.cacheName[type=checkbox]'), (value) => {
                 value.checked = !value.checked;
                 if (value.checked) {
@@ -95,7 +95,7 @@ if ('serviceWorker' in navigator) {
             });
             cacheContainer.appendChild(checkbox);
             cacheContainer.appendChild(label);
-            document.getElementById('cache_versions').appendChild(cacheContainer);
+            cacheVersions.appendChild(cacheContainer);
           });
           let deleteButton = document.createElement('input');
           deleteButton.className = 'cacheName';
@@ -109,7 +109,7 @@ if ('serviceWorker' in navigator) {
                   request: 'delete cache',
                   cache: value.id
                 });
-                document.getElementById('cache_versions').removeChild(value.parentElement);
+                cacheVersions.removeChild(value.parentElement);
               }
             });
           });
@@ -143,8 +143,8 @@ if ('serviceWorker' in navigator) {
             }
             }
           });
-          document.getElementById('cache_versions').appendChild(deleteButton);
-          document.getElementById('cache_versions').appendChild(useCacheButton);
+          cacheVersions.appendChild(deleteButton);
+          cacheVersions.appendChild(useCacheButton);
           break;
         }
         case 'claim': {

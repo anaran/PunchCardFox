@@ -186,8 +186,8 @@ div#scroll-and-view {
     background-color: inherit;
     color: inherit;
     display: flex;
-    height: calc(100vh - 24mm);
-    border: 2px solid silver;
+    height: calc(100vh - 8mm);
+    /* border: 2px solid silver; */
 }
 
 /* nav#punchcard_scrollbar:hover li { */
@@ -230,7 +230,7 @@ nav#punchcard_scrollbar ul {
 /* } */
 
 section#view-punchcard-list {
-    /* width: calc(100vw - 1.5rem); */
+    width: 100vw;
     /* right: 0; */
     overflow: scroll;
 }

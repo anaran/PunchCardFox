@@ -69,7 +69,7 @@ document.addEventListener('readystatechange', (event) => {
       }
     });
     info_categories.addEventListener('contextmenu', (event) => {
-      event.preventDefault();
+      // event.preventDefault();
       Array.prototype.forEach.call(info_categories.querySelectorAll('input'), (value) => {
         value.checked = !value.checked;
         if (value.checked) {
@@ -984,7 +984,6 @@ document.addEventListener('readystatechange', (event) => {
         });
       }
       infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
-
       var limit = options.limit ? Number(options.limit) : 100;
       var matchLimit = options.match_limit ? Number(options.match_limit) : 50;
       var dec = !!options.descending;
@@ -995,12 +994,12 @@ document.addEventListener('readystatechange', (event) => {
       var entries = document.importNode(content, "deep").firstElementChild;
       var previousEntries = scrollView.querySelector('div.entries');
       entries.classList.add('updating');
-      var cache_versions = document.querySelector('#cache_versions');
+      var cacheSection = document.querySelector('#cache_section');
       if (previousEntries) {
         scrollView.insertBefore(entries, previousEntries);
       }
       else {
-        scrollView.insertBefore(entries, cache_versions);
+        scrollView.insertBefore(entries, cacheSection);
       }
       entries.id = 'R' + resultIndex;
       var queryInfoElement = entries.querySelector('span.info');
