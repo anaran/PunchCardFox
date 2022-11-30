@@ -677,8 +677,8 @@ export class NewEntryUI extends HTMLElement {
       if (!this.entries) {
         let content = document.querySelector('#entries_template').content;
         this.entries = document.importNode(content, "deep").firstElementChild;
-        let cache_versions = document.querySelector('#cache_versions');
-        this.scrollView.insertBefore(this.entries, cache_versions);
+        let cache_section = document.querySelector('#cache_section');
+        this.scrollView.insertBefore(this.entries, cache_section);
         this.entries.id = 'New';
         let queryInfoElement = this.entries.querySelector('span.info');
         queryInfoElement.scrollIntoView({block: "center", inline: "center"});

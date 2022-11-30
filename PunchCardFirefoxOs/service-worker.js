@@ -63,6 +63,16 @@ self.addEventListener('fetch', function(event) {
             });
           });
         }, fetchTimeout);
+        // if (event.request.url.match(self.registration.scope)) {
+        //   event.request.url += `?t=${Date.now()}`;
+        // }
+        self.clients.get(event.clientId).then((client) => {
+          client.postMessage({
+            request: 'info',
+            message: `event.request ${event.request.url} ${event.request.url.match(self.registration.scope) ? 'matches' : 'does not match'} scope`,
+            scope: self.registration.scope
+          });
+        });
         return fetch(event.request, {signal}).then(response => {
           clearTimeout(timeout);
           if (request.method == 'GET' && response && successResponses.test(response.status) &&
@@ -72,6 +82,13 @@ self.addEventListener('fetch', function(event) {
             // More recent spec versions have newer language stating that the browser can
             // resolve the promise as soon as the entry is recorded in the database even
             // if the response body is still streaming in.
+            self.clients.get(event.clientId).then((client) => {
+              client.postMessage({
+                request: 'info',
+                message: `cache.put ${event.request.url}`,
+                scope: self.registration.scope
+              });
+            });
             cache.put(event.request, response.clone());
           }
           else {

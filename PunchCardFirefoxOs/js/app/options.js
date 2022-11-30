@@ -462,6 +462,7 @@ var searchMatchingActivities = function () {
 // ---
 
 var login = document.querySelector('#login');
+let passwordMenu = document.getElementById('password_menu');
 var logout = document.querySelector('#logout');
 
 // Forms will take the values in the input fields they contain
@@ -482,12 +483,25 @@ document.getElementById('pass').addEventListener('keypress', function (event) {
   }
   // console.log(event.type, event);
 });
+let password_entry = document.querySelector('#password_entry');
+if (password_entry) {
+  password_entry.addEventListener('blur', (event) => {
+    var sessionUrl = document.getElementById('protocol').value +
+        document.getElementById('hostportpath').value + '_session';
+    if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
+    }
+    event.target.value = '';
+    event.target.parentElement.parentElement.style.display = '';
+  });
+}
+let password_menu = document.querySelector('#password_menu');
 login.addEventListener('click', function(e) {
   // e.preventDefault();
   // FIXME: async!
-  var sessionUrl = document.getElementById('protocol').value +
-      document.getElementById('hostportpath').value + '_session';
-  if (sessionLogin(sessionUrl, document.getElementById('user').value, document.getElementById('pass').value)) {
+  if (password_menu) {
+    if (password_menu.style.display == '') {
+      utilsjs.positionMenu(password_menu, event);
+    }
   }
 });
 logout.addEventListener('click', function(e) {

@@ -48,16 +48,17 @@ if ('serviceWorker' in navigator) {
         infojs.error(err, infoNode);
       });
       // navigator.serviceWorker.addEventListener('controllerchange', function(e) {
-      //   console.log(`[ServiceWorker] : controllerchange`, e);
+      //   infojs.info(`[ServiceWorker] : controllerchange`);
+      //   infojs.info(e);
       //   navigator.serviceWorker.controller.addEventListener('statechange', function(e) {
-      //     console.log(`[ServiceWorker] statechange ${e.target.state}`, e);
+      //     infojs.info(`[ServiceWorker] statechange ${e.target.state}`)
+      //     infojs.info(e);
       //   });
       // });
       navigator.serviceWorker.addEventListener('message', function(e) {
         let infoNode = document.getElementById('replication_info');
         infojs.timeEnd('readystatechange');
         infojs.timeEnd('complete');
-        infojs.info(e.data, infoNode);
         switch (e.data.request) {
         case 'caches': {
           let cacheVersions = document.getElementById('cache_versions');
@@ -81,21 +82,22 @@ if ('serviceWorker' in navigator) {
                 event.target.checked = false;
               }
             });
-            cacheVersions.addEventListener('contextmenu', (event) => {
-              // event.preventDefault();
-              Array.prototype.forEach.call(document.querySelectorAll('input.cacheName[type=checkbox]'), (value) => {
-                value.checked = !value.checked;
-                if (value.checked) {
-                  value.setAttribute('checked', true);
-                }
-                else {
-                  value.removeAttribute('checked');
-                }
-              });
-            });
             cacheContainer.appendChild(checkbox);
             cacheContainer.appendChild(label);
             cacheVersions.appendChild(cacheContainer);
+          });
+          cacheVersions.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            Array.prototype.forEach.call(document.querySelectorAll('input.cacheName[type=checkbox]'), (value) => {
+              value.checked = !value.checked;
+              if (value.checked) {
+                value.setAttribute('checked', true);
+              }
+              else {
+                value.removeAttribute('checked');
+              }
+            });
           });
           let deleteButton = document.createElement('input');
           deleteButton.className = 'cacheName';
@@ -105,6 +107,7 @@ if ('serviceWorker' in navigator) {
             event.preventDefault();
             Array.prototype.forEach.call(document.querySelectorAll('input.cacheName[type=checkbox]'), (value) => {
               if (value.checked) {
+                infojs.info(navigator.serviceWorker.controller);
                 navigator.serviceWorker.controller.postMessage({
                   request: 'delete cache',
                   cache: value.id
@@ -161,9 +164,11 @@ if ('serviceWorker' in navigator) {
           break;
         }
         case 'error': {
-          // Nothing to be done here since infojs is already called before switch statement.
-          // let infoNode = document.getElementById('replication_info');
-          // infojs(e.data.message, infoNode);
+          infojs.error(e.data, infoNode);
+          break;
+        }
+        case 'info': {
+          infojs.info(e.data, infoNode);
           break;
         }
         case 'version': {

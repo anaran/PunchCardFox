@@ -204,3 +204,17 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     infojs.error(err, entries);
   }
 }
+
+export let positionMenu = function(menu, event) {
+      let xProp = 'left', yProp = 'top';
+      let xOffset = event.clientX + 10, yOffset = event.clientY + 10;
+      if (event.clientX > window.innerWidth * 0.8) {
+        xProp = 'right';
+        xOffset = window.innerWidth - event.clientX + 10;
+      }
+      if (event.clientY > window.innerHeight * 0.8) {
+        yProp = 'bottom';
+        yOffset = window.innerHeight - event.clientY + 10;
+      }
+      menu.style = 'display: block; ' + xProp + ': ' + xOffset + 'px; ' + yProp + ': ' + yOffset + 'px';
+}
