@@ -262,7 +262,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
           // replication paused (e.g. user went offline)
           if (verbositySelect.value == 'verbose') {
             myInfo[localDbName] = "replication paused (e.g. user went offline)";
-            infojs.info(myInfo, infoNode);
+            infojs.infojs(myInfo, infoNode);
           }
         })
         .on('active', function () {
@@ -276,15 +276,15 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
           // a document failed to replicate, e.g. due to permissions
           if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = info;
-            infojs.info(myInfo, infoNode);
+            infojs.error(myInfo, infoNode);
           }
         })
         .on('complete', function (info) {
           if (verbositySelect.value != 'silent') {
             myInfo[localDbName] = info;
-            infojs.info(myInfo, infoNode);
+            infojs.infojs(myInfo, infoNode);
             remoteDB.info().then(function (info) {
-              infojs.info(info, infoNode);
+              infojs.infojs(info, infoNode);
             }).catch(function (err) {
               infojs.error(err, infoNode);
             });
@@ -294,7 +294,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         })
         .on('uptodate', function (info) {
           myInfo[localDbName] = info;
-          infojs.info(myInfo, infoNode);
+          infojs.infojs(myInfo, infoNode);
         })
         .on('error', function (err) {
           myInfo[localDbName] = err;
@@ -485,10 +485,10 @@ document.getElementById('pass').addEventListener('keypress', function (event) {
 });
 let password_entry = document.querySelector('#password_entry');
 if (password_entry) {
-  password_entry.addEventListener('blur', (event) => {
+  password_entry.addEventListener('click', (event) => {
     var sessionUrl = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value + '_session';
-    if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
+    if (event.target.value.length && sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
     }
     event.target.value = '';
     event.target.parentElement.parentElement.style.display = '';

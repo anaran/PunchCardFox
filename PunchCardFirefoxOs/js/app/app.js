@@ -714,7 +714,7 @@ document.addEventListener('readystatechange', (event) => {
       titleItem.addEventListener('click', toggleFilter);
     }
     let toggleScrollbar = function(event) {
-      event.target.style.opacity = 0.5;
+      event.target.style.opacity = 0.3;
       event.preventDefault();
       event.stopPropagation();
       window.setTimeout((event) => {

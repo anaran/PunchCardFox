@@ -1,6 +1,6 @@
 'use strict';
 
-let version = 'Punchcard v46';
+let version = 'Punchcard v80';
 let cachedVersion = undefined;
 
 self.addEventListener('install', function(event) {
@@ -72,8 +72,19 @@ self.addEventListener('fetch', function(event) {
             message: `event.request ${event.request.url} ${event.request.url.match(self.registration.scope) ? 'matches' : 'does not match'} scope`,
             scope: self.registration.scope
           });
+        }).catch(err => {
+          self.clients.get(event.clientId).then((client) => {
+            client && client.postMessage({
+              request: 'error',
+              message: `${err.message} ${event.request.url}`,
+              scope: self.registration.scope
+            });
+          });
         });
-        return fetch(event.request, {signal}).then(response => {
+        return fetch(event.request, {
+          signal: signal,
+          cache: 'no-cache',
+        }).then(response => {
           clearTimeout(timeout);
           if (request.method == 'GET' && response && successResponses.test(response.status) &&
               request.url.match(self.registration.scope) &&
@@ -83,7 +94,7 @@ self.addEventListener('fetch', function(event) {
             // resolve the promise as soon as the entry is recorded in the database even
             // if the response body is still streaming in.
             self.clients.get(event.clientId).then((client) => {
-              client.postMessage({
+              client && client.postMessage({
                 request: 'info',
                 message: `cache.put ${event.request.url}`,
                 scope: self.registration.scope

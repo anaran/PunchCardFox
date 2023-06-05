@@ -214,7 +214,7 @@ export class NewEntryUI extends HTMLElement {
     this.setDateFromStringOrNumber = (ticker, elementUpdater) => {
       return (event) => {
         // space
-        if (event.data == ' ') {
+        if (event.type == 'blur') {
           // event.preventDefault();
           // event.stopPropagation();
           ticker();
@@ -501,7 +501,7 @@ export class NewEntryUI extends HTMLElement {
       this.endUpdater(time);
     };
 
-    this.start.addEventListener('input', this.setDateFromStringOrNumber(() => {
+    this.start.addEventListener('blur', this.setDateFromStringOrNumber(() => {
       this.tack.removeCallback(this.updateStart);
     }, this.updateStart));
     this.addTouchable({
@@ -526,7 +526,7 @@ export class NewEntryUI extends HTMLElement {
       this.endUpdater(this.endDateTime);
     });
     this.getEndTime = () => { return this.endDateTime; };
-    this.end.addEventListener('input', this.setDateFromStringOrNumber(() => {
+    this.end.addEventListener('blur', this.setDateFromStringOrNumber(() => {
       this.tack.removeCallback(this.updateEnd);
     }, this.updateEnd));
     this.addTouchable({
@@ -538,6 +538,33 @@ export class NewEntryUI extends HTMLElement {
       minute: { selector: '.end_delta_div>.minute', padwidth: 2},
       second: { selector: '.end_delta_div>.second', padwidth: 2},
       datetime: { selector: '#end', getter: this.getEndTime }});
+    let maybePasteJSON = (event) => {
+      try {
+        let paste = (event.clipboardData || window.clipboardData).getData('text');
+        let entry = JSON.parse(paste);
+        event.preventDefault();
+        if (this.activity.value) {
+          alert('JSON entry can only be pasted to replace empty entry.');
+          return;
+        }
+        if  ('activity' in entry && 'start' in entry) {
+          this.tack.removeCallback.bind(this.tack)(this.updateStart);
+          this.updateStartButton.removeAttribute('disabled');
+          this.tack.removeCallback.bind(this.tack)(this.updateEnd);
+          this.updateEndButton.removeAttribute('disabled');
+          this.activity.value = entry.activity;
+          this.start.value = entry.start;
+          this.end.value = 'end' in entry ? entry.end : '';
+        }
+        else {
+          infojs.error('Parsed JSON is not a valid PunchCard entry.');
+        }
+      }
+      catch(err) {
+        infojs.info(err);
+      };
+    }
+    this.activity.addEventListener('paste', maybePasteJSON, 'capture');
     class Tacker {
       constructor() {
         this.callbacks = [];

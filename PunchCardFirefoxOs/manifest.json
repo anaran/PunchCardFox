@@ -1,6 +1,6 @@
 {
 
-  "background_color": "red",
+  "background_color": "black",
 
   "description": "Punchcard is a progressive web app for taking timed notes and syncing them with couchdb databases.",
 
