@@ -1,6 +1,6 @@
 'use strict';
 
-let version = 'Punchcard v80';
+let version = 'Punchcard v86';
 let cachedVersion = undefined;
 
 self.addEventListener('install', function(event) {
