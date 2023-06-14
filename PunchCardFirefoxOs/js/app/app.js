@@ -104,7 +104,8 @@ document.addEventListener('readystatechange', (event) => {
       let loginLink = document.querySelector('#login_link');
       let logoutLink = document.querySelector('#logout_link');
       let fauxtonLink = `${document.getElementById('protocol').value}${document.getElementById('hostportpath').value}_utils/index.html`;
-      loginLink.href = `${fauxtonLink}#login`;
+      // loginLink.href = `${fauxtonLink}#login`;
+      loginLink.href = `${fauxtonLink}`;
       logoutLink.href = `${fauxtonLink}#logout`;
     };
     setupLoginLogoutLinks();

@@ -1,6 +1,6 @@
 'use strict';
 
-let version = 'Punchcard v86';
+let version = 'Punchcard v96';
 let cachedVersion = undefined;
 
 self.addEventListener('install', function(event) {
@@ -30,7 +30,8 @@ self.addEventListener('activate', function(event) {
     }).catch(err => {
       client.postMessage({
         request: 'error',
-        message: err
+        message: err,
+        where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
       });
     }));
 });
@@ -54,12 +55,13 @@ self.addEventListener('fetch', function(event) {
         const fetchTimeout = 5000;
         const timeout = setTimeout(() => { 
           controller.abort();
-          const msg = `fetch request for ${event.request.url} timed out after ${fetchTimeout} ms`;
+          const msg = `fetch request timed out after ${fetchTimeout} ms for ${event.request.url}`;
           self.clients.get(event.clientId).then((client) => {
             client.postMessage({
               request: 'error',
               message: msg,
-              scope: self.registration.scope
+              scope: self.registration.scope,
+              where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
             });
           });
         }, fetchTimeout);
@@ -77,7 +79,8 @@ self.addEventListener('fetch', function(event) {
             client && client.postMessage({
               request: 'error',
               message: `${err.message} ${event.request.url}`,
-              scope: self.registration.scope
+              scope: self.registration.scope,
+              where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
             });
           });
         });
@@ -114,7 +117,8 @@ self.addEventListener('fetch', function(event) {
             client.postMessage({
               request: 'error',
               message: `${err.message} ${event.request.url}`,
-              scope: self.registration.scope
+              scope: self.registration.scope,
+              where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
             });
           });
         });
@@ -122,7 +126,9 @@ self.addEventListener('fetch', function(event) {
         self.clients.get(event.clientId).then((client) => {
           client.postMessage({
             request: 'error',
-            message: `${err.message} for ${event.request.url}`
+            message: `${err.message} for ${event.request.url}`,
+            scope: self.registration.scope,
+            where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
           });
         });
       });
@@ -130,7 +136,9 @@ self.addEventListener('fetch', function(event) {
       self.clients.get(event.clientId).then((client) => {
         client.postMessage({
           request: 'error',
-          message: `${err.message} for ${event.request.url}`
+          message: `${err.message} for ${event.request.url}`,
+          scope: self.registration.scope,
+          where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
         });
       });
     }));

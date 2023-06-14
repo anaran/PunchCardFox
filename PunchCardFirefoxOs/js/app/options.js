@@ -255,7 +255,7 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         }
         if (verbositySelect.value != 'silent') {
           myInfo[localDbName] = info;
-          infojs.info(myInfo, infoNode);
+          infojs.infojs(myInfo, infoNode);
         }
       })
         .on('paused', function () {
@@ -299,6 +299,8 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         .on('error', function (err) {
           myInfo[localDbName] = err;
           infojs.error(myInfo, infoNode);
+          let loginLink = document.querySelector('#login_link');
+          loginLink.click();
           startButton.removeAttribute('disabled');
           stopButton.setAttribute('disabled', true);
         });
