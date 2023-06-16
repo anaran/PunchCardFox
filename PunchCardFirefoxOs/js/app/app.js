@@ -100,15 +100,6 @@ document.addEventListener('readystatechange', (event) => {
       }
     };
     loadAutosavedEntries();
-    let setupLoginLogoutLinks = () => {
-      let loginLink = document.querySelector('#login_link');
-      let logoutLink = document.querySelector('#logout_link');
-      let fauxtonLink = `${document.getElementById('protocol').value}${document.getElementById('hostportpath').value}_utils/index.html`;
-      // loginLink.href = `${fauxtonLink}#login`;
-      loginLink.href = `${fauxtonLink}`;
-      logoutLink.href = `${fauxtonLink}#logout`;
-    };
-    setupLoginLogoutLinks();
     let filter = document.querySelector('#filter input-ui');
     filter.minLength = 4;
 
