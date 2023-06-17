@@ -299,8 +299,9 @@ let setupRemoteSync = function _setupRemoteSync(opt) {
         .on('error', function (err) {
           myInfo[localDbName] = err;
           infojs.error(myInfo, infoNode);
-          let loginLink = document.querySelector('#login_link');
-          loginLink.click();
+          let sessionUrl = document.getElementById('protocol').value +
+              document.getElementById('hostportpath').value + '_session';
+         sessionLogin(sessionUrl, document.getElementById('user').value, document.getElementById('pass').value);
           startButton.removeAttribute('disabled');
           stopButton.setAttribute('disabled', true);
         });
@@ -464,7 +465,6 @@ var searchMatchingActivities = function () {
 // ---
 
 var login = document.querySelector('#login');
-let passwordMenu = document.getElementById('password_menu');
 var logout = document.querySelector('#logout');
 
 // Forms will take the values in the input fields they contain
@@ -476,38 +476,25 @@ var logout = document.querySelector('#logout');
 // https://developer.mozilla.org/Web/API/event.preventDefault
 //
 // Then we search without leaving this page, just as we wanted.
-document.getElementById('pass').addEventListener('keypress', function (event) {
-  if (event.key == 'Enter') {
-    var sessionUrl = document.getElementById('protocol').value +
+document.getElementById('pass').addEventListener('blur', function (event) {
+  // if (event.key == 'Enter') {
+    let sessionUrl = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value + '_session';
     if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
     }
-  }
+  // }
   // console.log(event.type, event);
 });
-let password_entry = document.querySelector('#password_entry');
-if (password_entry) {
-  password_entry.addEventListener('click', (event) => {
-    var sessionUrl = document.getElementById('protocol').value +
-        document.getElementById('hostportpath').value + '_session';
-    if (event.target.value.length && sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
-    }
-    event.target.value = '';
-    event.target.parentElement.parentElement.style.display = '';
-  });
-}
-let password_menu = document.querySelector('#password_menu');
 login.addEventListener('click', function(e) {
   // e.preventDefault();
   // FIXME: async!
-  if (password_menu) {
-    if (password_menu.style.display == '') {
-      utilsjs.positionMenu(password_menu, event);
-    }
+  let sessionUrl = document.getElementById('protocol').value +
+      document.getElementById('hostportpath').value + '_session';
+  if (sessionLogin(sessionUrl, document.getElementById('user').value, document.getElementById('pass').value)) {
   }
 });
 logout.addEventListener('click', function(e) {
-  var sessionUrl = document.getElementById('protocol').value +
+  let sessionUrl = document.getElementById('protocol').value +
       document.getElementById('hostportpath').value + '_session';
   // e.preventDefault();
   if (sessionLogout(sessionUrl)) {
