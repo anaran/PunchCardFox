@@ -48,22 +48,18 @@ document.addEventListener('readystatechange', (event) => {
     let info_categories = document.querySelector('#info_categories');
     Array.prototype.forEach.call(info_categories.querySelectorAll('input'), (value) => {
       if (localStorage.getItem(value.id)) {
-        value.setAttribute('checked', true);
         value.checked = true;
       }
       else {
-        value.removeAttribute('checked');
         value.checked = false;
       }
     });
     info_categories.addEventListener('click', (event) => {
       if (event.target.checked) {
-        event.target.setAttribute('checked', true);
         event.target.checked = true;
         localStorage.setItem(event.target.id, event.target.id);
       }
       else {
-        event.target.removeAttribute('checked');
         event.target.checked = false;
         localStorage.removeItem(event.target.id);
       }
@@ -74,11 +70,9 @@ document.addEventListener('readystatechange', (event) => {
       Array.prototype.forEach.call(info_categories.querySelectorAll('input'), (value) => {
         value.checked = !value.checked;
         if (value.checked) {
-          value.setAttribute('checked', true);
           localStorage.setItem(value.id, value.id);
         }
         else {
-          value.removeAttribute('checked');
           localStorage.removeItem(value.id);
         }
       });
@@ -247,7 +241,7 @@ document.addEventListener('readystatechange', (event) => {
         }
       }
       if (event.target.classList.contains("activity")) {
-        let operationCount = document.querySelectorAll('div.entry>input.checked[checked]').length;
+        let operationCount = document.querySelectorAll('div.entry>input:checked').length;
         let menu = operationCount > 0 ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
           utilsjs.positionMenu(menu, event);
@@ -739,7 +733,7 @@ document.addEventListener('readystatechange', (event) => {
         event.preventDefault();
         event.stopPropagation();
         window.setTimeout((event) => {
-          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input.checked'), (value) => {
+          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
             if (event.target.checked && !value.checked) {
               value.parentElement.style.display = 'none';
             }
@@ -1177,31 +1171,15 @@ document.addEventListener('readystatechange', (event) => {
           Array.prototype.forEach.call(document.querySelectorAll('div.entry'), entry => setAvailableRevisionCount(entry));
           entries.classList.remove('updating');
 
-          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input.checked'), (value) => {
+          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
             value.addEventListener('contextmenu', (event) => {
               event.preventDefault();
               event.stopPropagation();
-              Array.prototype.forEach.call(document.querySelectorAll('div.entry>input.checked'), (value) => {
+              Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
                 if (value.parentElement.style.display != 'none') {
                   value.checked = !value.checked;
-                  if (value.checked) {
-                    value.setAttribute('checked', true);
-                  }
-                  else {
-                    value.removeAttribute('checked');
-                  }
                 }
               });
-            });
-            value.addEventListener('click', (event) => {
-              if (event.target.checked) {
-                event.target.setAttribute('checked', true);
-                event.target.checked = true;
-              }
-              else {
-                event.target.removeAttribute('checked');
-                event.target.checked = false;
-              }
             });
           });
 

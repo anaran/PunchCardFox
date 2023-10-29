@@ -74,6 +74,10 @@ div.entry.deleted {
     color: white;
 }
 
+.deleted .changed {
+    background-color: inherit
+}
+
 div.entry.available {
     background-color: silver;
 }
@@ -133,7 +137,7 @@ pre.duration {
     grid-row: 2;
 }
 
-input.checked {
+input[type=checkbox] {
     grid-column: 2;
     grid-row: 2;
     height: 1rem;
@@ -151,7 +155,7 @@ pre.activity {
     grid-row: 3;
 }
 
-input.checked:checked ~ pre.activity {
+input[type=checkbox]:checked ~ pre.activity {
     overflow: visible;
     display: block;
     white-space: pre-wrap;
