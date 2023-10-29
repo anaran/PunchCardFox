@@ -38,6 +38,7 @@ body.dark_theme {
 }
 
 select {
+    background-color: inherit;
     color: inherit;
 }
 
@@ -304,6 +305,11 @@ nav#punchcard_scrollbar li a:hover {
 /* } */
 
 input-ui {
+    background-color: inherit;
+    color: inherit;
+}
+
+input {
     background-color: inherit;
     color: inherit;
 }

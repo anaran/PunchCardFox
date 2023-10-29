@@ -9,14 +9,14 @@ ul.menu {
 }
 
 ul.menu > li {
-  display: block;
+    display: block;
 }
 
 ul.menu > li > button {
     border: 0;
     display: block;
-    font-size: medium;
-    padding: 0.5em;
+    font-size: 1rem;
+    padding: 0.5rem;
     width: 100%;
 }
 
