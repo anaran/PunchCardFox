@@ -6,6 +6,10 @@
 /* @import url(links.css);
  */
 
+:root {
+    color-scheme: light dark;
+}
+
 html {
     font-size: medium;
 }
@@ -40,6 +44,11 @@ body.dark_theme {
 select {
     background-color: inherit;
     color: inherit;
+}
+
+.dark_theme option {
+    background-color: black;
+    color: white;
 }
 
 #app_header {
@@ -113,8 +122,8 @@ pre:hover:not(.info) {
 
 .dark_theme pre:hover:not(.info) {
     /* filter: invert(100%); */
-    color: white;
-    background-color: black;
+    color: black;
+    background-color: white;
 }
 
 pre.start {
@@ -160,6 +169,7 @@ input[type=checkbox]:checked ~ pre.activity {
     overflow: visible;
     display: block;
     white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .changed {
@@ -282,18 +292,6 @@ nav#punchcard_scrollbar li a.deleted {
 .dark_theme nav#punchcard_scrollbar li a.deleted {
     /* background-color: white; */
     color: darkred;
-}
-
-nav#punchcard_scrollbar li a:hover/* , nav#punchcard_scrollbar li:active a, nav#punchcard_scrollbar li:focus a */ {
-    /* border-radius: 6px; */
-    /* border: 2px solid black; */
-    /* left: 0; */
-    /* Create stacking context to move element to the front, see
-         https://developer.mozilla.org/en-US/docs/Web/CSS/transform */
-    /* transform: translate(0, 0); */
-    /* background-color: red; */
-    /* Invert font colors, works for images too. */
-    /* font-weight: bold; */
 }
 
 nav#punchcard_scrollbar li a:hover {

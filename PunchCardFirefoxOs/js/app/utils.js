@@ -25,7 +25,7 @@ export let formatStartDate = (date) => {
 
 if ('Intl' in window) {
   let idtf = new Intl.DateTimeFormat(navigator.languages, {
-    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'narrow',
+    year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
     hour: 'numeric', minute: 'numeric', second: 'numeric'
   });
   formatStartDate = (date) => {
@@ -206,15 +206,29 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
 }
 
 export let positionMenu = function(menu, event) {
-      let xProp = 'left', yProp = 'top';
-      let xOffset = event.clientX + 10, yOffset = event.clientY + 10;
-      if (event.clientX > window.innerWidth * 0.8) {
-        xProp = 'right';
-        xOffset = window.innerWidth - event.clientX + 10;
-      }
-      if (event.clientY > window.innerHeight * 0.8) {
-        yProp = 'bottom';
-        yOffset = window.innerHeight - event.clientY + 10;
-      }
-      menu.style = 'display: block; ' + xProp + ': ' + xOffset + 'px; ' + yProp + ': ' + yOffset + 'px';
+  let xProp, yProp;
+  let xOffset, yOffset;
+  if (event.clientX > window.innerWidth * 0.8) {
+    xProp = 'right';
+    menu.style['left'] = ``;
+    xOffset = window.innerWidth - event.clientX + 10;
+  }
+  else {
+    xProp = 'left';
+    menu.style['right'] = ``;
+    xOffset = event.clientX + 10;
+  }
+  if (event.clientY > window.innerHeight * 0.8) {
+    yProp = 'bottom';
+    menu.style['top'] = ``;
+    yOffset = window.innerHeight - event.clientY + 10;
+  }
+  else {
+    yProp = 'top';
+    menu.style['bottom'] = ``;
+    yOffset = event.clientY + 10;
+  }
+  menu.style.display = 'block';
+  menu.style[xProp] = `${xOffset}px`;
+  menu.style[yProp] = `${yOffset}px`;
 }

@@ -45,30 +45,6 @@ let changeFontSize = (element) => {
 };
 changeFontSize(fontSizeSelect);
 fontSizeSelect.addEventListener ('change', (event) => changeFontSize(event.target));
-let themeSelect = document.getElementById ('punchcard_theme_select');
-let changeTheme = (element) => {
-  switch (element.value) {
-  case "Light": {
-    document.body.classList.remove('dark_theme');
-    break;
-  }
-  case "Dark": {
-    document.body.classList.add('dark_theme');
-    break;
-  }
-  case "System": {
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.body.classList.add('dark_theme');
-    }
-    else {
-      document.body.classList.remove('dark_theme');
-    }
-    break;
-  }
-  }
-};
-changeTheme(themeSelect);
-themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
 
 loadButton.addEventListener('click', (event) => {
   infojs.time('optionsDB.allDocs');

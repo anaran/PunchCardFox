@@ -26,6 +26,43 @@ document.addEventListener('readystatechange', (event) => {
     window.addEventListener('online', (e) => {
       infojs.info(`Browser is now ${e.type}`);
     });
+    {
+      // Create the query list.
+      const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+      // Define a callback function for the event listener.
+      function handleColorThemeChange(evt) {
+        if (evt.matches) {
+          document.body.classList.add('dark_theme');
+        } else {
+          document.body.classList.remove('dark_theme');
+        }
+        infojs.info(evt);
+      }
+      let themeSelect = document.getElementById ('punchcard_theme_select');
+      let changeTheme = (element) => {
+        switch (element.value) {
+        case "Light": {
+          mediaQueryList.removeEventListener("change", handleColorThemeChange);
+          document.body.classList.remove('dark_theme');
+          break;
+        }
+        case "Dark": {
+          mediaQueryList.removeEventListener("change", handleColorThemeChange);
+          document.body.classList.add('dark_theme');
+          break;
+        }
+        case "System": {
+          // Add the callback function as a listener to the query list.
+          mediaQueryList.addEventListener("change", handleColorThemeChange);
+          // Run the orientation change handler once.
+          handleColorThemeChange(mediaQueryList);
+          break;
+        }
+        }
+      };
+      changeTheme(themeSelect);
+      themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
+    }
     let resultIndex = 1;
     let optionsDB = new PouchDB('options');
     let db = new PouchDB('punchcard');
@@ -202,7 +239,7 @@ document.addEventListener('readystatechange', (event) => {
           startMenu.dataset.id = event.target.parentElement.id;
         }
         else {
-          startMenu.style = 'display: none;';
+          startMenu.style.display = 'none';
           delete startMenu.dataset.id;
         }
       }
@@ -218,7 +255,7 @@ document.addEventListener('readystatechange', (event) => {
           }
         }
         else {
-          endMenu.style = 'display: none;';
+          endMenu.style.display = 'none';
           delete endMenu.dataset.id;
         }
       }
@@ -236,7 +273,7 @@ document.addEventListener('readystatechange', (event) => {
           }
         }
         else {
-          revisionsMenu.style = 'display: none;';
+          revisionsMenu.style.display = 'none';
           delete revisionsMenu.dataset.id;
         }
       }
@@ -248,7 +285,7 @@ document.addEventListener('readystatechange', (event) => {
           menu.dataset.id = event.target.parentElement.id;
         }
         else {
-          menu.style = 'display: none;';
+          menu.style.display = 'none';
           delete menu.dataset.id;
         }
       }
@@ -707,6 +744,8 @@ document.addEventListener('readystatechange', (event) => {
     if (titleItem) {
       titleItem.addEventListener('click', toggleFilter);
     }
+    // Don't display filter when application loads.
+    toggleFilter();
     let toggleScrollbar = function(event) {
       event.target.style.opacity = 0.3;
       event.preventDefault();
