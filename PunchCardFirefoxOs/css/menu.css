@@ -1,6 +1,5 @@
 ul.menu {
     border: 1px solid;
-    display: none;
     position: fixed;
     margin: 0;
     padding: 0;
@@ -11,26 +10,11 @@ ul.menu > li {
 }
 
 ul.menu > li > button {
-    background-color: white;
     border: 0;
-    color: black;
     display: block;
     font-size: 1rem;
     padding: 0.5rem;
     width: 100%;
-}
-
-ul.menu > li > button:disabled {
-    background-color: silver;
-}
-
-.dark_theme ul.menu > li > button {
-    background-color: black;
-    color: white;
-}
-
-.dark_theme ul.menu > li > button:disabled {
-    background-color: silver;
 }
 
 ul.menu a {

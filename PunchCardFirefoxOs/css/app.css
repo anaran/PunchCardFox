@@ -89,7 +89,11 @@ div.entry.deleted {
 }
 
 div.entry.available {
-    background-color: silver;
+    background-color: lightgrey;
+}
+
+.dark_theme div.entry.available {
+    background-color: dimgrey;
 }
 
 div.entry.filtered {
@@ -201,7 +205,6 @@ new-entry {
 /* JUMPER */
 
 div#scroll-and-view {
-    /* border: 2px solid silver; */
     background-color: inherit;
     bottom: 0;
     color: inherit;
@@ -312,6 +315,24 @@ input {
     color: inherit;
 }
 
+:is(button, input)[type=button] {
+    background-color: white;
+    color: black;
+}
+
+:is(button, input)[type=button]:disabled {
+    background-color: lightgrey;
+}
+
+.dark_theme :is(button, input)[type=button] {
+    background-color: black;
+    color: white;
+}
+
+.dark_theme :is(button, input)[type=button]:disabled {
+    background-color: dimgrey;
+}
+
 #filter input-ui {
     /* background-color: inherit; */
     /* color: inherit; */
@@ -385,9 +406,11 @@ width: -moz-calc(100% + 1.5rem);
 } */
 
 div.entries.updating, input.updating {
-    background-color: silver;
-    /*     width: 90%; */
-    /*   max-height: 50%; */
+    background-color: lightgrey;
+}
+
+.dark_theme :is(div.entries.updating, input.updating) {
+    background-color: dimgrey;
 }
 
 div.entries_header a {
