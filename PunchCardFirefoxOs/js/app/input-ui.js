@@ -16,6 +16,10 @@ export class InputUI extends HTMLElement {
 <input type="button" class="undo" value="&#x238c;"/>
 <input type="button" class="erase" value="&Cross;"/>
 <style>
+input {
+  font-size: inherit;
+}
+
 input.val {
   background-color: inherit;
   color: inherit;

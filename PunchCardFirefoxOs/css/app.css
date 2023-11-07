@@ -44,6 +44,11 @@ body.dark_theme {
 select {
     background-color: inherit;
     color: inherit;
+    font-size: inherit;
+}
+
+option {
+    font-size: inherit;
 }
 
 .dark_theme option {
@@ -308,16 +313,19 @@ nav#punchcard_scrollbar li a:hover {
 input-ui {
     background-color: inherit;
     color: inherit;
+    font-size: inherit;
 }
 
 input {
     background-color: inherit;
     color: inherit;
+    font-size: inherit;
 }
 
 :is(button, input)[type=button] {
     background-color: white;
     color: black;
+    font-size: inherit;
 }
 
 :is(button, input)[type=button]:disabled {

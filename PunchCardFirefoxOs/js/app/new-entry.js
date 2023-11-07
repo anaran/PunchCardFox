@@ -93,9 +93,16 @@ export class NewEntryUI extends HTMLElement {
   </section>
 </section>
 <style>
+input {
+    background-color: inherit;
+    color: inherit;
+    font-size: inherit;
+}
+
 #start, #end {
   background-color: inherit;
   color: inherit;
+  font-size: inherit;
   width: 33ch;
     /*font-family: monospace;*/
 }
@@ -151,6 +158,7 @@ export class NewEntryUI extends HTMLElement {
   background-color: inherit;
   color: inherit;
   flex: auto;
+  font-size: inherit;
   resize: both;
   height: 10ch;
   /*min-height: 6ch;
