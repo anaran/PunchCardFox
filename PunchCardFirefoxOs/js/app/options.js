@@ -453,12 +453,12 @@ var logout = document.querySelector('#logout');
 //
 // Then we search without leaving this page, just as we wanted.
 document.getElementById('pass').addEventListener('blur', function (event) {
-  // if (event.key == 'Enter') {
+  if (event.target.value.length  > 0) {
     let sessionUrl = document.getElementById('protocol').value +
         document.getElementById('hostportpath').value + '_session';
     if (sessionLogin(sessionUrl, document.getElementById('user').value, event.target.value)) {
     }
-  // }
+  }
   // console.log(event.type, event);
 });
 login.addEventListener('click', function(e) {
