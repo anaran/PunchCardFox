@@ -10,6 +10,11 @@
     <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ..."></input-ui>
     <input-ui class="persistent" type="date" id="query_start" data-l10n-id="query_start_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 1, YYYY-MM-DD"></input-ui>
     <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
+    <div>
+      <input type="checkbox" id="live_changes" name="live_changes"
+             value="true" />
+      <label for="live_changes">Display Punchcard database changes live</label>
+    </div>
   </section>
   <section>
     <p>

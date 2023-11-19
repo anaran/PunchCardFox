@@ -2,6 +2,7 @@
 
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
+import * as appjs from './app.js';
 // import '../../bower_components/pouchdb/dist/pouchdb.min.js';
 import '../../bower_components/pouchdb/dist/pouchdb.js';
 
@@ -38,6 +39,29 @@ document.addEventListener('readystatechange', (event) => {
       localStorage.setItem(element.id, value);
     });
   });
+});
+let liveChanges = document.getElementById ('live_changes');
+let liveQuery;
+liveChanges.addEventListener('change', function (event) {
+  var element = event.target;
+  var value = element.checked;
+  // window.alert(`${element.id} is ${value}`);
+  if (value) {
+    liveQuery = appjs.runQuery({
+      // conflicts: true,
+      db_changes: true, // run db.changes instead of db.allDocs
+      descending: false,
+      include_docs: true,
+      live: true,
+      return_docs: false,
+      since: 'now'
+    });
+  }
+  else {
+    if (liveQuery) {
+      liveQuery.cancel();
+    }
+  }
 });
 let fontSizeSelect = document.getElementById ('punchcard_font_size_select');
 let changeFontSize = (element) => {
