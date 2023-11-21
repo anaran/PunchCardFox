@@ -2,9 +2,9 @@
 
 import * as infojs from './info.js';
 import * as readmejs from './readme.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
+import '../../js/libs/pouchdb-8.0.1.min.js';
 // import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
-import '../../bower_components/pouchdb/dist/pouchdb.js';
+// import '../../js/libs/pouchdb-8.0.1.js';
 import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
 import { PouchdbUI } from './pouchdb-ui.js';
 

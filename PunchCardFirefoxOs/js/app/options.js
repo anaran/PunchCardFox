@@ -3,8 +3,8 @@
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
 import * as appjs from './app.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
-import '../../bower_components/pouchdb/dist/pouchdb.js';
+import '../../js/libs/pouchdb-8.0.1.min.js';
+// import '../../js/libs/pouchdb-8.0.1.js';
 
 // try {
 infojs.time('options.js');
