@@ -784,11 +784,11 @@ input {
           }
           if (this.isValidEntry(otherDoc)) {
             this.db.put(otherDoc).then((response) => {
-              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(startDate));
-              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endText ? utilsjs.formatEndDate(endDate) : ' ');
+              changedStart && utilsjs.updateEntriesElement(id, 'start', utilsjs.formatStartDate(startDate));
+              changedEnd && utilsjs.updateEntriesElement(id, 'end', endText ? utilsjs.formatEndDate(endDate) : ' ');
               (changedStart || changedEnd) &&
-                utilsjs.updateEntriesElement(id, 'pre.duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
-              changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
+                utilsjs.updateEntriesElement(id, 'duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
+              changedActivity && utilsjs.updateEntriesElement(id, 'activity', activityText);
               // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
               // Update id attribute to reflect now document id.
               // Fixes bug where future menu operations on replaced entry would not work.
@@ -796,7 +796,7 @@ input {
               document.getElementById(response.id).classList.remove('deleted');
               resolve({ modified: response });
               // TO be set by caller
-              // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
+              // utilsjs.updateEntriesElement(id, 'revisions', response.rev.split(/-/)[0] + ' revs');
             }).catch((err) => {
               infojs.error(err);
               reject('Modified entry is valid but cannot be saved.\nPlease report this error.'
@@ -836,9 +836,9 @@ input {
             else {
               newEntry = utilsjs.addNewEntry(entry, this.entries, this.entries.querySelector('div.entry'));
             }
-            newEntry.querySelector('pre.activity').classList.add('changed');
-            newEntry.querySelector('pre.start').classList.add('changed');
-            newEntry.querySelector('pre.end').classList.add('changed');
+            newEntry.activity.classList.add('changed');
+            newEntry.start.classList.add('changed');
+            newEntry.end.classList.add('changed');
             // NOTE: Too early, will scroll out of view when new entry UI is
             // no longer displayed in caller.
             // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});

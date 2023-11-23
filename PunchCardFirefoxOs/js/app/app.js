@@ -5,6 +5,7 @@ import './about.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
 import * as optionsjs from './options.js';
+import * as entriesui from './entries-ui.js';
 
 let resultIndex = 1;
 let optionsDB = new PouchDB('options');
@@ -13,7 +14,7 @@ let db = new PouchDB('punchcard');
 let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   const entries = document.getElementById(result[4]);
-  const queryInfoElement = entries.querySelector('span.info');
+  const queryInfoElement = entries.info;
   if (result[0]) {
     queryInfoElement.textContent += ` found ${result[2]}`;
   }
@@ -22,20 +23,21 @@ let updateQueryResults = (result) => {
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
-  Array.prototype.forEach.call(document.querySelectorAll('div.entry'), entry => setAvailableRevisionCount(entry));
-  entries.classList.remove('updating');
-
-  Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
+  Array.prototype.forEach.call(entries.entries('entry-ui'), (entry) => {
+    setAvailableRevisionCount(entry);
+    let value = entry.checked;
     value.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
-        if (value.parentElement.style.display != 'none') {
+      Array.prototype.forEach.call(entries.entries('entry-ui'), (entry) => {
+        let value = entry.checked;
+        if (value.style.display != 'none') {
           value.checked = !value.checked;
         }
       });
     });
   });
+  entries.classList.remove('updating');
 
   infojs.timeEnd('runQuery');
 };
@@ -53,7 +55,7 @@ let setAvailableRevisionCount = function(entry) {
   // Possibly do estimate shortcut when accurate
   // revision reporting is disabled for performance reasons.
   // It takes a while when displaying 1000 entries.
-  var revisions = entry.querySelector('pre.revisions');
+  var revisions = entry.revisions;
   // Revision prefix does not account for unavailable revs (e.g missing).
   if (false) {
     revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
@@ -92,9 +94,9 @@ let setAvailableRevisionCount = function(entry) {
 let updateScrollLinks = function() {
   infojs.time('updateScrollLinks');
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-  var entryNodes = scrollView.querySelectorAll('.entry:not(.filtered)');
   // query result container
-  var entriesNodes = scrollView.querySelectorAll('.entries');
+  let entriesNodes = scrollView.querySelectorAll('entries-ui');
+  var entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui:not(.filtered)')); })
   var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ul>li');
   var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
   for (var linkIndex = 3; linkIndex < scrollLinks.length; linkIndex++)  {
@@ -117,7 +119,7 @@ let updateScrollLinks = function() {
           // Skip over first two links reserved for top and results links.
           var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 3].firstElementChild;
           var last = (link == scrollLinks[scrollLinks.length - 1].firstElementChild);
-          var result = entryNodes[scrollIndex].parentElement.id;
+          var result = entryNodes[scrollIndex].parentNode.host.id;
           if (entryNodes[scrollIndex].classList.contains('deleted')) {
             link.classList.add('deleted');
           }
@@ -188,10 +190,9 @@ export let runQuery = function(arg) {
     // Limit query to a maximum of 1000 rows, not to use too much
     // memory in mobile browsers on smartphones
     var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
-    var content = document.getElementById('entries_template').content;
-    var entries = document.importNode(content, "deep").firstElementChild;
+    let entries = new entriesui.EntriesUI();
     const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-    var previousEntries = scrollView.querySelector('div.entries');
+    var previousEntries = scrollView.querySelector('entries-ui');
     entries.classList.add('updating');
     var cacheSection = document.querySelector('#cache_section');
     if (previousEntries) {
@@ -202,11 +203,11 @@ export let runQuery = function(arg) {
     }
     entries.id = 'R' + resultIndex;
     resultIndex += 1;
-    var queryInfoElement = entries.querySelector('span.info');
+    var queryInfoElement = entries.info;
     queryInfoElement.scrollIntoView({block: "center", inline: "center"});
-    var update = entries.querySelector('a.update');
-    var close = entries.querySelector('a.close');
-    var stop = entries.querySelector('a.stop');
+    var update = entries.update;
+    var close = entries.close;
+    var stop = entries.stop;
     update.addEventListener('click', function(event) {
       event.preventDefault();
       alert('rerun query is not implemented yet. \u221E');
@@ -596,11 +597,12 @@ document.addEventListener('readystatechange', (event) => {
     let updateFilter = function(event) {
       event.target.classList.add('updating');
       infojs.time('updating');
-      let entryNodes = scrollView.querySelectorAll('.entry');
+      let entriesNodes = scrollView.querySelectorAll('entries-ui');
+      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
       let regexp = stringToRegexp(event.target.value.trim());
       if (regexp) {
         Array.prototype.forEach.call(entryNodes, function(node, index) {
-          let activity = node.querySelector('.activity');
+          let activity = node.activity;
           if (regexp.test(activity.textContent)) {
             node.classList.remove('filtered');
           }
@@ -617,7 +619,8 @@ document.addEventListener('readystatechange', (event) => {
       toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
-        document.querySelector('.entry:not(.filtered)').scrollIntoView({block: "center", inline: "center"});
+        let firstUnfilteredEntryNode = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui:not(.filtered)')); })[0];
+        firstUnfilteredEntryNode.scrollIntoView({block: "center", inline: "center"});
       });
       event.target.classList.remove('updating');
       infojs.timeEnd('updating');
@@ -686,20 +689,21 @@ document.addEventListener('readystatechange', (event) => {
       // event.preventDefault();
       // event.stopPropagation();
       var bcr = event.target.getBoundingClientRect();
-      if (event.target.classList.contains("start")) {
+      if (event.composedPath()[0].classList.contains("start")) {
         if (startMenu.style.display == 'none') {
           utilsjs.positionMenu(startMenu, event);
-          startMenu.dataset.id = event.target.parentElement.id;
+          // entry-ui inside shadow dom.
+          startMenu.dataset.id = event.composedPath()[2].id;
         }
         else {
           startMenu.style.display = 'none';
           delete startMenu.dataset.id;
         }
       }
-      if (event.target.classList.contains("end")) {
+      if (event.composedPath()[0].classList.contains("end")) {
         if (endMenu.style.display == 'none') {
           utilsjs.positionMenu(endMenu, event);
-          endMenu.dataset.id = event.target.parentElement.id;
+          endMenu.dataset.id = event.composedPath()[2].id;
           if (event.target.parentElement.querySelector('pre.end').textContent == ' ') {
             document.getElementById('end_undefined').setAttribute('disabled', true);
           }
@@ -712,10 +716,10 @@ document.addEventListener('readystatechange', (event) => {
           delete endMenu.dataset.id;
         }
       }
-      if (event.target.classList.contains("revisions")) {
+      if (event.composedPath()[0].classList.contains("revisions")) {
         if (revisionsMenu.style.display == 'none') {
           utilsjs.positionMenu(revisionsMenu, event);
-          revisionsMenu.dataset.id = event.target.parentElement.id;
+          revisionsMenu.dataset.id = event.composedPath()[2].id;
           if (event.target.parentElement.classList.contains('available')) {
             // document.getElementById('add_as_new_revision').setAttribute('href', '#add_as_new_revision');
             // document.getElementById('show_revisions').removeAttribute('href');
@@ -730,12 +734,13 @@ document.addEventListener('readystatechange', (event) => {
           delete revisionsMenu.dataset.id;
         }
       }
-      if (event.target.classList.contains("activity")) {
-        let operationCount = document.querySelectorAll('div.entry>input:checked').length;
+      if (event.composedPath()[0].classList.contains("activity")) {
+        // FIXME
+        let operationCount = document.querySelectorAll('entry-ui>input:checked').length;
         let menu = operationCount > 0 ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
           utilsjs.positionMenu(menu, event);
-          menu.dataset.id = event.target.parentElement.id;
+          menu.dataset.id = event.composedPath()[2].id;
         }
         else {
           menu.style.display = 'none';
@@ -744,6 +749,14 @@ document.addEventListener('readystatechange', (event) => {
       }
     });
     let scrollBar = document.querySelector('nav#punchcard_scrollbar');
+    scrollBar.addEventListener('click', (event) => {
+      let entriesNodes = scrollView.querySelectorAll('entries-ui');
+      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
+      let target = entryNodes.find((element) => {
+        return element.id == event.target.hash.substring(1);
+      });
+      target && target.scrollIntoView({block: "center", inline: "center"});      
+    });
     // let links = document.querySelectorAll('nav#punchcard_scrollbar a');
     // scrollView.addEventListener('scroll', function (event) {
     //   scrollBar.style.right = '0';
@@ -903,9 +916,9 @@ document.addEventListener('readystatechange', (event) => {
         let startText = otherDoc._id.substring(0,24);
         otherDoc.end = now.toJSON();
         return db.put(otherDoc).then(function(response) {
-          utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
+          utilsjs.updateEntriesElement(id, 'end', utilsjs.formatEndDate(now));
           setAvailableRevisionCount(document.getElementById(id));
-          utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
+          utilsjs.updateEntriesElement(id, 'duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
           // saveLink.click();
         }).catch(function(err) {
           //errors
@@ -926,9 +939,9 @@ document.addEventListener('readystatechange', (event) => {
       db.get(id).then(function(otherDoc) {
         delete otherDoc.end;
         return db.put(otherDoc).then(function(response) {
-          utilsjs.updateEntriesElement(id, 'pre.end', ' ');
+          utilsjs.updateEntriesElement(id, 'end', ' ');
           setAvailableRevisionCount(document.getElementById(id));
-          utilsjs.updateEntriesElement(id, 'pre.duration', ' ');
+          utilsjs.updateEntriesElement(id, 'duration', ' ');
           // saveLink.click();
         }).catch(function(err) {
           //errors
@@ -950,7 +963,12 @@ document.addEventListener('readystatechange', (event) => {
       var parts = elementId.split(/_/);
       var id = parts[0];
       var rev = parts[1];
-      if (!document.getElementById(elementId).classList.contains('available')) {
+      let entriesNodes = scrollView.querySelectorAll('entries-ui');
+      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
+      let beforeThisElement = entryNodes.find((element) => {
+        return element.id == id;
+      });
+      if (!beforeThisElement || !beforeThisElement.classList.contains('available')) {
         let options = {
           // Defaults to winning revision
           // rev: doc._rev,
@@ -976,10 +994,9 @@ document.addEventListener('readystatechange', (event) => {
                 start: availableDoc.start,
                 end: availableDoc.end
               };
-              var beforeThisElement = document.getElementById(elementId);
-              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
+              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentNode.host, 
                                                  beforeThisElement, 'addRevisionToElementId');
-              newEntry.querySelector('pre.revisions').textContent = (index + 1) + ' of ' + obj.length + ' revs';
+              newEntry.revisions.textContent = (index + 1) + ' of ' + obj.length + ' revs';
               // NOTE addRevisionToElementId argument makes this more obvious.
               // newEntry.id = entry._id + '.' + entry._rev;
               newEntry.scrollIntoView({block: "center", inline: "center"});
@@ -992,7 +1009,7 @@ document.addEventListener('readystatechange', (event) => {
             });
           });
         }).catch(function (err) {
-          infojs.error(err, document.getElementById(id).parentElement);
+          infojs.error(err, beforeThisElement.parentNode.host);
         });
       }
     };
@@ -1161,16 +1178,16 @@ document.addEventListener('readystatechange', (event) => {
     // Don't display filter when application loads.
     toggleFilter();
     // Query recent changes when application starts.
-    runQuery({
-      db_changes: true, // run db.changes instead of db.allDocs
-      descending: true,
-      include_docs: true,
-      // conflicts: true,
-      limit: 99,
-      live: false,
-      return_docs: false,
-      since: 'now'
-    });
+    // runQuery({
+    //   db_changes: true, // run db.changes instead of db.allDocs
+    //   descending: true,
+    //   include_docs: true,
+    //   // conflicts: true,
+    //   limit: 99,
+    //   live: false,
+    //   return_docs: false,
+    //   since: 'now'
+    // });
     let toggleScrollbar = function(event) {
       event.target.style.opacity = 0.3;
       event.preventDefault();
@@ -1197,7 +1214,7 @@ document.addEventListener('readystatechange', (event) => {
         event.preventDefault();
         event.stopPropagation();
         window.setTimeout((event) => {
-          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
+          Array.prototype.forEach.call(document.querySelectorAll('entry-ui>input[type=checkbox]'), (value) => {
             if (event.target.checked && !value.checked) {
               value.parentElement.style.display = 'none';
             }
@@ -1269,7 +1286,8 @@ document.addEventListener('readystatechange', (event) => {
       event.preventDefault();
       event.stopPropagation();
       infojs.time('searching');
-      let entryNodes = scrollView.querySelectorAll('.entry');
+      let entriesNodes = scrollView.querySelectorAll('entries-ui');
+      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
       let regexp = stringToRegexp(filter.value.trim());
       if (regexp) {
         let firstEntry = Array.prototype.find.call(entryNodes, function(node, index) {

@@ -1,6 +1,7 @@
 'use strict';
 
 import * as infojs from './info.js';
+import * as entryui from './entry-ui.js';
 
 export let getRandom12HexDigits = () => {
   return (Math.floor(Math.random() * (2**48 - 1))).toString(16).padStart(12, '0');
@@ -50,7 +51,7 @@ export let formatEndDate = (date) => {
 }
 
 export let updateEntriesElement = (id, selector, value) => {
-  let updateItem = document.getElementById(id).querySelector(selector);
+  let updateItem = document.getElementById(id)[selector];
   if (updateItem.textContent != value) {
     updateItem.textContent = value;
     updateItem.classList.add('changed');
@@ -94,8 +95,7 @@ export let reportDateTimeDiff = (d1, d2) => {
 
 export let addNewEntry = function (doc, entries, before, addRevisionToElementId) {
   try {
-    let content = document.getElementById('entry_template').content;
-    let entry = document.importNode(content, "deep").firstElementChild;
+    let entry = new entryui.EntryUI();
     if (addRevisionToElementId) {
       // NOTE _ is allowed in HTML id attribute and not used in my Date.toJSON() _id.
       entry.id = doc._id + '_' + doc._rev;
@@ -103,11 +103,11 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     else {
       entry.id = doc._id;
     }
-    let start = entry.children[0];
-    let end = entry.children[1];
-    let duration = entry.children[2];
-    let revisions = entry.children[3];
-    let activity = entry.children[5];
+    let start = entry.start;
+    let end = entry.end;
+    let duration = entry.duration;
+    let revisions = entry.revisions;
+    let activity = entry.activity;
     // start.contentEditable = true;
     // end.contentEditable = true;
     // activity.contentEditable = true;
@@ -190,10 +190,11 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     // });
     if (before) {
       // Insert before the first entry we find, if any.
-      entries.insertBefore(entry, before);
+      entries.shadowRoot.insertBefore(entry, before);
     }
     else {
-      entries.appendChild(entry);
+      entries.shadowRoot.appendChild(entry);
+      // entries.insertAdjacentElement('afterend', entry);
     }
     return entry;
   }
