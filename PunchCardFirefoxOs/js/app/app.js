@@ -689,22 +689,24 @@ document.addEventListener('readystatechange', (event) => {
       // event.preventDefault();
       // event.stopPropagation();
       var bcr = event.target.getBoundingClientRect();
-      if (event.composedPath()[0].classList.contains("start")) {
+      let menu = event.composedPath()[0];
+      // entry-ui inside shadow dom.
+      let entry = event.composedPath()[2];
+      if (menu.classList.contains("start")) {
         if (startMenu.style.display == 'none') {
           utilsjs.positionMenu(startMenu, event);
-          // entry-ui inside shadow dom.
-          startMenu.dataset.id = event.composedPath()[2].id;
+          startMenu.dataset.id = entry.id;
         }
         else {
           startMenu.style.display = 'none';
           delete startMenu.dataset.id;
         }
       }
-      if (event.composedPath()[0].classList.contains("end")) {
+      if (menu.classList.contains("end")) {
         if (endMenu.style.display == 'none') {
           utilsjs.positionMenu(endMenu, event);
-          endMenu.dataset.id = event.composedPath()[2].id;
-          if (event.target.parentElement.querySelector('pre.end').textContent == ' ') {
+          endMenu.dataset.id = entry.id;
+          if (entry.end.textContent == ' ') {
             document.getElementById('end_undefined').setAttribute('disabled', true);
           }
           else {
@@ -716,10 +718,10 @@ document.addEventListener('readystatechange', (event) => {
           delete endMenu.dataset.id;
         }
       }
-      if (event.composedPath()[0].classList.contains("revisions")) {
+      if (menu.classList.contains("revisions")) {
         if (revisionsMenu.style.display == 'none') {
           utilsjs.positionMenu(revisionsMenu, event);
-          revisionsMenu.dataset.id = event.composedPath()[2].id;
+          revisionsMenu.dataset.id = entry.id;
           if (event.target.parentElement.classList.contains('available')) {
             // document.getElementById('add_as_new_revision').setAttribute('href', '#add_as_new_revision');
             // document.getElementById('show_revisions').removeAttribute('href');
@@ -734,7 +736,7 @@ document.addEventListener('readystatechange', (event) => {
           delete revisionsMenu.dataset.id;
         }
       }
-      if (event.composedPath()[0].classList.contains("activity")) {
+      if (menu.classList.contains("activity")) {
         // FIXME
         let operationCount = document.querySelectorAll('entry-ui>input:checked').length;
         let menu = operationCount > 0 ? operationMenu : activityMenu;
@@ -749,28 +751,6 @@ document.addEventListener('readystatechange', (event) => {
       }
     });
     let scrollBar = document.querySelector('nav#punchcard_scrollbar');
-    // scrollBar.addEventListener('click', (event) => {
-    //   let entriesNodes = scrollView.querySelectorAll('entries-ui');
-    //   let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
-    //   let target = entryNodes.find((element) => {
-    //     return element.id == event.target.hash.substring(1);
-    //   });
-    //   target && target.scrollIntoView({block: "center", inline: "center"});      
-    // });
-    // let links = document.querySelectorAll('nav#punchcard_scrollbar a');
-    // scrollView.addEventListener('scroll', function (event) {
-    //   scrollBar.style.right = '0';
-    // });
-    // scrollView.addEventListener('click', function (event) {
-    //   // if (event.target === document.body) {
-    //     if (scrollBar.style.right == '0px') {
-    //       scrollBar.style.right = '-5em';
-    //     }
-    //     else {
-    //       scrollBar.style.right = '0';
-    //     }
-    //   // }
-    // });
     // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
     let ignore = (event) => {
       event.preventDefault();
@@ -888,10 +868,10 @@ document.addEventListener('readystatechange', (event) => {
             var newEntry = utilsjs.addNewEntry(newDoc, beforeThisElement.parentElement, beforeThisElement);
             setAvailableRevisionCount(document.getElementById(response.id));
             newEntry.scrollIntoView({block: "center", inline: "center"});
-            newEntry.querySelector('pre.activity').classList.add('changed');
-            newEntry.querySelector('pre.start').classList.add('changed');
-            newEntry.querySelector('pre.end').classList.add('changed');
-            newEntry.querySelector('pre.revisions').classList.add('changed');
+            newEntry.activity.classList.add('changed');
+            newEntry.start.classList.add('changed');
+            newEntry.end.classList.add('changed');
+            newEntry.revisions.classList.add('changed');
           }).catch(function(err) {
             //errors
             infojs.error(err, document.getElementById(id).parentElement);
@@ -1100,7 +1080,7 @@ document.addEventListener('readystatechange', (event) => {
       event.stopPropagation();
       var id = getDataSetIdHideMenu(event);
       // NOTE: Works, but too silly to be considered.
-      // var activityItem = document.getElementById(id).querySelector('pre.activity');
+      // var activityItem = document.getElementById(id).activity;
       // var s = getSelection();
       // s.removeAllRanges();
       // var r = document.createRange();
@@ -1284,12 +1264,11 @@ document.addEventListener('readystatechange', (event) => {
       event.preventDefault();
       event.stopPropagation();
       infojs.time('searching');
-      let entriesNodes = scrollView.querySelectorAll('entries-ui');
-      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
+      let entryNodes = scrollView.querySelectorAll('entry-ui');
       let regexp = stringToRegexp(filter.value.trim());
       if (regexp) {
         let firstEntry = Array.prototype.find.call(entryNodes, function(node, index) {
-          var activity = node.querySelector('.activity');
+          var activity = node.activity;
           if (regexp.test(activity.textContent)) {
             return node;
           }
@@ -1387,10 +1366,10 @@ document.addEventListener('readystatechange', (event) => {
           var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
           setAvailableRevisionCount(document.getElementById(id));
           newEntry.scrollIntoView({block: "center", inline: "center"});
-          newEntry.querySelector('pre.activity').classList.add('changed');
-          newEntry.querySelector('pre.start').classList.add('changed');
-          newEntry.querySelector('pre.end').classList.add('changed');
-          newEntry.querySelector('pre.revisions').classList.add('changed');
+          newEntry.activity.classList.add('changed');
+          newEntry.start.classList.add('changed');
+          newEntry.end.classList.add('changed');
+          newEntry.revisions.classList.add('changed');
           // document.location.reload('force');
           // saveLink.click();
         }).catch(function(err) {
