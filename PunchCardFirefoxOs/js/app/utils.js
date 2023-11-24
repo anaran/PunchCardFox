@@ -190,10 +190,10 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     // });
     if (before) {
       // Insert before the first entry we find, if any.
-      entries.shadowRoot.insertBefore(entry, before);
+      entries.insertBefore(entry, before);
     }
     else {
-      entries.shadowRoot.appendChild(entry);
+      entries.appendChild(entry);
       // entries.insertAdjacentElement('afterend', entry);
     }
     return entry;

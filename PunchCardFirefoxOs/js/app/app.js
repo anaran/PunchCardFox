@@ -23,13 +23,13 @@ let updateQueryResults = (result) => {
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
-  Array.prototype.forEach.call(entries.entries('entry-ui'), (entry) => {
+  Array.prototype.forEach.call(scrollView.querySelectorAll('entry-ui'), (entry) => {
     setAvailableRevisionCount(entry);
     let value = entry.checked;
     value.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      Array.prototype.forEach.call(entries.entries('entry-ui'), (entry) => {
+      Array.prototype.forEach.call(scrollView.querySelectorAll('entry-ui'), (entry) => {
         let value = entry.checked;
         if (value.style.display != 'none') {
           value.checked = !value.checked;
@@ -81,7 +81,7 @@ let setAvailableRevisionCount = function(entry) {
       // infojs.error({
       //   get_error: JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
       // }, entries);
-      infojs.error(err, document.getElementById(id).parentElement);
+      infojs.error(err);
     });
   }
   // getIt.then(function (result) {
@@ -96,7 +96,7 @@ let updateScrollLinks = function() {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   // query result container
   let entriesNodes = scrollView.querySelectorAll('entries-ui');
-  var entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui:not(.filtered)')); })
+  var entryNodes = scrollView.querySelectorAll('entry-ui:not(.filtered)');
   var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ul>li');
   var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
   for (var linkIndex = 3; linkIndex < scrollLinks.length; linkIndex++)  {
@@ -119,7 +119,7 @@ let updateScrollLinks = function() {
           // Skip over first two links reserved for top and results links.
           var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 3].firstElementChild;
           var last = (link == scrollLinks[scrollLinks.length - 1].firstElementChild);
-          var result = entryNodes[scrollIndex].parentNode.host.id;
+          var result = entryNodes[scrollIndex].parentElement.id;
           if (entryNodes[scrollIndex].classList.contains('deleted')) {
             link.classList.add('deleted');
           }
@@ -598,7 +598,7 @@ document.addEventListener('readystatechange', (event) => {
       event.target.classList.add('updating');
       infojs.time('updating');
       let entriesNodes = scrollView.querySelectorAll('entries-ui');
-      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
+      let entryNodes = scrollView.querySelectorAll('entry-ui');
       let regexp = stringToRegexp(event.target.value.trim());
       if (regexp) {
         Array.prototype.forEach.call(entryNodes, function(node, index) {
@@ -619,7 +619,7 @@ document.addEventListener('readystatechange', (event) => {
       toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
-        let firstUnfilteredEntryNode = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui:not(.filtered)')); })[0];
+        let firstUnfilteredEntryNode = scrollView.querySelector('entry-ui:not(.filtered)');
         firstUnfilteredEntryNode.scrollIntoView({block: "center", inline: "center"});
       });
       event.target.classList.remove('updating');
@@ -749,14 +749,14 @@ document.addEventListener('readystatechange', (event) => {
       }
     });
     let scrollBar = document.querySelector('nav#punchcard_scrollbar');
-    scrollBar.addEventListener('click', (event) => {
-      let entriesNodes = scrollView.querySelectorAll('entries-ui');
-      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
-      let target = entryNodes.find((element) => {
-        return element.id == event.target.hash.substring(1);
-      });
-      target && target.scrollIntoView({block: "center", inline: "center"});      
-    });
+    // scrollBar.addEventListener('click', (event) => {
+    //   let entriesNodes = scrollView.querySelectorAll('entries-ui');
+    //   let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
+    //   let target = entryNodes.find((element) => {
+    //     return element.id == event.target.hash.substring(1);
+    //   });
+    //   target && target.scrollIntoView({block: "center", inline: "center"});      
+    // });
     // let links = document.querySelectorAll('nav#punchcard_scrollbar a');
     // scrollView.addEventListener('scroll', function (event) {
     //   scrollBar.style.right = '0';
@@ -964,11 +964,9 @@ document.addEventListener('readystatechange', (event) => {
       var id = parts[0];
       var rev = parts[1];
       let entriesNodes = scrollView.querySelectorAll('entries-ui');
-      let entryNodes = Array.from(entriesNodes).flatMap((entries) => { return Array.from(entries.entries('entry-ui')); });
-      let beforeThisElement = entryNodes.find((element) => {
-        return element.id == id;
-      });
-      if (!beforeThisElement || !beforeThisElement.classList.contains('available')) {
+      let entryNodes = scrollView.querySelectorAll('entry-ui');
+      let beforeThisElement = document.getElementById(elementId);
+      if (!beforeThisElement.classList.contains('available')) {
         let options = {
           // Defaults to winning revision
           // rev: doc._rev,
@@ -994,7 +992,7 @@ document.addEventListener('readystatechange', (event) => {
                 start: availableDoc.start,
                 end: availableDoc.end
               };
-              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentNode.host, 
+              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
                                                  beforeThisElement, 'addRevisionToElementId');
               newEntry.revisions.textContent = (index + 1) + ' of ' + obj.length + ' revs';
               // NOTE addRevisionToElementId argument makes this more obvious.
