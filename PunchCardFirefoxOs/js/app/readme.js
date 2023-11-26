@@ -1,50 +1,10 @@
 'use strict';
 
-import '../../bower_components/marked/lib/marked.js';
+import '../../js/libs/commonmark.js';
 
 var XHR_TIMEOUT_MS = 0;
 export let init = function (url, renderElement, editElement, toggleElement) {
   return new Promise(function(resolve, reject) {
-    // See
-    // https://github.com/chjj/marked/issues/545#issuecomment-74505539
-    var toc = [];
-    var renderer = (function() {
-      var renderer = new marked.Renderer();
-      renderer.heading = function(text, level, raw) {
-        var anchor = this.options.headerPrefix + raw.toLowerCase().replace(/[^\w]+/g, '-');
-        toc.push({
-          anchor: anchor,
-          level: level,
-          text: text
-        });
-        return '<h'
-          + level
-          + ' id="'
-          + anchor
-          + '">'
-          + text
-          + '</h'
-          + level
-          + '>\n'
-          + '<a href="#table-of-contents">Index</a>\n';
-      };
-      return renderer;
-    })();
-
-    // marked.setOptions({
-    //     renderer: renderer
-    // });
-
-    marked.setOptions({
-      renderer: renderer,
-      gfm: true,
-      tables: true,
-      breaks: false,
-      pedantic: false,
-      sanitize: true,
-      smartLists: true,
-      smartypants: false
-    });
     try {
       var edit = editElement;
       edit.style.display = 'none';
@@ -117,8 +77,36 @@ export let init = function (url, renderElement, editElement, toggleElement) {
             edit.style.display = 'none';
             render.style.display = 'block';
           }
-          if ('use marked again after experimenting with Remarkable') {
-            var html = marked(request.response);
+          if ('use commonmark') {
+            let reader = new commonmark.Parser();
+            var writer = new commonmark.HtmlRenderer();
+            let parsed = reader.parse(request.response);
+            let walker = parsed.walker();
+            let event, node;
+            let toc = [];
+            while ((event = walker.next())) {
+              node = event.node;
+              // if (event.entering && node.type === 'link') {
+              //   node.type;
+              // }
+              if (event.entering && node.type === 'html_inline') {
+                node.type;
+              }
+              if (event.entering && node.type === 'heading') {
+                let anchor = node.firstChild.literal.toLowerCase().replace(/[^\w]+/g, '-');
+                toc.push({
+                  anchor: anchor,
+                  level: node.level,
+                  text: node.firstChild.literal
+                });
+                node.name = anchor;
+                let a_inline = `<a id="${anchor}" href="#table-of-contents">Index</a>`;
+                let inline_heading = new commonmark.Node('html_inline', node.sourcepos);
+                inline_heading.literal = a_inline;
+                node.insertBefore(inline_heading);
+              }
+            }
+            let html = writer.render(parsed);
             let tocHTML = '<h1 id="table-of-contents">Index</h1>\n<ul>\n';
             tocHTML += '<li><a href="#readme_edit_toggle">Top</a></li>\n';
             toc.forEach(function (entry) {
