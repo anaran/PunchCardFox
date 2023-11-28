@@ -1,5 +1,7 @@
 'use strict';
 
+import * as infojs from './info.js';
+
 export class EntriesUI extends HTMLElement {
   constructor() {
     try {
@@ -21,7 +23,7 @@ export class EntriesUI extends HTMLElement {
 `;
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   connectedCallback() {
@@ -32,7 +34,7 @@ export class EntriesUI extends HTMLElement {
       this.a_stop = this.shadow.querySelector('a.stop');
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   static get observedAttributes() {
@@ -46,7 +48,7 @@ export class EntriesUI extends HTMLElement {
     // try {
     // }
     // catch (e) {
-    //   window.alert(JSON.stringify(e, null, 2));
+    //   infojs.error(e);
     // }
   }
   get info() {
@@ -54,7 +56,7 @@ export class EntriesUI extends HTMLElement {
       return this.span_info;
     }
     catch (e) {
-      // window.alert(JSON.stringify(e, null, 2));
+      // infojs.error(e);
     }
   }
   get update() {
@@ -62,7 +64,7 @@ export class EntriesUI extends HTMLElement {
       return this.a_update;
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get close() {
@@ -70,7 +72,7 @@ export class EntriesUI extends HTMLElement {
       return this.a_close;
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get stop() {
@@ -78,12 +80,12 @@ export class EntriesUI extends HTMLElement {
       return this.a_stop;
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
-  entries(query) {
-    return this.shadow.querySelectorAll(query || 'entry-ui');
-  }
+  // entries(query) {
+  //   return this.querySelectorAll(query || 'entry-ui');
+  // }
   // insertBefore(entry, before) {
   //   this.shadow.insertBefore(entry, before);
   // }
@@ -95,7 +97,7 @@ export class EntriesUI extends HTMLElement {
   //     return this.shadow.children[4];
   //   }
   //   catch (e) {
-  //     window.alert(JSON.stringify(e, null, 2));
+  //     infojs.error(e);
   //   }
   // }
   // get activity() {
@@ -103,7 +105,7 @@ export class EntriesUI extends HTMLElement {
   //     return this.shadow.children[5];
   //   }
   //   catch (e) {
-  //     window.alert(JSON.stringify(e, null, 2));
+  //     infojs.error(e);
   //   }
   // }
 }

@@ -1,6 +1,7 @@
 'use strict';
 
 import * as infojs from './js/app/info.js';
+import { HeaderUI } from './js/app/header-ui.js';
 
 let cachedVersion = undefined;
 
@@ -32,9 +33,9 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async (event) => {
     infojs.timeEnd('sw-support.js load');
     let infoNode = document.getElementById('replication_info');
-    let sw = '../service-worker.js';
+    let sw = 'service-worker.js';
     const registration = await navigator.serviceWorker.register(sw, {
-      scope: '../',
+      scope: '.',
       type: 'module'
     });
     infojs.info('ServiceWorker registration successful', infoNode);
@@ -247,7 +248,7 @@ if ('serviceWorker' in navigator) {
         break;
       }
       case 'version': {
-        document.querySelector('span.app_title').textContent = e.data.message;
+        document.querySelector('header-ui').title = e.data.message;
         break;
       }
       }

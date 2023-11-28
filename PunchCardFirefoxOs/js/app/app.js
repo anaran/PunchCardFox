@@ -1,7 +1,9 @@
 'use strict';
 
 import * as infojs from './info.js';
-import './about.js';
+import { HeaderUI } from './header-ui.js';
+import { AboutUI } from './about-ui.js';
+import { OptionsUI } from './options-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
 import * as optionsjs from './options.js';
@@ -23,16 +25,18 @@ let updateQueryResults = (result) => {
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
-  Array.prototype.forEach.call(scrollView.querySelectorAll('entry-ui'), (entry) => {
-    setAvailableRevisionCount(entry);
+  let resultEntries = entries.querySelectorAll('entry-ui');
+  Array.prototype.forEach.call(resultEntries, (entry) => {
+    if (!entry.classList.contains('deleted')) {
+      setAvailableRevisionCount(entry);
+    }
     let value = entry.checked;
-    value.addEventListener('contextmenu', (event) => {
+    entry.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      Array.prototype.forEach.call(scrollView.querySelectorAll('entry-ui'), (entry) => {
-        let value = entry.checked;
-        if (value.style.display != 'none') {
-          value.checked = !value.checked;
+      Array.prototype.forEach.call(resultEntries, (entry) => {
+        if (entry.style.display != 'none') {
+          entry.checked = !entry.checked;
         }
       });
     });
@@ -184,9 +188,16 @@ export let runQuery = function(arg) {
       });
     }
     infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
+    var dec = !!options.descending;
+    if (dec) {
+      // FIXME
+      // decending query also finds my single design document, hence I increase limit by that 1.
+      if (options.limit) {
+        options.limit =Number(options.limit) + 1;
+      }
+    }
     var limit = options.limit ? Number(options.limit) : 100;
     var matchLimit = options.match_limit ? Number(options.match_limit) : 50;
-    var dec = !!options.descending;
     // Limit query to a maximum of 1000 rows, not to use too much
     // memory in mobile browsers on smartphones
     var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
@@ -301,7 +312,7 @@ export let runQuery = function(arg) {
         infojs.error({delete_error: err}, entries);
       }).on('complete', function(info) {
         infojs.time('query result processing');
-        updateQueryResults([!'isSearch', arg, !'matches', entries.querySelectorAll('div.deleted').length, entries.id]);
+        updateQueryResults([!'isSearch', arg, !'matches', entries.querySelectorAll('entry-ui.deleted').length, entries.id]);
       });
       // db.get(options.deleted_id, {
       //   // rev: info.doc._rev,
@@ -331,42 +342,56 @@ export let runQuery = function(arg) {
     }
     else {
       // if (document.querySelector('#new_entry').style.display != 'none') {
-      if (options.startkey) {
-        startDate = options.startkey;
-      }
-      else {
-        var start = document.querySelector('#query_start');
-        var startDate = start.valueAsDate;
-      }
-      if (options.endkey) {
-        endDate = options.endkey;
-      }
-      else {
-        var end = document.querySelector('#query_end');
-        var endDate = end.valueAsDate;
-      }
-      if (startDate && endDate && startDate > endDate) {
-        [ startDate, endDate ] = [ endDate, startDate ];
-      }
-      // start.value = startDate.toString();
-      // end.value = endDate.toString();
-      if (startDate) {
-        if (dec) {
-          opts.endkey = startDate;
-        }
-        else {
-          opts.startkey = startDate;
-        }
-      }
-      if (endDate) {
-        if (dec) {
-          opts.startkey = endDate;
-        }
-        else {
-          opts.endkey = endDate;
-        }
-      }
+      // let startDate, endDate;
+      // if (options.startkey) {
+      //   startDate = options.startkey;
       // }
+      // // else {
+      // //   var start = document.querySelector('#query_start');
+      // //   var startDate = start.valueAsDate;
+      // // }
+      // if (options.endkey) {
+      //   endDate = options.endkey;
+      // }
+      // // else {
+      // //   var end = document.querySelector('#query_end');
+      // //   var endDate = end.valueAsDate;
+      // // }
+      // if (startDate && endDate && startDate > endDate) {
+      //   [ startDate, endDate ] = [ endDate, startDate ];
+      // }
+      // // start.value = startDate.toString();
+      // // end.value = endDate.toString();
+      // if (startDate) {
+      //   if (dec) {
+      //     opts.endkey = startDate;
+      //   }
+      //   else {
+      //     opts.startkey = startDate;
+      //   }
+      // }
+      // if (endDate) {
+      //   if (dec) {
+      //     opts.startkey = endDate;
+      //   }
+      //   else {
+      //     opts.endkey = endDate;
+      //   }
+      // }
+      // // }
+      if (options.query_start) {
+        opts.startkey = options.query_start;
+      }
+      if (options.query_end) {
+        opts.endkey = options.query_end;
+      }
+      if (opts.startkey > opts.endkey) {
+        // [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
+        infojs.warn('opts.startkey > opts.endkey, consider swapping them to get any results');
+      }
+      if (dec) {
+        [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
+      }
       var isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
       // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
       var includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
@@ -409,7 +434,7 @@ export let runQuery = function(arg) {
             if ('startkey' in opts && rowCount && doc.rows.length) {
               doc.rows.shift();
             }
-            for (var index = 0; index < doc.rows.length; index++) {
+            for (var index = dec ? 1 : 0; index < doc.rows.length; index++) {
               if (stop_query) {
                 stop_query = false;
                 return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
@@ -483,6 +508,8 @@ document.addEventListener('readystatechange', (event) => {
     return;
   }
   infojs.timeEnd('appjs to readyState complete');
+  let headerUI = new HeaderUI();
+  document.body.insertBefore(headerUI, document.body.firstElementChild);
   let ORIENTATION = false;
   let SCROLL = false;
   try {
@@ -492,43 +519,6 @@ document.addEventListener('readystatechange', (event) => {
     window.addEventListener('online', (e) => {
       infojs.info(`Browser is now ${e.type}`);
     });
-    {
-      // Create the query list.
-      const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
-      // Define a callback function for the event listener.
-      function handleColorThemeChange(evt) {
-        if (evt.matches) {
-          document.body.classList.add('dark_theme');
-        } else {
-          document.body.classList.remove('dark_theme');
-        }
-        infojs.info(evt);
-      }
-      let themeSelect = document.getElementById ('punchcard_theme_select');
-      let changeTheme = (element) => {
-        switch (element.value) {
-        case "Light": {
-          mediaQueryList.removeEventListener("change", handleColorThemeChange);
-          document.body.classList.remove('dark_theme');
-          break;
-        }
-        case "Dark": {
-          mediaQueryList.removeEventListener("change", handleColorThemeChange);
-          document.body.classList.add('dark_theme');
-          break;
-        }
-        case "System": {
-          // Add the callback function as a listener to the query list.
-          mediaQueryList.addEventListener("change", handleColorThemeChange);
-          // Run the orientation change handler once.
-          handleColorThemeChange(mediaQueryList);
-          break;
-        }
-        }
-      };
-      changeTheme(themeSelect);
-      themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
-    }
     const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     let startMenu = document.getElementById('start_menu');
     let endMenu = document.getElementById('end_menu');
@@ -597,7 +587,6 @@ document.addEventListener('readystatechange', (event) => {
     let updateFilter = function(event) {
       event.target.classList.add('updating');
       infojs.time('updating');
-      let entriesNodes = scrollView.querySelectorAll('entries-ui');
       let entryNodes = scrollView.querySelectorAll('entry-ui');
       let regexp = stringToRegexp(event.target.value.trim());
       if (regexp) {
@@ -616,7 +605,6 @@ document.addEventListener('readystatechange', (event) => {
           node.classList.remove('filtered');
         });
       }
-      toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
         let firstUnfilteredEntryNode = scrollView.querySelector('entry-ui:not(.filtered)');
@@ -738,7 +726,11 @@ document.addEventListener('readystatechange', (event) => {
       }
       if (menu.classList.contains("activity")) {
         // FIXME
-        let operationCount = document.querySelectorAll('entry-ui>input:checked').length;
+        let operationCount = Array.from(document.querySelectorAll('entry-ui'))
+            .reduce((accumulator, currentValue) => {
+              currentValue.checked && accumulator++;
+              return accumulator;
+            }, 0);
         let menu = operationCount > 0 ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
           utilsjs.positionMenu(menu, event);
@@ -1137,207 +1129,6 @@ document.addEventListener('readystatechange', (event) => {
     let queryWeekItem = document.querySelector('#query_week');
     if (queryWeekItem) {
       queryWeekItem.addEventListener('click', queryWeek);
-    }
-    let toggleFilter = function(event) {
-      // event.preventDefault();
-      if (filter.style['display'] == 'none') {
-        filter.style['display'] = '';
-        filter.focus();
-        // filter.scrollIntoView({block: "center", inline: "center"});
-      }
-      else {
-        filter.style['display'] = 'none';
-      }
-    };
-    let titleItem = document.querySelector('span.app_title');
-    if (titleItem) {
-      titleItem.addEventListener('click', toggleFilter);
-    }
-    // Don't display filter when application loads.
-    toggleFilter();
-    // Query recent changes when application starts.
-    // runQuery({
-    //   db_changes: true, // run db.changes instead of db.allDocs
-    //   descending: true,
-    //   include_docs: true,
-    //   // conflicts: true,
-    //   limit: 99,
-    //   live: false,
-    //   return_docs: false,
-    //   since: 'now'
-    // });
-    let toggleScrollbar = function(event) {
-      event.target.style.opacity = 0.3;
-      event.preventDefault();
-      event.stopPropagation();
-      window.setTimeout((event) => {
-        if (scrollBar.style['display'] == 'none') {
-          scrollBar.style['display'] = 'block';
-        }
-        else {
-          scrollBar.style['display'] = 'none';
-        }
-        recenterCenterElement();
-        event.target.style.opacity = 1;
-      }, 50, event);
-    };
-    let scrollbaritem = document.querySelector('span.scrollbar');
-    if (scrollbaritem) {
-      scrollbaritem.addEventListener('click', toggleScrollbar);
-    }
-    let hideUncheckedItem = document.querySelector('.hide_unchecked');
-    if (hideUncheckedItem) {
-      hideUncheckedItem.addEventListener('change', (event) => {
-        event.target.disabled = true;
-        event.preventDefault();
-        event.stopPropagation();
-        window.setTimeout((event) => {
-          Array.prototype.forEach.call(document.querySelectorAll('entry-ui>input[type=checkbox]'), (value) => {
-            if (event.target.checked && !value.checked) {
-              value.parentElement.style.display = 'none';
-            }
-            else {
-              value.parentElement.style.display = '';
-            }
-          });
-          event.target.disabled = false;
-        }, 50, event);
-      });
-    }
-    let editNewItem = document.querySelector('span.edit');
-    if (editNewItem) {
-      editNewItem.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        addNewEdit(undefined);
-      });
-    }
-
-    let toggleAbout = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      let aboutElement = document.querySelector('#about');
-      // aboutElement.style.display = 'none';
-      if (aboutElement) {
-        if (aboutElement.style.display == 'none') {
-          // otherView.style.display = 'block';
-          aboutElement.style.display = 'block';
-          event.target.style.opacity = '0.3';
-          // Let user peruse about information...
-          aboutElement.scrollIntoView({block: "center", inline: "center"});
-        }
-        else {
-          // reload document location.
-          // otherView.style.display = 'none';
-          aboutElement.style.display = 'none';
-          event.target.style.opacity = '1.0';
-
-          // TODO: how to best save options without having to actively blur last edit?
-          // var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
-          // optionsDB.get(event.target.id).then(function(otherDoc) {
-          //   otherDoc.value = value;
-          //   return optionsDB.put(otherDoc).then(function(response) {
-          //     // document.location.reload('force');
-          //     // saveLink.click();
-          //   }).catch(function(err) {
-          //     //errors
-          //     window.alert(err);
-          //   });
-          // }).catch(function(err) {
-          //   //errors
-          //   window.alert(err.message + '\n' + err.stack);
-          //   return optionsDB.put({ _id: event.target.id, value: value });
-          // });
-
-
-          // document.location.reload('force');
-        }
-      }
-    };
-
-    let aboutItem = document.querySelector('span.about');
-    if (aboutItem) {
-      aboutItem.addEventListener('click', toggleAbout, 'capture');
-    }
-
-    var searchFilter = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      infojs.time('searching');
-      let entryNodes = scrollView.querySelectorAll('entry-ui');
-      let regexp = stringToRegexp(filter.value.trim());
-      if (regexp) {
-        let firstEntry = Array.prototype.find.call(entryNodes, function(node, index) {
-          var activity = node.activity;
-          if (regexp.test(activity.textContent)) {
-            return node;
-          }
-        });
-        firstEntry && firstEntry.scrollIntoView({block: "center", inline: "center"});
-        infojs.timeEnd('searching');
-      }
-    }
-
-    let searchItem = document.querySelector('span.search');
-    if (searchItem) {
-      searchItem.addEventListener('click', searchFilter, 'capture');
-    }
-
-    var reloadApp = function(event) {
-      event.preventDefault();
-      // in linux nightly firefox there is no way to get at app after reloadApp
-      // when local python webserver is stopped or hosted app cannot be reached
-      // because network is turned off.
-      // nightly firefox for android just displays a footer overlay stating
-      // "showing offline version" and works fine after reloadApp!
-      // if ('serviceWorker' in navigator) {
-      //   navigator.serviceWorker.getRegistration().then(function(registration) {
-      //     registration.unregister();
-      //   });
-      // }
-      // document.location.reload('force');
-      // See https://developer.mozilla.org/en-US/docs/Web/API/Location/reload#location.reload_has_no_parameter
-      document.location.reload();
-    };
-
-    var roloadItem = document.querySelector('span.reload');
-    if (roloadItem) {
-      roloadItem.addEventListener('click', reloadApp, 'capture');
-    }
-
-    var toggleOptionDisplay = function(event) {
-      infojs.time('toggleOptionDisplay');
-      event.preventDefault();
-      event.stopPropagation();
-      var optionsElement = document.querySelector('#options');
-      // optionsElement.style.display = 'none';
-      if (optionsElement) {
-        if (optionsElement.style.display == 'none') {
-          // otherView.style.display = 'block';
-          optionsElement.style.display = 'block';
-          event.target.style.opacity = '0.3';
-          // Let user change options...
-          optionsElement.scrollIntoView({block: "center", inline: "center"});
-        }
-        else {
-          // reload document location.
-          // otherView.style.display = 'none';
-          optionsElement.style.display = 'none';
-          event.target.style.opacity = '1.0';
-          // document.location.reload('force');
-          // document.location.reload();
-          runQuery();
-        }
-      }
-      infojs.timeEnd('toggleOptionDisplay');
-    };
-    var optionsItem = document.querySelector('span.settings');
-    if (optionsItem) {
-      optionsItem.addEventListener('click', toggleOptionDisplay, 'capture');
-      // NOTE: Let's bring up a menu on click, if necessary, as is already done for #start_menu, etc.
-      // optionsItem.addEventListener('contextmenu', function (event) {
-      //   window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');
-      // });
     }
 
     var getDataSetIdHideMenu = function(event) {

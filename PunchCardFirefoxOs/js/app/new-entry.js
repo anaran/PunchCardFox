@@ -2,8 +2,6 @@
 
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
-// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
 
 let LOG = false;
 
@@ -19,7 +17,6 @@ export class NewEntryUI extends HTMLElement {
     this.shadow.innerHTML = `
 <section id="new_entry">
   <section id="editor">
-    <!-- <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
     <textarea id="activity" placeholder="enter activity"></textarea>
     <span>
       <div>

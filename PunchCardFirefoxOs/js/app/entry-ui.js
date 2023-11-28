@@ -1,5 +1,7 @@
 'use strict';
 
+import * as infojs from './info.js';
+
 export class EntryUI extends HTMLElement {
   constructor() {
     try {
@@ -147,17 +149,26 @@ pre:hover {
 
 </style>
 `;
-  // <link rel="stylesheet" href="../css/app.css">
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   connectedCallback() {
     try {
+      this.checkbox = this.shadow.children[3];
+      this.checked = this.checkbox.checked;
+      this.checkbox.addEventListener('change', (event) => {
+        if (event.target.checked) {
+          this.checked = true;
+        }
+        else {
+          this.checked = false;
+        }
+      });
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   static get observedAttributes() {
@@ -168,18 +179,19 @@ pre:hover {
     ];
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
-    // try {
-    // }
-    // catch (e) {
-    //   window.alert(JSON.stringify(e, null, 2));
-    // }
+    try {
+      infojs.info(`new value $newValue for attribute $name`);
+    }
+    catch (e) {
+      infojs.error(e);
+    }
   }
   get start() {
     try {
       return this.shadow.children[0];
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get end() {
@@ -187,7 +199,7 @@ pre:hover {
       return this.shadow.children[1];
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get duration() {
@@ -195,15 +207,23 @@ pre:hover {
       return this.shadow.children[2];
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get checked() {
     try {
-      return this.shadow.children[3];
+      return this.checkbox.checked;
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
+    }
+  }
+  set checked(value) {
+    try {
+      this.checkbox.checked = value;
+    }
+    catch (e) {
+      infojs.error(e);
     }
   }
   get revisions() {
@@ -211,7 +231,7 @@ pre:hover {
       return this.shadow.children[4];
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get activity() {
@@ -219,7 +239,7 @@ pre:hover {
       return this.shadow.children[5];
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
 }
