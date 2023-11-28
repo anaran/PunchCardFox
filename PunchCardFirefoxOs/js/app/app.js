@@ -6,7 +6,6 @@ import { AboutUI } from './about-ui.js';
 import { OptionsUI } from './options-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
-import * as optionsjs from './options.js';
 import * as entriesui from './entries-ui.js';
 
 let resultIndex = 1;
