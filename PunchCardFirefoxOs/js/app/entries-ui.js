@@ -3,7 +3,7 @@
 import * as infojs from './info.js';
 
 export class EntriesUI extends HTMLElement {
-  constructor() {
+  constructor(id) {
     try {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
@@ -21,6 +21,7 @@ export class EntriesUI extends HTMLElement {
 
 </style>
 `;
+      this.id = id;
     }
     catch (e) {
       infojs.error(e);
@@ -53,10 +54,18 @@ export class EntriesUI extends HTMLElement {
   }
   get info() {
     try {
-      return this.span_info;
+      return this.span_info.textContent;
     }
     catch (e) {
-      // infojs.error(e);
+      infojs.error(e);
+    }
+  }
+  set info(text) {
+    try {
+      this.span_info.textContent = text;
+    }
+    catch (e) {
+      infojs.error(e);
     }
   }
   get update() {
@@ -83,31 +92,6 @@ export class EntriesUI extends HTMLElement {
       infojs.error(e);
     }
   }
-  // entries(query) {
-  //   return this.querySelectorAll(query || 'entry-ui');
-  // }
-  // insertBefore(entry, before) {
-  //   this.shadow.insertBefore(entry, before);
-  // }
-  // appendchild(entry) {
-  //   this.shadow.appendchild(entry);
-  // }
-  // get revisions() {
-  //   try {
-  //     return this.shadow.children[4];
-  //   }
-  //   catch (e) {
-  //     infojs.error(e);
-  //   }
-  // }
-  // get activity() {
-  //   try {
-  //     return this.shadow.children[5];
-  //   }
-  //   catch (e) {
-  //     infojs.error(e);
-  //   }
-  // }
 }
 
 if (!customElements.get('entries-ui')) {

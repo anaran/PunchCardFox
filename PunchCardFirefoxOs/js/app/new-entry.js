@@ -2,6 +2,7 @@
 
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
+import { EntriesUI } from './entries-ui.js';
 
 let LOG = false;
 
@@ -658,19 +659,6 @@ input {
   }
 
   init(id) {
-    // let editorSizeToggle = this.shadow.querySelector('#resize_ta');
-    // this.activity.addEventListener ('focus', event => {
-    //   this.activity.rows = 10;
-    //   this.activity.style['text-overflow'] = 'unset';
-    // });
-    // this.activity.addEventListener ('focusout', event => {
-    //   this.activity.rows = 1;
-    //   this.activity.style['text-overflow'] = 'ellipsis ellipsis';
-    // });
-    // this.activity.addEventListener ('blur', event => {
-    //   this.activity.rows = 1;
-    //   this.activity.style['text-overflow'] = 'ellipsis ellipsis';
-    // }, 'capture');
     try {
       if (id) {
         this.activity.dataset.id = id;
@@ -705,29 +693,13 @@ input {
 
   save() {
     return new Promise((resolve, reject) => {
-      this.entries = this.entries  || document.querySelector('#New');
+      this.entries = this.entries  || document.querySelector('entries-ui#New');
       if (!this.entries) {
-        let content = document.querySelector('#entries_template').content;
-        this.entries = document.importNode(content, "deep").firstElementChild;
+          this.entries = new EntriesUI('New');
         let cache_section = document.querySelector('#cache_section');
         this.scrollView.insertBefore(this.entries, cache_section);
-        this.entries.id = 'New';
-        let queryInfoElement = this.entries.querySelector('span.info');
-        queryInfoElement.scrollIntoView({block: "center", inline: "center"});
-        let update = this.entries.querySelector('a.update');
-        let close = this.entries.querySelector('a.close');
-        update.addEventListener('click', (event) => {
-          event.preventDefault();
-          alert('rerun query is not implemented yet. \u221E');
-        });
-        close.addEventListener('click', (event) => {
-          event.preventDefault();
-          this.scrollView.removeChild(this.entries);
-          // Would require export of function from app.js and import
-          // into this new-entry.js
-          // updateScrollLinks();
-        });
-        queryInfoElement.textContent = 'New Entries';
+        this.entries.scrollIntoView({block: "center", inline: "center"});
+        this.entries.info = 'New Entries';
       }
       if (this.activity.dataset.id && !this.copy) {
         var id = this.activity.dataset.id.toString();
@@ -828,10 +800,10 @@ input {
               let beforeThisElement = document.getElementById(this.activity.dataset.id);
               // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
               this.activity.removeAttribute('data-id');
-              newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+              newEntry = utilsjs.addNewEntry(entry, this.entries, beforeThisElement);
             }
             else {
-              newEntry = utilsjs.addNewEntry(entry, this.entries, this.entries.querySelector('div.entry'));
+              newEntry = utilsjs.addNewEntry(entry, this.entries);
             }
             newEntry.activity.classList.add('changed');
             newEntry.start.classList.add('changed');
@@ -849,8 +821,7 @@ input {
         }
         else {
           infojs.info(entry);
-          var newEntry = document.querySelector('new-entry');
-          newEntry.scrollIntoView({block: "center", inline: "center"});
+          this.scrollIntoView({block: "center", inline: "center"});
           reject('New entry is invalid. Please make suggested corrections.'
                  + JSON.stringify(entry, Object.getOwnPropertyNames(entry), 2));
         }

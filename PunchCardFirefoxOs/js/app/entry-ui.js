@@ -173,14 +173,14 @@ pre:hover {
   }
   static get observedAttributes() {
     return [
-      'class',
-      'id', // COUCHDB DOC ID(_REVISION)?
-      'linked'
+      // 'class',
+      // 'id', // COUCHDB DOC ID(_REVISION)?
+      // 'linked'
     ];
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
     try {
-      infojs.info(`new value $newValue for attribute $name`);
+      infojs.info(`new value ${newValue} for attribute ${name}`);
     }
     catch (e) {
       infojs.error(e);

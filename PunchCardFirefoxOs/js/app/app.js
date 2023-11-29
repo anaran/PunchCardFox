@@ -6,7 +6,7 @@ import { AboutUI } from './about-ui.js';
 import { OptionsUI } from './options-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
-import * as entriesui from './entries-ui.js';
+import { EntriesUI } from './entries-ui.js';
 
 let resultIndex = 1;
 let optionsDB = new PouchDB('options');
@@ -15,12 +15,11 @@ let db = new PouchDB('punchcard');
 let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   const entries = document.getElementById(result[4]);
-  const queryInfoElement = entries.info;
   if (result[0]) {
-    queryInfoElement.textContent += ` found ${result[2]}`;
+    entries.info += ` found ${result[2]}`;
   }
   else {
-    queryInfoElement.textContent += ` found ${result[3]}`;
+    entries.info += ` found ${result[3]}`;
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
@@ -188,19 +187,12 @@ export let runQuery = function(arg) {
     }
     infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
     var dec = !!options.descending;
-    if (dec) {
-      // FIXME
-      // decending query also finds my single design document, hence I increase limit by that 1.
-      if (options.limit) {
-        options.limit =Number(options.limit) + 1;
-      }
-    }
     var limit = options.limit ? Number(options.limit) : 100;
     var matchLimit = options.match_limit ? Number(options.match_limit) : 50;
     // Limit query to a maximum of 1000 rows, not to use too much
     // memory in mobile browsers on smartphones
     var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
-    let entries = new entriesui.EntriesUI();
+    let entries = new EntriesUI('R' + resultIndex);
     const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     var previousEntries = scrollView.querySelector('entries-ui');
     entries.classList.add('updating');
@@ -213,8 +205,7 @@ export let runQuery = function(arg) {
     }
     entries.id = 'R' + resultIndex;
     resultIndex += 1;
-    var queryInfoElement = entries.info;
-    queryInfoElement.scrollIntoView({block: "center", inline: "center"});
+    entries.scrollIntoView({block: "center", inline: "center"});
     var update = entries.update;
     var close = entries.close;
     var stop = entries.stop;
@@ -234,7 +225,7 @@ export let runQuery = function(arg) {
     let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
     if (arg && arg.db_changes) {
       delete arg.db_changes;
-      queryInfoElement.textContent = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
+      entries.info = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
       let changesCount = 0;
       infojs.time('db.changes');
       return db.changes(arg).on('change', function(info) {
@@ -262,7 +253,7 @@ export let runQuery = function(arg) {
       });
     }
     else if (regexp) {
-      queryInfoElement.textContent = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
+      entries.info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
       var changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
       let matchingDeletes = 0;
       db.changes({
@@ -392,15 +383,14 @@ export let runQuery = function(arg) {
         [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
       }
       var isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
-      // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
       var includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
       var excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
       if (isSearch) {
-        queryInfoElement.textContent = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
+        entries.info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
         infojs.time('query allDocs search');
       }
       else {
-        queryInfoElement.textContent = `Query ${entries.id} limited to ${limit} entries`;
+        entries.info = `Query ${entries.id} limited to ${limit} entries`;
         opts.reduce = false;
         infojs.time('query allDocs');
       }
@@ -433,7 +423,7 @@ export let runQuery = function(arg) {
             if ('startkey' in opts && rowCount && doc.rows.length) {
               doc.rows.shift();
             }
-            for (var index = dec ? 1 : 0; index < doc.rows.length; index++) {
+            for (var index = 0; index < doc.rows.length; index++) {
               if (stop_query) {
                 stop_query = false;
                 return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
@@ -451,6 +441,10 @@ export let runQuery = function(arg) {
               }
               var entry;
               if (!('activity' in row.doc)) {
+                // FIXME
+                // allDocs query finds design documents too.
+                // Let's just warn about that for now:
+                infojs.warn(`Found document ${row.id} with no activity`);
                 if (rowCount + index + 1 == limit) {
                   return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
                 }
@@ -890,7 +884,6 @@ document.addEventListener('readystatechange', (event) => {
           utilsjs.updateEntriesElement(id, 'end', utilsjs.formatEndDate(now));
           setAvailableRevisionCount(document.getElementById(id));
           utilsjs.updateEntriesElement(id, 'duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
-          // saveLink.click();
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -913,7 +906,6 @@ document.addEventListener('readystatechange', (event) => {
           utilsjs.updateEntriesElement(id, 'end', ' ');
           setAvailableRevisionCount(document.getElementById(id));
           utilsjs.updateEntriesElement(id, 'duration', ' ');
-          // saveLink.click();
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -1130,6 +1122,18 @@ document.addEventListener('readystatechange', (event) => {
       queryWeekItem.addEventListener('click', queryWeek);
     }
 
+    // Query recent changes when application starts.
+    runQuery({
+      db_changes: true, // run db.changes instead of db.allDocs
+      descending: true,
+      include_docs: true,
+      // conflicts: true,
+      limit: 99,
+      live: false,
+      return_docs: false,
+      since: 'now'
+    });
+
     var getDataSetIdHideMenu = function(event) {
       let id = event.target.parentElement.parentElement.dataset.id;
       if (id) {
@@ -1161,7 +1165,6 @@ document.addEventListener('readystatechange', (event) => {
           newEntry.end.classList.add('changed');
           newEntry.revisions.classList.add('changed');
           // document.location.reload('force');
-          // saveLink.click();
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
