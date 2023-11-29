@@ -1,5 +1,6 @@
 'use strict';
 
+import * as infojs from './info.js';
 import '../../js/libs/commonmark.js';
 
 var XHR_TIMEOUT_MS = 0;
