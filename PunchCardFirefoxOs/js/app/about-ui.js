@@ -47,41 +47,29 @@ export class AboutUI extends HTMLElement {
 <style>
 @import url(css/links.css);
 
-pre {
-  font-family: FiraSans;
-}
-
-/* html, body {
-  margin: 0;
-  padding: 0.5rem;
-} */
-
-div {
-/*   font-size: small; */
-/*   border: 1px solid; */
-  padding: 0 0 0;
-/*   display: inline; */
-}
-
-div.entry {
-/*   font-size: small; */
-  border: 0.1em solid;
-/*   margin: 0 0 1em; */
-}
-
-pre {
-/*   margin: 0 0 0; */
-  width: 90%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis ellipsis;
-}
-
-pre:focus {
+#edit_markdown {
+  margin:  0.2rem;
+  margin: 0.3rem;
+  border: 1px solid;
+  padding: 0.2rem;
   overflow: visible;
-  white-space: pre;
-/*   white-space: pre; */
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
+
+#render_markdown {
+  margin: 0.5rem;
+  margin: 0.3rem;
+  border: 1px solid;
+  padding: 0.2rem;
+  display: none;
+}
+
+:host(:target) {
+    border: 0.2rem dashed;
+}
+
 </style>
 `;
   // <link rel="stylesheet" href="../css/app.css">

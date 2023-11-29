@@ -126,9 +126,12 @@ export let init = function (url, renderElement, editElement, toggleElement) {
             });
             tocHTML += '</ul>\n';
             render.innerHTML = html + tocHTML;
-          } else {
-            // render.innerHTML = (new Remarkable('commonmark')).render(request.response);
-            render.innerHTML = (new Remarkable('full')).render(request.response);
+            render.addEventListener('click', (event) => {
+              // infojs.info(event.composedPath());
+              let u = event.target.href.split('#')[1];
+              let t = render.parentElement.querySelector(`#${u}`);
+              t.scrollIntoView(/*{block: "center", inline: "center"}*/);
+            });
           }
           if (edit.textContent) {
             toggleElement.style.visibility = 'visible';

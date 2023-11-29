@@ -65,10 +65,10 @@ pre.activity {
 }
 
 input[type=checkbox]:checked ~ pre.activity {
-    overflow: visible;
-    display: block;
-    white-space: pre-wrap;
-    word-break: break-all;
+  overflow: visible;
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 :host-context(.updating) {
