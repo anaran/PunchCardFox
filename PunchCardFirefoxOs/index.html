@@ -3,7 +3,6 @@
   <head>
     <meta http-equiv="pragma" content="no-cache" />
     <link rel="manifest" href="./manifest.json">
-    <!--                 <link rel="manifest" href="manifest.webapp"> -->
     <meta charset="utf-8">
     <script type="module" src="./sw-support.js"></script>
     <title>Punchcard</title>
@@ -64,7 +63,6 @@ own language (as long as you provide translations).
     <link rel="icon" type="image/png" href="./img/icons/icon16x16.png">
   </head>
   <body role="application">
-    <link rel="import" href="common-header.html">
     <div id="scroll-and-view">
     <nav data-type="scrollbar" id="punchcard_scrollbar">
       <ul>
@@ -105,10 +103,7 @@ own language (as long as you provide translations).
         <span>
           <input-ui placeholder="filter by activity" type="search"></input-ui>
         </span>
-          <!-- <span class="erase">&times;</span> -->
       </section>
-      <link rel="import" href="options.html">
-      <link rel="import" href="about.html">
       <section id="cache_section">
         <fieldset id="cache_versions">
           <legend>Cached Punchcard Versions</legend>
@@ -161,6 +156,5 @@ own language (as long as you provide translations).
       <li><button type="button" disabled=true id="fill_gap">fill gap</button></li>
     </ul>
     <script type="module" src="./js/app/app.js"></script>
-    <link rel="import" href="templates.html">
   </body>
 </html>

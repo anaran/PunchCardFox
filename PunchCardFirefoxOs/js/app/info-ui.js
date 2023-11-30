@@ -29,7 +29,7 @@ pre.selected {
       this.pre = this.shadow.querySelector('pre');
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   connectedCallback() {
@@ -49,7 +49,7 @@ pre.selected {
       });
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   static get observedAttributes() {
@@ -62,7 +62,7 @@ pre.selected {
       this.pre.setAttribute(name, newValue);
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   get textContent() {
@@ -70,7 +70,7 @@ pre.selected {
       return this.pre.textContent;
     }
     catch (e) {
-      window.alert(JSON.stringify(e, null, 2));
+      infojs.error(e);
     }
   }
   set textContent(newContent) {

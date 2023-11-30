@@ -3,39 +3,6 @@
 let version = 'Punchcard v46';
 let cachedVersion = undefined;
 
-self.addEventListener('install', function(event) {
-  event.waitUntil(self.skipWaiting());
-});
-
-// NOTE: activate listener originally taken from
-// https://serviceworke.rs/immediate-claim_service-worker_doc.html
-// `onactivate` is usually called after a worker was installed and the page
-// got refreshed. Since we call `skipWaiting()` in `oninstall`, `onactivate` is
-// called immediately.
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    // `claim()` sets this worker as the active worker for all clients that
-    // match the worker's scope and triggers an `oncontrollerchange` event for
-    // the clients.
-    self.clients.matchAll({
-      includeUncontrolled: true
-    }).then(function(clientList) {
-      clientList.map(function(client) {
-        client.postMessage({
-          request: 'claim',
-          message: version
-        });
-      });
-      return self.clients.claim();
-    }).catch(err => {
-      client.postMessage({
-        request: 'error',
-        message: err,
-        where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
-      });
-    }));
-});
-
 // NOTE: Originally following strategy of
 // https://pouchdb.com/serviceWorker.js
 // which is cache.match or fetch.
@@ -147,6 +114,10 @@ self.addEventListener('fetch', function(event) {
 self.addEventListener("message", function(e) {
   // e.source is a client object
   switch (e.data.request) {
+  case 'SKIP_WAITING': {
+    self.skipWaiting();
+    break;
+  }
   case 'caches': {
     caches.keys().then((cacheNames) => {
       return Promise.all(

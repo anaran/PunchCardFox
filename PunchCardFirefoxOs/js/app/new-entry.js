@@ -2,8 +2,7 @@
 
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
-// import '../../bower_components/pouchdb/dist/pouchdb.min.js';
-// import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.min.js';
+import { EntriesUI } from './entries-ui.js';
 
 let LOG = false;
 
@@ -19,7 +18,6 @@ export class NewEntryUI extends HTMLElement {
     this.shadow.innerHTML = `
 <section id="new_entry">
   <section id="editor">
-    <!-- <h1 data-l10n-id="app_title">Privileged empty app</h1> -->
     <textarea id="activity" placeholder="enter activity"></textarea>
     <span>
       <div>
@@ -661,19 +659,6 @@ input {
   }
 
   init(id) {
-    // let editorSizeToggle = this.shadow.querySelector('#resize_ta');
-    // this.activity.addEventListener ('focus', event => {
-    //   this.activity.rows = 10;
-    //   this.activity.style['text-overflow'] = 'unset';
-    // });
-    // this.activity.addEventListener ('focusout', event => {
-    //   this.activity.rows = 1;
-    //   this.activity.style['text-overflow'] = 'ellipsis ellipsis';
-    // });
-    // this.activity.addEventListener ('blur', event => {
-    //   this.activity.rows = 1;
-    //   this.activity.style['text-overflow'] = 'ellipsis ellipsis';
-    // }, 'capture');
     try {
       if (id) {
         this.activity.dataset.id = id;
@@ -708,29 +693,13 @@ input {
 
   save() {
     return new Promise((resolve, reject) => {
-      this.entries = this.entries  || document.querySelector('#New');
+      this.entries = this.entries  || document.querySelector('entries-ui#New');
       if (!this.entries) {
-        let content = document.querySelector('#entries_template').content;
-        this.entries = document.importNode(content, "deep").firstElementChild;
+          this.entries = new EntriesUI('New');
         let cache_section = document.querySelector('#cache_section');
         this.scrollView.insertBefore(this.entries, cache_section);
-        this.entries.id = 'New';
-        let queryInfoElement = this.entries.querySelector('span.info');
-        queryInfoElement.scrollIntoView({block: "center", inline: "center"});
-        let update = this.entries.querySelector('a.update');
-        let close = this.entries.querySelector('a.close');
-        update.addEventListener('click', (event) => {
-          event.preventDefault();
-          alert('rerun query is not implemented yet. \u221E');
-        });
-        close.addEventListener('click', (event) => {
-          event.preventDefault();
-          this.scrollView.removeChild(this.entries);
-          // Would require export of function from app.js and import
-          // into this new-entry.js
-          // updateScrollLinks();
-        });
-        queryInfoElement.textContent = 'New Entries';
+        this.entries.scrollIntoView({block: "center", inline: "center"});
+        this.entries.info = 'New Entries';
       }
       if (this.activity.dataset.id && !this.copy) {
         var id = this.activity.dataset.id.toString();
@@ -784,11 +753,11 @@ input {
           }
           if (this.isValidEntry(otherDoc)) {
             this.db.put(otherDoc).then((response) => {
-              changedStart && utilsjs.updateEntriesElement(id, 'pre.start', utilsjs.formatStartDate(startDate));
-              changedEnd && utilsjs.updateEntriesElement(id, 'pre.end', endText ? utilsjs.formatEndDate(endDate) : ' ');
+              changedStart && utilsjs.updateEntriesElement(id, 'start', utilsjs.formatStartDate(startDate));
+              changedEnd && utilsjs.updateEntriesElement(id, 'end', endText ? utilsjs.formatEndDate(endDate) : ' ');
               (changedStart || changedEnd) &&
-                utilsjs.updateEntriesElement(id, 'pre.duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
-              changedActivity && utilsjs.updateEntriesElement(id, 'pre.activity', activityText);
+                utilsjs.updateEntriesElement(id, 'duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
+              changedActivity && utilsjs.updateEntriesElement(id, 'activity', activityText);
               // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
               // Update id attribute to reflect now document id.
               // Fixes bug where future menu operations on replaced entry would not work.
@@ -796,7 +765,7 @@ input {
               document.getElementById(response.id).classList.remove('deleted');
               resolve({ modified: response });
               // TO be set by caller
-              // utilsjs.updateEntriesElement(id, 'pre.revisions', response.rev.split(/-/)[0] + ' revs');
+              // utilsjs.updateEntriesElement(id, 'revisions', response.rev.split(/-/)[0] + ' revs');
             }).catch((err) => {
               infojs.error(err);
               reject('Modified entry is valid but cannot be saved.\nPlease report this error.'
@@ -831,14 +800,14 @@ input {
               let beforeThisElement = document.getElementById(this.activity.dataset.id);
               // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
               this.activity.removeAttribute('data-id');
-              newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+              newEntry = utilsjs.addNewEntry(entry, this.entries, beforeThisElement);
             }
             else {
-              newEntry = utilsjs.addNewEntry(entry, this.entries, this.entries.querySelector('div.entry'));
+              newEntry = utilsjs.addNewEntry(entry, this.entries);
             }
-            newEntry.querySelector('pre.activity').classList.add('changed');
-            newEntry.querySelector('pre.start').classList.add('changed');
-            newEntry.querySelector('pre.end').classList.add('changed');
+            newEntry.activity.classList.add('changed');
+            newEntry.start.classList.add('changed');
+            newEntry.end.classList.add('changed');
             // NOTE: Too early, will scroll out of view when new entry UI is
             // no longer displayed in caller.
             // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
@@ -852,8 +821,7 @@ input {
         }
         else {
           infojs.info(entry);
-          var newEntry = document.querySelector('new-entry');
-          newEntry.scrollIntoView({block: "center", inline: "center"});
+          this.scrollIntoView({block: "center", inline: "center"});
           reject('New entry is invalid. Please make suggested corrections.'
                  + JSON.stringify(entry, Object.getOwnPropertyNames(entry), 2));
         }

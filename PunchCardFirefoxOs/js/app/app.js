@@ -1,10 +1,494 @@
 'use strict';
 
 import * as infojs from './info.js';
-import './about.js';
+import { HeaderUI } from './header-ui.js';
+import { AboutUI } from './about-ui.js';
+import { OptionsUI } from './options-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
-import * as optionsjs from './options.js';
+import { EntriesUI } from './entries-ui.js';
+
+let resultIndex = 1;
+let optionsDB = new PouchDB('options');
+let db = new PouchDB('punchcard');
+
+let updateQueryResults = (result) => {
+  const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+  const entries = document.getElementById(result[4]);
+  if (result[0]) {
+    entries.info += ` found ${result[2]}`;
+  }
+  else {
+    entries.info += ` found ${result[3]}`;
+  }
+  infojs.timeEnd('query result processing');
+  updateScrollLinks();
+  let resultEntries = entries.querySelectorAll('entry-ui');
+  Array.prototype.forEach.call(resultEntries, (entry) => {
+    if (!entry.classList.contains('deleted')) {
+      setAvailableRevisionCount(entry);
+    }
+    let value = entry.checked;
+    entry.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      Array.prototype.forEach.call(resultEntries, (entry) => {
+        if (entry.style.display != 'none') {
+          entry.checked = !entry.checked;
+        }
+      });
+    });
+  });
+  entries.classList.remove('updating');
+
+  infojs.timeEnd('runQuery');
+};
+
+let stringToRegexp = function(str) {
+  let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/);
+  // Default to ignore case.
+  // Regexp syntax requires at least a slash at end, possibly followed by flags.
+  return captureGroups &&
+    new RegExp(captureGroups[1],
+               typeof captureGroups[2] == 'undefined' ? "is" : captureGroups[2]);
+};
+
+let setAvailableRevisionCount = function(entry) {
+  // Possibly do estimate shortcut when accurate
+  // revision reporting is disabled for performance reasons.
+  // It takes a while when displaying 1000 entries.
+  var revisions = entry.revisions;
+  // Revision prefix does not account for unavailable revs (e.g missing).
+  if (false) {
+    revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
+  }
+  else {
+    var parts = entry.id.split(/_/);
+    var id = parts[0];
+    var rev = parts[1];
+    db.get(id, {
+      // Defaults to winning revision
+      // rev: doc._rev,
+      revs_info: true
+      // open_revs: "all"
+      // conflicts: true
+    }).then(function (otherDoc) {
+      var currentRev = otherDoc._rev;
+      var availableRevisions = otherDoc._revs_info.filter(function (rev) {
+        return rev.status == 'available' && rev.rev != currentRev;
+      })
+      revisions.textContent = (availableRevisions ? availableRevisions.length : 0) + ' revs';
+    }).catch(function (err) {
+      // var e = new Error("db.get in setAvailableRevisionCount");
+      // infojs.error({
+      //   get_error: JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
+      // }, entries);
+      infojs.error(err);
+    });
+  }
+  // getIt.then(function (result) {
+  //   return result;
+  // }).catch(function (err) {
+  //   return err;
+  // });
+}
+
+let updateScrollLinks = function() {
+  infojs.time('updateScrollLinks');
+  const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+  // query result container
+  let entriesNodes = scrollView.querySelectorAll('entries-ui');
+  var entryNodes = scrollView.querySelectorAll('entry-ui:not(.filtered)');
+  var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ul>li');
+  var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
+  for (var linkIndex = 3; linkIndex < scrollLinks.length; linkIndex++)  {
+    scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
+  }
+  Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
+    element.classList.remove('linked');
+  });
+  // let bottom = scrollLinks[scrollLinks.length - 1].firstElementChild;
+  // bottom.textContent = (new Date(entryNodes[entryNodes.length - 1].id.substring(0, 24))).toDateString() + entryNodes[entryNodes.length - 1].parentElement.id;
+  // bottom.href = '#' + entryNodes[entryNodes.length - 1].id;
+  // bottom.style.visibility = 'visible';
+  for (var scrollIndex = 0; scrollIndex < entryNodes.length; scrollIndex++) {
+    if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
+      var classList = entryNodes[scrollIndex].classList;
+      if (classList && !classList.contains('filtered')) {
+        classList.add('linked');
+        // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
+        (function () {
+          // Skip over first two links reserved for top and results links.
+          var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 3].firstElementChild;
+          var last = (link == scrollLinks[scrollLinks.length - 1].firstElementChild);
+          var result = entryNodes[scrollIndex].parentElement.id;
+          if (entryNodes[scrollIndex].classList.contains('deleted')) {
+            link.classList.add('deleted');
+          }
+          else {
+            link.classList.remove('deleted');
+          }
+          // if (entryNodes[scrollIndex].classList.contains('deleted')) {
+          //   link.textContent = 'deleted' + (new Date(entryNodes[scrollIndex].id.substring(0, 24))).toDateString() + result;
+          //   link.href = '#' + entryNodes[scrollIndex].id;
+          //   link.style.visibility = 'visible';
+          // }
+          // else {
+          // db.get(entryNodes[scrollIndex].id).then(function(doc) {
+          // link.textContent = (new Date(doc._id.substring(0, 24))).toDateString() + result;
+          link.textContent = (new Date(entryNodes[scrollIndex].id.substring(0, 24))).toDateString() + result;
+          // link.href = '#' + doc._id;
+          link.href = '#' + entryNodes[scrollIndex].id;
+          link.style.visibility = 'visible';
+          if (last) {
+            infojs.timeEnd('updateScrollLinks');
+          }
+          // });
+          // }
+        })();
+      }
+      else {
+        entryNodes[scrollIndex].class = 'linked';
+      }
+    }
+  }
+  var resultsLink = scrollLinks[1];
+  Array.prototype.forEach.call(resultsLink.querySelectorAll('a'), function(elem) {
+    elem.parentElement.removeChild(elem);
+  });
+  Array.prototype.forEach.call(entriesNodes, function(node) {
+    var link = document.createElement('a');
+    link.textContent = node.id;
+    link.href = '#' + node.id;
+    resultsLink.appendChild(link);
+  });
+  infojs.timeEnd('updateScrollLinks');
+};
+
+export let runQuery = function(arg) {
+  try {
+    // db.query(map, {reduce: false, /*startkey: "2010-06-24T15:44:08", endkey: "2010-06-25T15:44:08", */limit: 33, include_docs: true, descending: false}, function(err, doc) {
+    // var obj = db.mapreduce(db);
+    // db.query(map, {/*stale: 'ok', */reduce: false,
+    let times = [];
+    let stop_query = false;
+    infojs.time('runQuery');
+    let options = arg || {};
+    if (!arg) {
+      document.querySelectorAll('.persistent').forEach((item) => {
+        infojs.info(`get persistent input for ${item.id}`);
+        if (item.type == 'checkbox') {
+          options[item.id] = item.checked;
+        }
+        else {
+          options[item.id] = item.value;
+        }
+      });
+    }
+    infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
+    var dec = !!options.descending;
+    var limit = options.limit ? Number(options.limit) : 100;
+    var matchLimit = options.match_limit ? Number(options.match_limit) : 50;
+    // Limit query to a maximum of 1000 rows, not to use too much
+    // memory in mobile browsers on smartphones
+    var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
+    let entries = new EntriesUI('R' + resultIndex);
+    const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+    var previousEntries = scrollView.querySelector('entries-ui');
+    entries.classList.add('updating');
+    var cacheSection = document.querySelector('#cache_section');
+    if (previousEntries) {
+      scrollView.insertBefore(entries, previousEntries);
+    }
+    else {
+      scrollView.insertBefore(entries, cacheSection);
+    }
+    entries.id = 'R' + resultIndex;
+    resultIndex += 1;
+    entries.scrollIntoView({block: "center", inline: "center"});
+    var update = entries.update;
+    var close = entries.close;
+    var stop = entries.stop;
+    update.addEventListener('click', function(event) {
+      event.preventDefault();
+      alert('rerun query is not implemented yet. \u221E');
+    });
+    close.addEventListener('click', function(event) {
+      event.preventDefault();
+      scrollView.removeChild(entries);
+      updateScrollLinks();
+    });
+    stop.addEventListener('click', function(event) {
+      event.preventDefault();
+      stop_query = true;
+    });
+    let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
+    if (arg && arg.db_changes) {
+      delete arg.db_changes;
+      entries.info = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
+      let changesCount = 0;
+      infojs.time('db.changes');
+      return db.changes(arg).on('change', function(info) {
+        infojs.timeEnd('db.changes');
+        if (stop_query) {
+          stop_query = false;
+          this.cancel();
+        }
+        changesCount += 1;
+        infojs.info(info);
+        if (info.deleted) {
+          let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+          entry.classList.add('deleted');
+        }
+        else {
+          utilsjs.addNewEntry(info.doc, entries, undefined, !'addRevisionToElementId');
+        }
+      }).on('error', function (err) {
+        infojs.error({delete_error: err}, entries);
+      }).on('complete', function(info) {
+        infojs.timeEnd('db.changes');
+        infojs.time('query result processing');
+        updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id]);
+        entries.classList.remove('updating');
+      });
+    }
+    else if (regexp) {
+      entries.info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
+      var changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
+      let matchingDeletes = 0;
+      db.changes({
+        descending: dec,
+        include_docs: true,
+        limit: limit,
+        /*style: 'all_docs', */
+        since: changesSinceSequence,
+      }).on('change', function(info) {
+        if (stop_query) {
+          stop_query = false;
+          this.cancel();
+        }
+        //       PouchDB 5.0.0 (blog post)
+
+        // Removed PouchDB.destroy(); use db.destroy() instead
+        // Removed 'create', 'update', 'delete' events; use 'change' instead
+        // Removed idb-alt adapter
+
+        // infojs.infojs({delete: info}, entries);
+        // db.allDocs({
+        //   include_docs: true,
+        //   keys: [info.id]
+        // }).then(function (otherDoc) {
+        //   infojs.infojs({otherDoc: otherDoc}, entries);
+        // }).catch(function (err) {
+        //   infojs.infojs({all_docs_error: err}, entries);
+        // });
+        db.get(info.doc._id, {
+          rev: info.doc._rev,
+          revs: true,
+          open_revs: "all"
+        }).then(function (otherDoc) {
+          if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
+            // infojs.info({get: otherDoc}, entries);
+            // Adding revision to id allows us to add document back
+            var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
+            entry.classList.add('deleted');
+          }
+        }).catch(function (err) {
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+        // }).on('change', function(info) {
+        //   var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+      }).on('error', function (err) {
+        infojs.error({delete_error: err}, entries);
+      }).on('complete', function(info) {
+        infojs.time('query result processing');
+        updateQueryResults([!'isSearch', arg, !'matches', entries.querySelectorAll('entry-ui.deleted').length, entries.id]);
+      });
+      // db.get(options.deleted_id, {
+      //   // rev: info.doc._rev,
+      //   revs: true,
+      //   open_revs: "all"
+      // }).then(function (otherDoc) {
+      //   infojs.info({get:otherDoc}, entries);
+      //   otherDoc[0].ok._revisions.ids.forEach(function (rev) {
+      //     // infojs.info({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
+      //     db.get(otherDoc[0].ok._id, {
+      //       open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
+      //     }).then(function (otherDoc) {
+      //       // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
+      //       if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
+      //         // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
+      //       }
+      //       else {
+      //       }
+      //       infojs.info({ 'rev': otherDoc }, entries);
+      //     }).catch(function (err) {
+      //       infojs.error({rev_error: err}, entries);
+      //     });
+      //   });
+      // }).catch(function (err) {
+      //   infojs.error({get_error:err}, entries);
+      // });
+    }
+    else {
+      // if (document.querySelector('#new_entry').style.display != 'none') {
+      // let startDate, endDate;
+      // if (options.startkey) {
+      //   startDate = options.startkey;
+      // }
+      // // else {
+      // //   var start = document.querySelector('#query_start');
+      // //   var startDate = start.valueAsDate;
+      // // }
+      // if (options.endkey) {
+      //   endDate = options.endkey;
+      // }
+      // // else {
+      // //   var end = document.querySelector('#query_end');
+      // //   var endDate = end.valueAsDate;
+      // // }
+      // if (startDate && endDate && startDate > endDate) {
+      //   [ startDate, endDate ] = [ endDate, startDate ];
+      // }
+      // // start.value = startDate.toString();
+      // // end.value = endDate.toString();
+      // if (startDate) {
+      //   if (dec) {
+      //     opts.endkey = startDate;
+      //   }
+      //   else {
+      //     opts.startkey = startDate;
+      //   }
+      // }
+      // if (endDate) {
+      //   if (dec) {
+      //     opts.startkey = endDate;
+      //   }
+      //   else {
+      //     opts.endkey = endDate;
+      //   }
+      // }
+      // // }
+      if (options.query_start) {
+        opts.startkey = options.query_start;
+      }
+      if (options.query_end) {
+        opts.endkey = options.query_end;
+      }
+      if (opts.startkey > opts.endkey) {
+        // [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
+        infojs.warn('opts.startkey > opts.endkey, consider swapping them to get any results');
+      }
+      if (dec) {
+        [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
+      }
+      var isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
+      var includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
+      var excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
+      if (isSearch) {
+        entries.info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
+        infojs.time('query allDocs search');
+      }
+      else {
+        entries.info = `Query ${entries.id} limited to ${limit} entries`;
+        opts.reduce = false;
+        infojs.time('query allDocs');
+      }
+      let rowCount = 0,  matches = 0, loops = 1;
+      // for (; rowCount < limit; loops++) {
+      let recursiveQuery = (opts, matches, rowCount) => {
+        return new Promise((resolve, reject) => {
+          var query;
+          // if (options.deleted_id) {
+          //   return;
+          // }
+          if (isSearch) {
+            query = db.allDocs(opts);
+          }
+          else {
+            query = db.allDocs(opts);
+          }
+          // window.requestAnimationFrame(function (timestamp) {
+          query.then(function(doc) {
+            if (isSearch) {
+              infojs.timeEnd('query allDocs search');
+            }
+            else {
+              infojs.timeEnd('query allDocs');
+            }
+            infojs.time('query result processing');
+            // NOTE: Iteration statement is needed to use break statement.
+            // doc.rows.forEach(function (row, index) {
+            // Discard first row on subsequent queries with a opts.startkey because it is the last row of the previous query
+            if ('startkey' in opts && rowCount && doc.rows.length) {
+              doc.rows.shift();
+            }
+            for (var index = 0; index < doc.rows.length; index++) {
+              if (stop_query) {
+                stop_query = false;
+                return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+              }
+              var row = doc.rows[index];
+              if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
+                  excludeRegExp && excludeRegExp.test(row.doc.activity)) {
+                // forEach function return becomes continue in for loop.
+                if (rowCount + index + 1 == limit) {
+                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                }
+                else {
+                  continue;
+                }
+              }
+              var entry;
+              if (!('activity' in row.doc)) {
+                // FIXME
+                // allDocs query finds design documents too.
+                // Let's just warn about that for now:
+                infojs.warn(`Found document ${row.id} with no activity`);
+                if (rowCount + index + 1 == limit) {
+                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                }
+                else {
+                  continue;
+                }
+              }
+              entry = utilsjs.addNewEntry(row.doc, entries, undefined, !'addRevisionToElementId');
+              if (isSearch) {
+                matches += 1;
+                if (matchLimit && (matches == matchLimit)) {
+                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                }
+              }
+              if (rowCount + index + 1 == limit) {
+                return resolve([ isSearch, opts, matches, rowCount + index + 1, entries.id]);
+              }
+            }
+            if (doc.rows.length == 0) {
+              return resolve([ isSearch, opts, matches, rowCount, entries.id]);
+            }
+            rowCount += doc.rows.length;
+            // Must not drop random part of ID to distinguish
+            // between multiple entries with same start time!
+            let newStart = doc.rows[doc.rows.length - 1].doc._id;
+            // startkey would not change, no use to carry on.
+            if (newStart == opts.startkey) {
+              return resolve([ isSearch, opts, matches, rowCount + doc.rows.length, entries.id]);
+            }
+            opts.startkey = newStart;
+            // Just recurse, we already checked for limit and matchLimit above
+            return resolve(recursiveQuery(opts, matches, rowCount, entries.id));
+          }).catch(function(err) {
+            infojs.error(err, document.getElementById(id).parentElement);
+          });
+        });
+      };
+      recursiveQuery(opts, matches, rowCount).then(updateQueryResults);
+    }
+  }
+  catch(err) {
+    infojs.error(err);
+  }
+};
 
 // DOMContentLoaded is fired once the document has been loaded and parsed,
 // but without waiting for other external resources to load (css/images/etc)
@@ -17,6 +501,8 @@ document.addEventListener('readystatechange', (event) => {
     return;
   }
   infojs.timeEnd('appjs to readyState complete');
+  let headerUI = new HeaderUI();
+  document.body.insertBefore(headerUI, document.body.firstElementChild);
   let ORIENTATION = false;
   let SCROLL = false;
   try {
@@ -26,46 +512,6 @@ document.addEventListener('readystatechange', (event) => {
     window.addEventListener('online', (e) => {
       infojs.info(`Browser is now ${e.type}`);
     });
-    {
-      // Create the query list.
-      const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
-      // Define a callback function for the event listener.
-      function handleColorThemeChange(evt) {
-        if (evt.matches) {
-          document.body.classList.add('dark_theme');
-        } else {
-          document.body.classList.remove('dark_theme');
-        }
-        infojs.info(evt);
-      }
-      let themeSelect = document.getElementById ('punchcard_theme_select');
-      let changeTheme = (element) => {
-        switch (element.value) {
-        case "Light": {
-          mediaQueryList.removeEventListener("change", handleColorThemeChange);
-          document.body.classList.remove('dark_theme');
-          break;
-        }
-        case "Dark": {
-          mediaQueryList.removeEventListener("change", handleColorThemeChange);
-          document.body.classList.add('dark_theme');
-          break;
-        }
-        case "System": {
-          // Add the callback function as a listener to the query list.
-          mediaQueryList.addEventListener("change", handleColorThemeChange);
-          // Run the orientation change handler once.
-          handleColorThemeChange(mediaQueryList);
-          break;
-        }
-        }
-      };
-      changeTheme(themeSelect);
-      themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
-    }
-    let resultIndex = 1;
-    let optionsDB = new PouchDB('options');
-    let db = new PouchDB('punchcard');
     const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     let startMenu = document.getElementById('start_menu');
     let endMenu = document.getElementById('end_menu');
@@ -73,15 +519,6 @@ document.addEventListener('readystatechange', (event) => {
     let activityMenu = document.getElementById('activity_menu');
     let operationMenu = document.getElementById('operation_menu');
     // let request = navigator.mozApps.getSelf();
-    let stringToRegexp = function(str) {
-      let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/);
-      // Default to ignore case.
-      // Regexp syntax requires at least a slash at end, possibly followed by flags.
-      return captureGroups &&
-        new RegExp(captureGroups[1],
-                   typeof captureGroups[2] == 'undefined' ? "is" : captureGroups[2]);
-    };
-
     let info_categories = document.querySelector('#info_categories');
     Array.prototype.forEach.call(info_categories.querySelectorAll('input'), (value) => {
       if (localStorage.getItem(value.id)) {
@@ -143,11 +580,11 @@ document.addEventListener('readystatechange', (event) => {
     let updateFilter = function(event) {
       event.target.classList.add('updating');
       infojs.time('updating');
-      let entryNodes = scrollView.querySelectorAll('.entry');
+      let entryNodes = scrollView.querySelectorAll('entry-ui');
       let regexp = stringToRegexp(event.target.value.trim());
       if (regexp) {
         Array.prototype.forEach.call(entryNodes, function(node, index) {
-          let activity = node.querySelector('.activity');
+          let activity = node.activity;
           if (regexp.test(activity.textContent)) {
             node.classList.remove('filtered');
           }
@@ -161,10 +598,10 @@ document.addEventListener('readystatechange', (event) => {
           node.classList.remove('filtered');
         });
       }
-      toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
-        document.querySelector('.entry:not(.filtered)').scrollIntoView({block: "center", inline: "center"});
+        let firstUnfilteredEntryNode = scrollView.querySelector('entry-ui:not(.filtered)');
+        firstUnfilteredEntryNode.scrollIntoView({block: "center", inline: "center"});
       });
       event.target.classList.remove('updating');
       infojs.timeEnd('updating');
@@ -233,21 +670,24 @@ document.addEventListener('readystatechange', (event) => {
       // event.preventDefault();
       // event.stopPropagation();
       var bcr = event.target.getBoundingClientRect();
-      if (event.target.classList.contains("start")) {
+      let menu = event.composedPath()[0];
+      // entry-ui inside shadow dom.
+      let entry = event.composedPath()[2];
+      if (menu.classList.contains("start")) {
         if (startMenu.style.display == 'none') {
           utilsjs.positionMenu(startMenu, event);
-          startMenu.dataset.id = event.target.parentElement.id;
+          startMenu.dataset.id = entry.id;
         }
         else {
           startMenu.style.display = 'none';
           delete startMenu.dataset.id;
         }
       }
-      if (event.target.classList.contains("end")) {
+      if (menu.classList.contains("end")) {
         if (endMenu.style.display == 'none') {
           utilsjs.positionMenu(endMenu, event);
-          endMenu.dataset.id = event.target.parentElement.id;
-          if (event.target.parentElement.querySelector('pre.end').textContent == ' ') {
+          endMenu.dataset.id = entry.id;
+          if (entry.end.textContent == ' ') {
             document.getElementById('end_undefined').setAttribute('disabled', true);
           }
           else {
@@ -259,10 +699,10 @@ document.addEventListener('readystatechange', (event) => {
           delete endMenu.dataset.id;
         }
       }
-      if (event.target.classList.contains("revisions")) {
+      if (menu.classList.contains("revisions")) {
         if (revisionsMenu.style.display == 'none') {
           utilsjs.positionMenu(revisionsMenu, event);
-          revisionsMenu.dataset.id = event.target.parentElement.id;
+          revisionsMenu.dataset.id = entry.id;
           if (event.target.parentElement.classList.contains('available')) {
             // document.getElementById('add_as_new_revision').setAttribute('href', '#add_as_new_revision');
             // document.getElementById('show_revisions').removeAttribute('href');
@@ -277,12 +717,17 @@ document.addEventListener('readystatechange', (event) => {
           delete revisionsMenu.dataset.id;
         }
       }
-      if (event.target.classList.contains("activity")) {
-        let operationCount = document.querySelectorAll('div.entry>input:checked').length;
+      if (menu.classList.contains("activity")) {
+        // FIXME
+        let operationCount = Array.from(document.querySelectorAll('entry-ui'))
+            .reduce((accumulator, currentValue) => {
+              currentValue.checked && accumulator++;
+              return accumulator;
+            }, 0);
         let menu = operationCount > 0 ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
           utilsjs.positionMenu(menu, event);
-          menu.dataset.id = event.target.parentElement.id;
+          menu.dataset.id = event.composedPath()[2].id;
         }
         else {
           menu.style.display = 'none';
@@ -291,20 +736,6 @@ document.addEventListener('readystatechange', (event) => {
       }
     });
     let scrollBar = document.querySelector('nav#punchcard_scrollbar');
-    // let links = document.querySelectorAll('nav#punchcard_scrollbar a');
-    // scrollView.addEventListener('scroll', function (event) {
-    //   scrollBar.style.right = '0';
-    // });
-    // scrollView.addEventListener('click', function (event) {
-    //   // if (event.target === document.body) {
-    //     if (scrollBar.style.right == '0px') {
-    //       scrollBar.style.right = '-5em';
-    //     }
-    //     else {
-    //       scrollBar.style.right = '0';
-    //     }
-    //   // }
-    // });
     // db.allDocs({include_docs: true, descending: false}, function(err, doc) {
     let ignore = (event) => {
       event.preventDefault();
@@ -422,10 +853,10 @@ document.addEventListener('readystatechange', (event) => {
             var newEntry = utilsjs.addNewEntry(newDoc, beforeThisElement.parentElement, beforeThisElement);
             setAvailableRevisionCount(document.getElementById(response.id));
             newEntry.scrollIntoView({block: "center", inline: "center"});
-            newEntry.querySelector('pre.activity').classList.add('changed');
-            newEntry.querySelector('pre.start').classList.add('changed');
-            newEntry.querySelector('pre.end').classList.add('changed');
-            newEntry.querySelector('pre.revisions').classList.add('changed');
+            newEntry.activity.classList.add('changed');
+            newEntry.start.classList.add('changed');
+            newEntry.end.classList.add('changed');
+            newEntry.revisions.classList.add('changed');
           }).catch(function(err) {
             //errors
             infojs.error(err, document.getElementById(id).parentElement);
@@ -450,10 +881,9 @@ document.addEventListener('readystatechange', (event) => {
         let startText = otherDoc._id.substring(0,24);
         otherDoc.end = now.toJSON();
         return db.put(otherDoc).then(function(response) {
-          utilsjs.updateEntriesElement(id, 'pre.end', utilsjs.formatEndDate(now));
+          utilsjs.updateEntriesElement(id, 'end', utilsjs.formatEndDate(now));
           setAvailableRevisionCount(document.getElementById(id));
-          utilsjs.updateEntriesElement(id, 'pre.duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
-          // saveLink.click();
+          utilsjs.updateEntriesElement(id, 'duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -473,10 +903,9 @@ document.addEventListener('readystatechange', (event) => {
       db.get(id).then(function(otherDoc) {
         delete otherDoc.end;
         return db.put(otherDoc).then(function(response) {
-          utilsjs.updateEntriesElement(id, 'pre.end', ' ');
+          utilsjs.updateEntriesElement(id, 'end', ' ');
           setAvailableRevisionCount(document.getElementById(id));
-          utilsjs.updateEntriesElement(id, 'pre.duration', ' ');
-          // saveLink.click();
+          utilsjs.updateEntriesElement(id, 'duration', ' ');
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -490,45 +919,6 @@ document.addEventListener('readystatechange', (event) => {
     if (endUndefinedItem) {
       endUndefinedItem.addEventListener('click', endUndefined);
     }
-    var setAvailableRevisionCount = function(entry) {
-      // Possibly do estimate shortcut when accurate
-      // revision reporting is disabled for performance reasons.
-      // It takes a while when displaying 1000 entries.
-      var revisions = entry.querySelector('pre.revisions');
-      // Revision prefix does not account for unavailable revs (e.g missing).
-      if (false) {
-        revisions.textContent = resolve(rev.split(/-/)[0]) + ' revs';
-      }
-      else {
-        var parts = entry.id.split(/_/);
-        var id = parts[0];
-        var rev = parts[1];
-        db.get(id, {
-          // Defaults to winning revision
-          // rev: doc._rev,
-          revs_info: true
-          // open_revs: "all"
-          // conflicts: true
-        }).then(function (otherDoc) {
-          var currentRev = otherDoc._rev;
-          var availableRevisions = otherDoc._revs_info.filter(function (rev) {
-            return rev.status == 'available' && rev.rev != currentRev;
-          })
-          revisions.textContent = (availableRevisions ? availableRevisions.length : 0) + ' revs';
-        }).catch(function (err) {
-          // var e = new Error("db.get in setAvailableRevisionCount");
-          // infojs.error({
-          //   get_error: JSON.stringify(e, Object.getOwnPropertyNames(e), 2)
-          // }, entries);
-          infojs.error(err, document.getElementById(id).parentElement);
-        });
-      }
-      // getIt.then(function (result) {
-      //   return result;
-      // }).catch(function (err) {
-      //   return err;
-      // });
-    }
     var showRevisions = function (event) {
       event.preventDefault();
       // Keep this _ separator in sync with function addNewEntry in utils.js
@@ -536,7 +926,10 @@ document.addEventListener('readystatechange', (event) => {
       var parts = elementId.split(/_/);
       var id = parts[0];
       var rev = parts[1];
-      if (!document.getElementById(elementId).classList.contains('available')) {
+      let entriesNodes = scrollView.querySelectorAll('entries-ui');
+      let entryNodes = scrollView.querySelectorAll('entry-ui');
+      let beforeThisElement = document.getElementById(elementId);
+      if (!beforeThisElement.classList.contains('available')) {
         let options = {
           // Defaults to winning revision
           // rev: doc._rev,
@@ -562,10 +955,9 @@ document.addEventListener('readystatechange', (event) => {
                 start: availableDoc.start,
                 end: availableDoc.end
               };
-              var beforeThisElement = document.getElementById(elementId);
               var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
                                                  beforeThisElement, 'addRevisionToElementId');
-              newEntry.querySelector('pre.revisions').textContent = (index + 1) + ' of ' + obj.length + ' revs';
+              newEntry.revisions.textContent = (index + 1) + ' of ' + obj.length + ' revs';
               // NOTE addRevisionToElementId argument makes this more obvious.
               // newEntry.id = entry._id + '.' + entry._rev;
               newEntry.scrollIntoView({block: "center", inline: "center"});
@@ -578,7 +970,7 @@ document.addEventListener('readystatechange', (event) => {
             });
           });
         }).catch(function (err) {
-          infojs.error(err, document.getElementById(id).parentElement);
+          infojs.error(err, beforeThisElement.parentNode.host);
         });
       }
     };
@@ -671,7 +1063,7 @@ document.addEventListener('readystatechange', (event) => {
       event.stopPropagation();
       var id = getDataSetIdHideMenu(event);
       // NOTE: Works, but too silly to be considered.
-      // var activityItem = document.getElementById(id).querySelector('pre.activity');
+      // var activityItem = document.getElementById(id).activity;
       // var s = getSelection();
       // s.removeAllRanges();
       // var r = document.createRange();
@@ -729,196 +1121,18 @@ document.addEventListener('readystatechange', (event) => {
     if (queryWeekItem) {
       queryWeekItem.addEventListener('click', queryWeek);
     }
-    let toggleFilter = function(event) {
-      // event.preventDefault();
-      if (filter.style['display'] == 'none') {
-        filter.style['display'] = '';
-        filter.focus();
-        // filter.scrollIntoView({block: "center", inline: "center"});
-      }
-      else {
-        filter.style['display'] = 'none';
-      }
-    };
-    let titleItem = document.querySelector('span.app_title');
-    if (titleItem) {
-      titleItem.addEventListener('click', toggleFilter);
-    }
-    // Don't display filter when application loads.
-    toggleFilter();
-    let toggleScrollbar = function(event) {
-      event.target.style.opacity = 0.3;
-      event.preventDefault();
-      event.stopPropagation();
-      window.setTimeout((event) => {
-        if (scrollBar.style['display'] == 'none') {
-          scrollBar.style['display'] = 'block';
-        }
-        else {
-          scrollBar.style['display'] = 'none';
-        }
-        recenterCenterElement();
-        event.target.style.opacity = 1;
-      }, 50, event);
-    };
-    let scrollbaritem = document.querySelector('span.scrollbar');
-    if (scrollbaritem) {
-      scrollbaritem.addEventListener('click', toggleScrollbar);
-    }
-    let hideUncheckedItem = document.querySelector('.hide_unchecked');
-    if (hideUncheckedItem) {
-      hideUncheckedItem.addEventListener('change', (event) => {
-        event.target.disabled = true;
-        event.preventDefault();
-        event.stopPropagation();
-        window.setTimeout((event) => {
-          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
-            if (event.target.checked && !value.checked) {
-              value.parentElement.style.display = 'none';
-            }
-            else {
-              value.parentElement.style.display = '';
-            }
-          });
-          event.target.disabled = false;
-        }, 50, event);
-      });
-    }
-    let editNewItem = document.querySelector('span.edit');
-    if (editNewItem) {
-      editNewItem.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        addNewEdit(undefined);
-      });
-    }
 
-    let toggleAbout = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      let aboutElement = document.querySelector('#about');
-      // aboutElement.style.display = 'none';
-      if (aboutElement) {
-        if (aboutElement.style.display == 'none') {
-          // otherView.style.display = 'block';
-          aboutElement.style.display = 'block';
-          event.target.style.opacity = '0.3';
-          // Let user peruse about information...
-          aboutElement.scrollIntoView({block: "center", inline: "center"});
-        }
-        else {
-          // reload document location.
-          // otherView.style.display = 'none';
-          aboutElement.style.display = 'none';
-          event.target.style.opacity = '1.0';
-
-          // TODO: how to best save options without having to actively blur last edit?
-          // var value = event.target.type == 'checkbox' ? event.target.checked : event.target.value;
-          // optionsDB.get(event.target.id).then(function(otherDoc) {
-          //   otherDoc.value = value;
-          //   return optionsDB.put(otherDoc).then(function(response) {
-          //     // document.location.reload('force');
-          //     // saveLink.click();
-          //   }).catch(function(err) {
-          //     //errors
-          //     window.alert(err);
-          //   });
-          // }).catch(function(err) {
-          //   //errors
-          //   window.alert(err.message + '\n' + err.stack);
-          //   return optionsDB.put({ _id: event.target.id, value: value });
-          // });
-
-
-          // document.location.reload('force');
-        }
-      }
-    };
-
-    let aboutItem = document.querySelector('span.about');
-    if (aboutItem) {
-      aboutItem.addEventListener('click', toggleAbout, 'capture');
-    }
-
-    var searchFilter = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      infojs.time('searching');
-      let entryNodes = scrollView.querySelectorAll('.entry');
-      let regexp = stringToRegexp(filter.value.trim());
-      if (regexp) {
-        let firstEntry = Array.prototype.find.call(entryNodes, function(node, index) {
-          var activity = node.querySelector('.activity');
-          if (regexp.test(activity.textContent)) {
-            return node;
-          }
-        });
-        firstEntry && firstEntry.scrollIntoView({block: "center", inline: "center"});
-        infojs.timeEnd('searching');
-      }
-    }
-
-    let searchItem = document.querySelector('span.search');
-    if (searchItem) {
-      searchItem.addEventListener('click', searchFilter, 'capture');
-    }
-
-    var reloadApp = function(event) {
-      event.preventDefault();
-      // in linux nightly firefox there is no way to get at app after reloadApp
-      // when local python webserver is stopped or hosted app cannot be reached
-      // because network is turned off.
-      // nightly firefox for android just displays a footer overlay stating
-      // "showing offline version" and works fine after reloadApp!
-      // if ('serviceWorker' in navigator) {
-      //   navigator.serviceWorker.getRegistration().then(function(registration) {
-      //     registration.unregister();
-      //   });
-      // }
-      // document.location.reload('force');
-      // See https://developer.mozilla.org/en-US/docs/Web/API/Location/reload#location.reload_has_no_parameter
-      document.location.reload();
-    };
-
-    var roloadItem = document.querySelector('span.reload');
-    if (roloadItem) {
-      roloadItem.addEventListener('click', reloadApp, 'capture');
-    }
-
-    var toggleOptionDisplay = function(event) {
-      infojs.time('toggleOptionDisplay');
-      event.preventDefault();
-      event.stopPropagation();
-      var optionsElement = document.querySelector('#options');
-      // optionsElement.style.display = 'none';
-      if (optionsElement) {
-        if (optionsElement.style.display == 'none') {
-          // otherView.style.display = 'block';
-          optionsElement.style.display = 'block';
-          event.target.style.opacity = '0.3';
-          // Let user change options...
-          optionsElement.scrollIntoView({block: "center", inline: "center"});
-        }
-        else {
-          // reload document location.
-          // otherView.style.display = 'none';
-          optionsElement.style.display = 'none';
-          event.target.style.opacity = '1.0';
-          // document.location.reload('force');
-          // document.location.reload();
-          runQuery();
-        }
-      }
-      infojs.timeEnd('toggleOptionDisplay');
-    };
-    var optionsItem = document.querySelector('span.settings');
-    if (optionsItem) {
-      optionsItem.addEventListener('click', toggleOptionDisplay, 'capture');
-      // NOTE: Let's bring up a menu on click, if necessary, as is already done for #start_menu, etc.
-      // optionsItem.addEventListener('contextmenu', function (event) {
-      //   window.alert('This could be useful to pick from saved queries, e.g.\nAround now\n100 newest\n100 oldest\netc.');
-      // });
-    }
+    // Query recent changes when application starts.
+    runQuery({
+      db_changes: true, // run db.changes instead of db.allDocs
+      descending: true,
+      include_docs: true,
+      // conflicts: true,
+      limit: 99,
+      live: false,
+      return_docs: false,
+      since: 'now'
+    });
 
     var getDataSetIdHideMenu = function(event) {
       let id = event.target.parentElement.parentElement.dataset.id;
@@ -946,12 +1160,11 @@ document.addEventListener('readystatechange', (event) => {
           var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
           setAvailableRevisionCount(document.getElementById(id));
           newEntry.scrollIntoView({block: "center", inline: "center"});
-          newEntry.querySelector('pre.activity').classList.add('changed');
-          newEntry.querySelector('pre.start').classList.add('changed');
-          newEntry.querySelector('pre.end').classList.add('changed');
-          newEntry.querySelector('pre.revisions').classList.add('changed');
+          newEntry.activity.classList.add('changed');
+          newEntry.start.classList.add('changed');
+          newEntry.end.classList.add('changed');
+          newEntry.revisions.classList.add('changed');
           // document.location.reload('force');
-          // saveLink.click();
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -1013,368 +1226,6 @@ document.addEventListener('readystatechange', (event) => {
           emit(doc.clockin_ms, 1);
         }
       }
-    };
-
-    var runQuery = function(arg) {
-      // db.query(map, {reduce: false, /*startkey: "2010-06-24T15:44:08", endkey: "2010-06-25T15:44:08", */limit: 33, include_docs: true, descending: false}, function(err, doc) {
-      // var obj = db.mapreduce(db);
-      // db.query(map, {/*stale: 'ok', */reduce: false,
-      let times = [];
-      infojs.time('runQuery');
-      let options = arg || {};
-      if (!arg) {
-        document.querySelectorAll('.persistent').forEach((item) => {
-          infojs.info(`get persistent input for ${item.id}`);
-          if (item.type == 'checkbox') {
-            options[item.id] = item.checked;
-          }
-          else {
-            options[item.id] = item.value;
-          }
-        });
-      }
-      infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
-      var limit = options.limit ? Number(options.limit) : 100;
-      var matchLimit = options.match_limit ? Number(options.match_limit) : 50;
-      var dec = !!options.descending;
-      // Limit query to a maximum of 1000 rows, not to use too much
-      // memory in mobile browsers on smartphones
-      var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
-      var content = document.getElementById('entries_template').content;
-      var entries = document.importNode(content, "deep").firstElementChild;
-      var previousEntries = scrollView.querySelector('div.entries');
-      entries.classList.add('updating');
-      var cacheSection = document.querySelector('#cache_section');
-      if (previousEntries) {
-        scrollView.insertBefore(entries, previousEntries);
-      }
-      else {
-        scrollView.insertBefore(entries, cacheSection);
-      }
-      entries.id = 'R' + resultIndex;
-      var queryInfoElement = entries.querySelector('span.info');
-      queryInfoElement.scrollIntoView({block: "center", inline: "center"});
-      var update = entries.querySelector('a.update');
-      var close = entries.querySelector('a.close');
-      update.addEventListener('click', function(event) {
-        event.preventDefault();
-        alert('rerun query is not implemented yet. \u221E');
-      });
-      close.addEventListener('click', function(event) {
-        event.preventDefault();
-        scrollView.removeChild(entries);
-        updateScrollLinks();
-      });
-      let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
-      if (regexp) {
-        queryInfoElement.textContent = `Search for deleted activity matching "${regexp.toString()}"`;
-        var changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
-        let matchingDeletes = 0;
-        db.changes({
-          descending: dec,
-          include_docs: true,
-          limit: limit,
-          /*style: 'all_docs', */
-          since: changesSinceSequence,
-        }).on('change', function(info) {
-          //       PouchDB 5.0.0 (blog post)
-
-          // Removed PouchDB.destroy(); use db.destroy() instead
-          // Removed 'create', 'update', 'delete' events; use 'change' instead
-          // Removed idb-alt adapter
-
-          // infojs.infojs({delete: info}, entries);
-          // db.allDocs({
-          //   include_docs: true,
-          //   keys: [info.id]
-          // }).then(function (otherDoc) {
-          //   infojs.infojs({otherDoc: otherDoc}, entries);
-          // }).catch(function (err) {
-          //   infojs.infojs({all_docs_error: err}, entries);
-          // });
-          db.get(info.doc._id, {
-            rev: info.doc._rev,
-            revs: true,
-            open_revs: "all"
-          }).then(function (otherDoc) {
-            if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
-              // infojs.info({get: otherDoc}, entries);
-              // Adding revision to id allows us to add document back
-              var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
-              entry.classList.add('deleted');
-            }
-          }).catch(function (err) {
-            infojs.error(err, document.getElementById(id).parentElement);
-          });
-          // }).on('change', function(info) {
-          //   var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
-        }).on('error', function (err) {
-          infojs.error({delete_error: err}, entries);
-        }).on('complete', function(info) {
-          resultIndex += 1;
-          updateScrollLinks();
-          queryInfoElement.textContent += ` found ${entries.querySelectorAll('div.deleted').length}`;
-          entries.classList.remove('updating');
-        });
-        // db.get(options.deleted_id, {
-        //   // rev: info.doc._rev,
-        //   revs: true,
-        //   open_revs: "all"
-        // }).then(function (otherDoc) {
-        //   infojs.info({get:otherDoc}, entries);
-        //   otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-        //     // infojs.info({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-        //     db.get(otherDoc[0].ok._id, {
-        //       open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-        //     }).then(function (otherDoc) {
-        //       // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-        //       if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-        //         // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-        //       }
-        //       else {
-        //       }
-        //       infojs.info({ 'rev': otherDoc }, entries);
-        //     }).catch(function (err) {
-        //       infojs.error({rev_error: err}, entries);
-        //     });
-        //   });
-        // }).catch(function (err) {
-        //   infojs.error({get_error:err}, entries);
-        // });
-      }
-      else {
-        // if (document.querySelector('#new_entry').style.display != 'none') {
-        if (options.startkey) {
-          startDate = options.startkey;
-        }
-        else {
-          var start = document.querySelector('#query_start');
-          var startDate = start.valueAsDate;
-        }
-        if (options.endkey) {
-          endDate = options.endkey;
-        }
-        else {
-          var end = document.querySelector('#query_end');
-          var endDate = end.valueAsDate;
-        }
-        if (startDate && endDate && startDate > endDate) {
-          [ startDate, endDate ] = [ endDate, startDate ];
-        }
-        // start.value = startDate.toString();
-        // end.value = endDate.toString();
-        if (startDate) {
-          if (dec) {
-            opts.endkey = startDate;
-          }
-          else {
-            opts.startkey = startDate;
-          }
-        }
-        if (endDate) {
-          if (dec) {
-            opts.startkey = endDate;
-          }
-          else {
-            opts.endkey = endDate;
-          }
-        }
-        // }
-        var isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
-        // queryInfoElement.textContent += (isSearch ? 'search' : 'query') + ' in progress...';
-        var includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
-        var excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
-        if (isSearch) {
-          queryInfoElement.textContent = `Search limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
-          infojs.time('query allDocs');
-        }
-        else {
-          queryInfoElement.textContent = `Query limited to ${limit} entries`;
-          opts.reduce = false;
-          infojs.time('query by_start');
-        }
-        let rowCount = 0,  matches = 0, loops = 1;
-        // for (; rowCount < limit; loops++) {
-
-        let updateQueryResults = (result) => {
-          // loops end
-          if (result[0]) {
-            queryInfoElement.textContent += ` found ${result[2]}`;
-          }
-          else {
-            queryInfoElement.textContent += ` found ${result[3]}`;
-          }
-          infojs.timeEnd('query result processing');
-          resultIndex += 1;
-          updateScrollLinks();
-          Array.prototype.forEach.call(document.querySelectorAll('div.entry'), entry => setAvailableRevisionCount(entry));
-          entries.classList.remove('updating');
-
-          Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
-            value.addEventListener('contextmenu', (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              Array.prototype.forEach.call(document.querySelectorAll('div.entry>input[type=checkbox]'), (value) => {
-                if (value.parentElement.style.display != 'none') {
-                  value.checked = !value.checked;
-                }
-              });
-            });
-          });
-
-          infojs.timeEnd('runQuery');
-        };
-        let recursiveQuery = (opts, matches, rowCount) => {
-          return new Promise((resolve, reject) => {
-            var query;
-            // if (options.deleted_id) {
-            //   return;
-            // }
-            if (isSearch) {
-              query = db.allDocs(opts);
-            }
-            else {
-              query = db.allDocs(opts);
-            }
-            // window.requestAnimationFrame(function (timestamp) {
-            query.then(function(doc) {
-              if (isSearch) {
-                infojs.timeEnd('query allDocs');
-              }
-              else {
-                infojs.timeEnd('query by_start');
-              }
-              infojs.time('query result processing');
-              // NOTE: Iteration statement is needed to use break statement.
-              // doc.rows.forEach(function (row, index) {
-              // Discard first row on subsequent queries with a opts.startkey because it is the last row of the previous query
-              if ('startkey' in opts && rowCount && doc.rows.length) {
-                doc.rows.shift();
-              }
-              for (var index = 0; index < doc.rows.length; index++) {
-                var row = doc.rows[index];
-                if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
-                    excludeRegExp && excludeRegExp.test(row.doc.activity)) {
-                  // forEach function return becomes continue in for loop.
-                  if (rowCount + index +1 == limit) {
-                    return resolve([isSearch, opts, matches, rowCount + index + 1]);
-                  }
-                  else {
-                    continue;
-                  }
-                }
-                var entry;
-                if (!('activity' in row.doc)) {
-                  if (rowCount + index +1 == limit) {
-                    return resolve([isSearch, opts, matches, rowCount + index + 1]);
-                  }
-                  else {
-                    continue;
-                  }
-                }
-                entry = utilsjs.addNewEntry(row.doc, entries, undefined, 0);
-                if (isSearch) {
-                  matches += 1;
-                  if (matchLimit && (matches == matchLimit)) {
-                    return resolve([isSearch, opts, matches, rowCount + index + 1]);
-                  }
-                }
-                if (rowCount + index + 1 == limit) {
-                  return resolve([ isSearch, opts, matches, rowCount + index + 1]);
-                }
-              }
-              if (doc.rows.length == 0) {
-                return resolve([ isSearch, opts, matches, rowCount]);
-              }
-              rowCount += doc.rows.length;
-              // Must not drop random part of ID to distinguish
-              // between multiple entries with same start time!
-              let newStart = doc.rows[doc.rows.length - 1].doc._id;
-              // startkey would not change, no use to carry on.
-              if (newStart == opts.startkey) {
-                return resolve([ isSearch, opts, matches, rowCount + doc.rows.length]);
-              }
-              opts.startkey = newStart;
-              // Just recurse, we already checked for limit and matchLimit above
-              return resolve(recursiveQuery(opts, matches, rowCount));
-            }).catch(function(err) {
-              infojs.error(err, document.getElementById(id).parentElement);
-            });
-          });
-        };
-        recursiveQuery(opts, matches, rowCount).then(updateQueryResults);
-      }
-    };
-
-    var updateScrollLinks = function() {
-      infojs.time('updateScrollLinks');
-      var entryNodes = scrollView.querySelectorAll('.entry:not(.filtered)');
-      // query result container
-      var entriesNodes = scrollView.querySelectorAll('.entries');
-      var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ul>li');
-      var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
-      for (var linkIndex = 3; linkIndex < scrollLinks.length; linkIndex++)  {
-        scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
-      }
-      Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
-        element.classList.remove('linked');
-      });
-      // let bottom = scrollLinks[scrollLinks.length - 1].firstElementChild;
-      // bottom.textContent = (new Date(entryNodes[entryNodes.length - 1].id.substring(0, 24))).toDateString() + entryNodes[entryNodes.length - 1].parentElement.id;
-      // bottom.href = '#' + entryNodes[entryNodes.length - 1].id;
-      // bottom.style.visibility = 'visible';
-      for (var scrollIndex = 0; scrollIndex < entryNodes.length; scrollIndex++) {
-        if (scrollLinks.length && (scrollIndex % rowsPerLink) < 1) {
-          var classList = entryNodes[scrollIndex].classList;
-          if (classList && !classList.contains('filtered')) {
-            classList.add('linked');
-            // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
-            (function () {
-              // Skip over first two links reserved for top and results links.
-              var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 3].firstElementChild;
-              var last = (link == scrollLinks[scrollLinks.length - 1].firstElementChild);
-              var result = entryNodes[scrollIndex].parentElement.id;
-              if (entryNodes[scrollIndex].classList.contains('deleted')) {
-                link.classList.add('deleted');
-              }
-              else {
-                link.classList.remove('deleted');
-              }
-              // if (entryNodes[scrollIndex].classList.contains('deleted')) {
-              //   link.textContent = 'deleted' + (new Date(entryNodes[scrollIndex].id.substring(0, 24))).toDateString() + result;
-              //   link.href = '#' + entryNodes[scrollIndex].id;
-              //   link.style.visibility = 'visible';
-              // }
-              // else {
-              // db.get(entryNodes[scrollIndex].id).then(function(doc) {
-              // link.textContent = (new Date(doc._id.substring(0, 24))).toDateString() + result;
-              link.textContent = (new Date(entryNodes[scrollIndex].id.substring(0, 24))).toDateString() + result;
-              // link.href = '#' + doc._id;
-              link.href = '#' + entryNodes[scrollIndex].id;
-              link.style.visibility = 'visible';
-              if (last) {
-                infojs.timeEnd('updateScrollLinks');
-              }
-              // });
-              // }
-            })();
-          }
-          else {
-            entryNodes[scrollIndex].class = 'linked';
-          }
-        }
-      }
-      var resultsLink = scrollLinks[1];
-      Array.prototype.forEach.call(resultsLink.querySelectorAll('a'), function(elem) {
-        elem.parentElement.removeChild(elem);
-      });
-      Array.prototype.forEach.call(entriesNodes, function(node) {
-        var link = document.createElement('a');
-        link.textContent = node.id;
-        link.href = '#' + node.id;
-        resultsLink.appendChild(link);
-      });
-      infojs.timeEnd('updateScrollLinks');
     };
   }
   catch(err) {
