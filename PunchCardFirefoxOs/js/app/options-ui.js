@@ -39,7 +39,7 @@ export class OptionsUI extends HTMLElement {
   <section>
     <input-ui class="persistent" type="text" id="protocol" data-l10n-id="protocol" value="https://"></input-ui>
     <input class="persistent" type="text" id="user" data-l10n-id="user" placeholder="user"></input>
-    <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"></input>
+    <slot></slot>
     <input-ui class="persistent" type="text" id="hostportpath" data-l10n-id="hostportpath" placeholder="host:port/path/"></input-ui>
     <h1 data-l10n-id="options_db_title">Options Database</h1>
     <p>
@@ -131,6 +131,9 @@ pre:focus {
 /*   white-space: pre; */
 }
 </style>
+`;
+      this.innerHTML = `
+    <input type="password" id="pass" data-l10n-id="pass" placeholder="pass"></input>
 `;
     }
     catch (e) {
@@ -469,7 +472,7 @@ pre:focus {
                 infojs.error(myInfo, infoNode);
                 let sessionUrl = this.shadow.getElementById('protocol').value +
                     this.shadow.getElementById('hostportpath').value + '_session';
-                sessionLogin(sessionUrl, this.shadow.getElementById('user').value, this.shadow.getElementById('pass').value);
+                sessionLogin(sessionUrl, this.shadow.getElementById('user').value, this.querySelector('#pass').value);
                 startButton.removeAttribute('disabled');
                 stopButton.setAttribute('disabled', true);
               });
@@ -644,7 +647,7 @@ pre:focus {
       // https://developer.mozilla.org/Web/API/event.preventDefault
       //
       // Then we search without leaving this page, just as we wanted.
-      this.shadow.getElementById('pass').addEventListener('blur', (event) => {
+      this.querySelector('#pass').addEventListener('blur', (event) => {
         if (event.target.value.length  > 0) {
           let sessionUrl = this.shadow.getElementById('protocol').value +
               this.shadow.getElementById('hostportpath').value + '_session';
@@ -658,7 +661,7 @@ pre:focus {
         // FIXME: async!
         let sessionUrl = this.shadow.getElementById('protocol').value +
             this.shadow.getElementById('hostportpath').value + '_session';
-        if (sessionLogin(sessionUrl, this.shadow.getElementById('user').value, this.shadow.getElementById('pass').value)) {
+        if (sessionLogin(sessionUrl, this.shadow.getElementById('user').value, this.querySelector('#pass').value)) {
         }
       });
       logout.addEventListener('click', (e) => {
