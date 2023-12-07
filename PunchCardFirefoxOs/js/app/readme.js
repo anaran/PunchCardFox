@@ -1,6 +1,6 @@
 'use strict';
 
-import '../../bower_components/marked/lib/marked.js';
+import '../libs/marked.min.js';
 
 var XHR_TIMEOUT_MS = 0;
 export let init = function (url, renderElement, editElement, toggleElement) {
@@ -118,7 +118,7 @@ export let init = function (url, renderElement, editElement, toggleElement) {
             render.style.display = 'block';
           }
           if ('use marked again after experimenting with Remarkable') {
-            var html = marked(request.response);
+            var html = marked.parse(request.response);
             let tocHTML = '<h1 id="table-of-contents">Index</h1>\n<ul>\n';
             tocHTML += '<li><a href="#readme_edit_toggle">Top</a></li>\n';
             toc.forEach(function (entry) {

@@ -18,6 +18,22 @@ export class EntriesUI extends HTMLElement {
 <slot></slot>
 <style>
 
+ 
+:host(.updating) {
+    background-color: lightgrey;
+}
+
+:host-context(.dark_theme):host(.updating) {
+    background-color: dimgrey;
+}
+
+div.entries_header {
+    background-color: inherit;
+}
+
+div.entries_header a {
+    padding: 0.5rem;
+}
 
 </style>
 `;

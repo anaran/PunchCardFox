@@ -1,6 +1,7 @@
 'use strict';
 
 import * as infojs from './info.js';
+import * as appjs from './app.js';
 import { AboutUI } from './about-ui.js';
 import { NewEntryUI }  from './new-entry.js';
 import { OptionsUI } from './options-ui.js';
@@ -53,6 +54,8 @@ export class HeaderUI extends HTMLElement {
   }
   connectedCallback() {
     try {
+      this.filter = document.querySelector('#filter');
+      this.toggleFilter();
       this.hideUncheckedItem = this.shadow.querySelector('.hide_unchecked');
       this.scrollbaritem = this.shadow.querySelector('span.scrollbar');
       this.titleItem = this.shadow.querySelector('span.app_title');
@@ -75,14 +78,14 @@ export class HeaderUI extends HTMLElement {
         this.editNewItem.addEventListener('click', this.toggleEdit);
       }
       let aboutUI = new AboutUI();
-      document.querySelector('#filter').insertAdjacentElement('afterend', aboutUI);
+      filter.insertAdjacentElement('afterend', aboutUI);
       if (this.aboutItem) {
         this.aboutItem.addEventListener('click', (event) => {
           aboutUI.toggle(event);
         }, 'capture');
       }
       let optionsUI = new OptionsUI();
-      document.querySelector('#filter').insertAdjacentElement('afterend', optionsUI);
+      filter.insertAdjacentElement('afterend', optionsUI);
       if (this.optionsItem) {
         this.optionsItem.addEventListener('click', (event) => {
           optionsUI.toggle(event);
@@ -119,14 +122,14 @@ export class HeaderUI extends HTMLElement {
     return this.titleItem.textContent;
   }
   toggleFilter = (event) => {
-      // event.preventDefault();
-      if (filter.style['display'] == 'none') {
-        filter.style['display'] = '';
-        filter.focus();
-        // filter.scrollIntoView({block: "center", inline: "center"});
+    // event.preventDefault();
+      if (this.filter.style['display'] == 'none') {
+        this.filter.style['display'] = '';
+        this.filter.querySelector('input-ui').focus();
+        // this.filter.scrollIntoView({block: "center", inline: "center"});
       }
       else {
-        filter.style['display'] = 'none';
+        this.filter.style['display'] = 'none';
       }
   };
     // Don't display filter when application loads.
@@ -180,7 +183,7 @@ export class HeaderUI extends HTMLElement {
 
   addNewEdit = (id, copy) => {
     let neu = new NewEntryUI(id, copy);
-    document.querySelector('#filter').insertAdjacentElement('afterend', neu);
+    this.filter.insertAdjacentElement('afterend', neu);
   };
 
   toggleEdit = (event) => {
@@ -193,8 +196,9 @@ export class HeaderUI extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     infojs.time('searching');
+    const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     let entryNodes = scrollView.querySelectorAll('entry-ui');
-    let regexp = stringToRegexp(filter.value.trim());
+    let regexp = appjs.stringToRegexp(this.filter.querySelector('input-ui').value.trim());
     if (regexp) {
       let firstEntry = Array.prototype.find.call(entryNodes, function(node, index) {
         var activity = node.activity;

@@ -1,6 +1,7 @@
 'use strict';
 
 import * as infojs from './info.js';
+import '../libs/marked.min.js';
 
 export class EntryUI extends HTMLElement {
   constructor() {
@@ -14,9 +15,10 @@ export class EntryUI extends HTMLElement {
   <input class="checked" type="checkbox">
   <pre class="revisions"></pre>
   <pre class="activity"></pre>
+  <div class="view" style="display: none"></div>
 <style>
 
-pre {
+:host>pre {
     margin: 0 0 0;
     padding: 0 0 0;
     border: 0;
@@ -60,8 +62,13 @@ pre.revisions {
 }
 
 pre.activity {
-    grid-column: 1 / 4;
-    grid-row: 3;
+  grid-column: 1 / 4;
+  grid-row: 3;
+}
+
+div.view {
+  grid-column: 1 / 4;
+  grid-row: 3;
 }
 
 input[type=checkbox]:checked ~ pre.activity {
@@ -70,6 +77,12 @@ input[type=checkbox]:checked ~ pre.activity {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/*
+:host-context(.updating) {
+    background-color: inherit;
+}
+*/
 
 :host-context(.updating) {
     background-color: lightgrey;
@@ -127,12 +140,12 @@ input[type=checkbox]:checked ~ pre.activity {
     border: 0.2rem dashed;
 }
 
-pre:hover {
+*:hover {
     color: white;
     background-color: black;
 }
 
-:host-context(.dark_theme) pre:hover {
+:host-context(.dark_theme) *:hover {
     color: black;
     background-color: white;
 }
@@ -158,12 +171,18 @@ pre:hover {
     try {
       this.checkbox = this.shadow.children[3];
       this.checked = this.checkbox.checked;
+      this.view = this.shadow.children[6];
+      // this.view.style.display = 'none';
       this.checkbox.addEventListener('change', (event) => {
+        this.checked = event.target.checked;
         if (event.target.checked) {
-          this.checked = true;
+          this.activity.style.display = 'none';
+          this.view.innerHTML = marked.parse(this.activity.textContent);
+          this.view.style.display = '';
         }
         else {
-          this.checked = false;
+          this.view.style.display = 'none';
+          this.activity.style.display = '';
         }
       });
     }

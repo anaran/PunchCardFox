@@ -2,9 +2,9 @@
 
 import * as infojs from './info.js';
 import * as readmejs from './readme.js';
-import '../../js/libs/pouchdb-8.0.1.min.js';
-// import '../../js/libs/pouchdb-8.0.1.js';
-import '../../bower_components/pouchdb-all-dbs/dist/pouchdb.all-dbs.js';
+import '../libs/pouchdb-8.0.1.min.js';
+// import '../libs/pouchdb-8.0.1.js';
+import '../libs/pouchdb.all-dbs.js';
 import { PouchdbUI } from './pouchdb-ui.js';
 
 export class AboutUI extends HTMLElement {
@@ -64,6 +64,37 @@ export class AboutUI extends HTMLElement {
   border: 1px solid;
   padding: 0.2rem;
   display: none;
+}
+
+#edit_markdown {
+  margin: 0.3rem;
+  border: 1px solid;
+  padding: 0.2rem;
+  display: none;
+/*   position: absolute; */
+/*   top: 0; */
+/*   overflow: scroll; */
+/*   width: 100%; */
+  white-space: pre-wrap;
+  word-break: break-all;
+/*   left: 0; */
+}
+
+#render_markdown {
+  margin: 0.3rem;
+  border: 1px solid;
+  padding: 0.2rem;
+  display: none;
+/*   position: absolute; */
+/*   opacity: 1.0; */
+/*   overflow: scroll; */
+/*   top: 0; */
+/*   left: 100%; */
+/*   width: 100%; */
+}
+
+code {
+  background-color: lightgray;
 }
 
 :host(:target) {

@@ -174,7 +174,6 @@ input {
   connectedCallback() {
     this.db = new PouchDB('punchcard');
     this.scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-    this.entries = document.querySelector('div#new_entries');
     let removeAutosave = () => {
       let autosavesJSON = localStorage.getItem('autosaves');
       let autosaves = {};
@@ -661,7 +660,6 @@ input {
   init(id) {
     try {
       if (id) {
-        this.activity.dataset.id = id;
         this.db.get(id).then((otherDoc) => {
           // activity.textContent = otherDoc.activity;
           this.activity.value = otherDoc.activity;
@@ -693,7 +691,7 @@ input {
 
   save() {
     return new Promise((resolve, reject) => {
-      this.entries = this.entries  || document.querySelector('entries-ui#New');
+      this.entries = document.querySelector('entries-ui#New');
       if (!this.entries) {
           this.entries = new EntriesUI('New');
         let cache_section = document.querySelector('#cache_section');
@@ -701,13 +699,9 @@ input {
         this.entries.scrollIntoView({block: "center", inline: "center"});
         this.entries.info = 'New Entries';
       }
-      if (this.activity.dataset.id && !this.copy) {
-        var id = this.activity.dataset.id.toString();
-        // NOTE: Make sure edit UI does not accidentally retain
-        // attribute for future edits.
-        this.activity.removeAttribute('data-id');
-        let oldStartString = (new Date(id.substring(0, 24))).toString();
-        this.db.get(id).then((otherDoc) => {
+      if (this.databaseID && !this.copy) {
+        let oldStartString = (new Date(this.databaseID.substring(0, 24))).toString();
+        this.db.get(this.databaseID).then((otherDoc) => {
           let startDate = this.getDateTime(this.start);
           let endDate = this.getDateTime(this.end);
           let activityText = this.activity.value;
@@ -725,7 +719,7 @@ input {
             if (changedStart) {
               otherDoc._deleted = true;
               this.db.put(otherDoc).then((response) => {
-                document.getElementById(response.id).classList.add('deleted');
+                document.getElementById(response.this.databaseID).classList.add('deleted');
               }).catch((err) => {
                 infojs.error(err);
                 reject('Cannot delete entry with old start time.\nDiscard edit?'
@@ -753,19 +747,17 @@ input {
           }
           if (this.isValidEntry(otherDoc)) {
             this.db.put(otherDoc).then((response) => {
-              changedStart && utilsjs.updateEntriesElement(id, 'start', utilsjs.formatStartDate(startDate));
-              changedEnd && utilsjs.updateEntriesElement(id, 'end', endText ? utilsjs.formatEndDate(endDate) : ' ');
+              changedStart && utilsjs.updateEntriesElement(this.databaseID, 'start', utilsjs.formatStartDate(startDate));
+              changedEnd && utilsjs.updateEntriesElement(this.databaseID, 'end', endText ? utilsjs.formatEndDate(endDate) : ' ');
               (changedStart || changedEnd) &&
-                utilsjs.updateEntriesElement(id, 'duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
-              changedActivity && utilsjs.updateEntriesElement(id, 'activity', activityText);
+                utilsjs.updateEntriesElement(this.databaseID, 'duration', endText ? utilsjs.reportDateTimeDiff(startDate, endDate) : ' ');
+              changedActivity && utilsjs.updateEntriesElement(this.databaseID, 'activity', activityText);
               // document.getElementById(response.id).scrollIntoView({block: "center", inline: "center"});
-              // Update id attribute to reflect now document id.
+              // Update id attribute to reflect new document id.
               // Fixes bug where future menu operations on replaced entry would not work.
-              document.getElementById(id).id = response.id;
+              document.getElementById(this.databaseID).id = response.id;
               document.getElementById(response.id).classList.remove('deleted');
               resolve({ modified: response });
-              // TO be set by caller
-              // utilsjs.updateEntriesElement(id, 'revisions', response.rev.split(/-/)[0] + ' revs');
             }).catch((err) => {
               infojs.error(err);
               reject('Modified entry is valid but cannot be saved.\nPlease report this error.'
@@ -796,11 +788,10 @@ input {
           this.db.put(entry).then((response) => {
             // Insert before the first entry
             let newEntry;
-            if (this.copy && this.activity.dataset.id) {
-              let beforeThisElement = document.getElementById(this.activity.dataset.id);
-              // NOTE: Make sure edit UI does not accidentally retain attribute for future edits.
-              this.activity.removeAttribute('data-id');
-              newEntry = utilsjs.addNewEntry(entry, this.entries, beforeThisElement);
+            if (this.copy && this.databaseID) {
+              let beforeThisElement = document.getElementById(this.databaseID);
+              newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+              infojs.info(`adding inside ${beforeThisElement.parentElement.id} before ${beforeThisElement.id}`);
             }
             else {
               newEntry = utilsjs.addNewEntry(entry, this.entries);

@@ -7,6 +7,7 @@ import { OptionsUI } from './options-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
 import { EntriesUI } from './entries-ui.js';
+import '../libs/marked.min.js';
 
 let resultIndex = 1;
 let optionsDB = new PouchDB('options');
@@ -28,13 +29,22 @@ let updateQueryResults = (result) => {
     if (!entry.classList.contains('deleted')) {
       setAvailableRevisionCount(entry);
     }
-    let value = entry.checked;
-    entry.addEventListener('contextmenu', (event) => {
+    entry.checkbox.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
       Array.prototype.forEach.call(resultEntries, (entry) => {
         if (entry.style.display != 'none') {
           entry.checked = !entry.checked;
+          if (entry.checked) {
+            entry.activity.style.display = 'none';
+            entry.view.innerHTML = marked.parse(entry.activity.textContent);
+            entry.view.style.display = '';
+          }
+        else {
+          // entry.checked = false;
+          entry.view.style.display = 'none';
+          entry.activity.style.display = '';
+        }
         }
       });
     });
@@ -42,15 +52,6 @@ let updateQueryResults = (result) => {
   entries.classList.remove('updating');
 
   infojs.timeEnd('runQuery');
-};
-
-let stringToRegexp = function(str) {
-  let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/);
-  // Default to ignore case.
-  // Regexp syntax requires at least a slash at end, possibly followed by flags.
-  return captureGroups &&
-    new RegExp(captureGroups[1],
-               typeof captureGroups[2] == 'undefined' ? "is" : captureGroups[2]);
 };
 
 let setAvailableRevisionCount = function(entry) {
@@ -163,6 +164,15 @@ let updateScrollLinks = function() {
     resultsLink.appendChild(link);
   });
   infojs.timeEnd('updateScrollLinks');
+};
+
+export let stringToRegexp = function(str) {
+  let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/);
+  // Default to ignore case.
+  // Regexp syntax requires at least a slash at end, possibly followed by flags.
+  return captureGroups &&
+    new RegExp(captureGroups[1],
+               typeof captureGroups[2] == 'undefined' ? "is" : captureGroups[2]);
 };
 
 export let runQuery = function(arg) {
@@ -598,6 +608,7 @@ document.addEventListener('readystatechange', (event) => {
           node.classList.remove('filtered');
         });
       }
+      headerUI.toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
         let firstUnfilteredEntryNode = scrollView.querySelector('entry-ui:not(.filtered)');

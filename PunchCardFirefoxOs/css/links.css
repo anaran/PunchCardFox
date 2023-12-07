@@ -1,3 +1,11 @@
 a {
   padding: 0.2rem;
 }
+
+a:any-link {
+    color: blue;
+}
+
+a:any-link.dark_theme {
+    color: lightblue;
+}
