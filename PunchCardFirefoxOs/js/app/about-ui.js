@@ -45,6 +45,7 @@ export class AboutUI extends HTMLElement {
   </section>
 </section>
 <style>
+@import url(css/form.css);
 @import url(css/links.css);
 
 #edit_markdown {

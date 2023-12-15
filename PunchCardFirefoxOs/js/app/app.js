@@ -729,12 +729,8 @@ document.addEventListener('readystatechange', (event) => {
         }
       }
       if (menu.classList.contains("activity")) {
-        // FIXME
-        let operationCount = Array.from(document.querySelectorAll('entry-ui'))
-            .reduce((accumulator, currentValue) => {
-              currentValue.checked && accumulator++;
-              return accumulator;
-            }, 0);
+        // checkbox is a slotted child, hence the space before :checked.
+        let operationCount = document.querySelectorAll('entry-ui :checked').length;
         let menu = operationCount > 0 ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
           utilsjs.positionMenu(menu, event);

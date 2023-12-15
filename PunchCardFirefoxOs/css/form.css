@@ -1,0 +1,47 @@
+
+select {
+    background-color: white;
+    color: black;
+    font-size: inherit;
+}
+
+:host-context(.dark_theme) select {
+    background-color: black;
+    color: white;
+}
+
+option {
+    background-color: white;
+    color: black;
+    font-size: inherit;
+}
+
+:host-context(.dark_theme) option {
+    background-color: black;
+    color: white;
+}
+
+input {
+    background-color: inherit;
+    color: inherit;
+    font-size: inherit;
+}
+
+:is(button, input)[type=button] {
+    background-color: white;
+    color: black;
+    font-size: inherit;
+}
+
+:is(button, input)[type=button]:disabled {
+    background-color: lightgrey;
+}
+
+.dark_theme :is(button, input)[type=button] {
+    background-color: black;
+    color: white;
+}
+
+.dark_theme :is(button, input)[type=button]:disabled {
+    background-color: dimgrey;
+}

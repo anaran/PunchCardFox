@@ -1,3 +1,4 @@
+@import url(form.css);
 @import url(menu.css);
 @import url(readme.css);
 
@@ -10,15 +11,11 @@ html {
 }
 
 body {
-    /* Don't refresh page when top of page is reached. */
-    /* border: 2px solid green; */
-    /* height: 100vh; */
-    /* overflow: hidden; */
-    /* width: 100vw; */
     background-color: white;
     color: black;
     left: 0;
     margin: 0;
+    /* Don't refresh page when top of page is reached. */
     overscroll-behavior: none;
     position: fixed;
     top: 0;
@@ -36,20 +33,7 @@ body.dark_theme {
     color: lightblue;
 }
 
-select {
-    background-color: inherit;
-    color: inherit;
-    font-size: inherit;
-}
-
-option {
-    font-size: inherit;
-}
-
-.dark_theme option {
-    background-color: black;
-    color: white;
-}
+/* See form.css for input element styling, also included by our web components. */
 
 /* JUMPER */
 
@@ -64,11 +48,6 @@ div#scroll-and-view {
     right: 0;
     top: 8mm;
 }
-
-/* nav#punchcard_scrollbar:hover li { */
-/*     overflow: visible; */
-/*     width: auto; */
-/* } */
 
 nav#punchcard_scrollbar {
     background-color: inherit;
@@ -98,23 +77,11 @@ nav#punchcard_scrollbar ul {
     flex-flow: column;
 }
 
-/* nav#punchcard_scrollbar ul:hover { */
-/*     /\* opacity: 0.9; *\/ */
-/*     display: block; */
-/*     background-color: white; */
-/* } */
-
 section#view-punchcard-list {
     width: 100vw;
     /* right: 0; */
     overflow: scroll;
 }
-
-/* scrollbar is a sibling of #view-punchcard-list and ancestor of the
-     hovered anchor element. */
-/* nav#punchcard_scrollbar:hover + section#view-punchcard-list { */
-/*     left: 8rem; */
-/* } */
 
 nav#punchcard_scrollbar li {
     background-color: inherit;
@@ -150,158 +117,24 @@ nav#punchcard_scrollbar li a:hover {
     filter: invert(100%);
 }
 
-/* nav#punchcard_scrollbar li:focus a { */
-/*     background-color: green; */
-/* } */
-
-input-ui {
-    background-color: inherit;
-    color: inherit;
-    font-size: inherit;
-}
-
-input {
-    background-color: inherit;
-    color: inherit;
-    font-size: inherit;
-}
-
-:is(button, input)[type=button] {
-    background-color: white;
-    color: black;
-    font-size: inherit;
-}
-
-:is(button, input)[type=button]:disabled {
-    background-color: lightgrey;
-}
-
-.dark_theme :is(button, input)[type=button] {
-    background-color: black;
-    color: white;
-}
-
-.dark_theme :is(button, input)[type=button]:disabled {
-    background-color: dimgrey;
-}
-
 #filter input-ui {
-    /* background-color: inherit; */
-    /* color: inherit; */
-    /* font-size: x-large; */
-    /* left: 1.5rem; */
-    /* opacity: 0.7; */
-    /* input-ui input element adjust to width */
-    /* width: calc(100vw - 3rem); */
     position: fixed;
     top: 8mm;
     left: 8mm;
-    /* right: 0; */
+    background-color: white;
+    color: black;
 }
 
 #filter input-ui:focus-within {
     color: inherit;
-    /* opacity: 1; */
-    /* background-color: white; */
 }
-
-/* input + span.erase { */
-/*     font-size: x-large; */
-/*     margin-inline-start: -1rem; */
-/*     /\* needed since margin-inline-start */
-/*          not available in Brave browser yet. *\/ */
-/*     margin-left: -1rem; */
-/*     opacity: 0.7; */
-/* } */
-
-/* input.empty + span.erase { */
-/*     display: none; */
-/* } */
-
-/* nav#punchcard_scrollbar li a:active {
-color: blue;
-} */
-
-/* nav#punchcard_scrollbar {
-z-index: 6;
-}
-
-nav#punchcard_scrollbar.selecting {
-bottom: 4.2rem;
-}
-
-nav#punchcard_scrollbar ul > li > * {
-pointer-events: none;
-} */
-
-/* See imports for .view */
-
-/* .view-body-inner {
-overflow-x: hidden;
-overflow-y: auto;
-position: absolute;
-left: 0;
-top: 0;
-bottom: 0;
-z-index: 5;
-width: 100%;
--moz-box-sizing: border-box;
-background: #fff;
-color: #333;
-text-align: left;
-will-change: scroll-position;
-} */
-
-/* Removes scroll from the view body inner */
-/* .view-noscroll .view-body-inner {
-width: -moz-calc(100% + 1.5rem);
-} */
-
-/* .view-noscroll {
-overflow-x: hidden;
-overflow-y: auto;
-position: absolute;
-} */
-
-/* Begin of section taken from
-https://developer.mozilla.org/en-US/Apps/Design/Firefox_OS_building_blocks/Scrolling/2.0 */
-/* html, body {
-margin: 0;
-padding: 0;
-font-size: 10px;
-font-family: sans-serif;
-background-color: #fff;
-}
-
-body {
-background: none;
-}
-
-body[role="application"] nav#punchcard_scrollbar p {
-opacity: 1;
-}
-
-body[role="application"] nav#punchcard_scrollbar {
-top: 6.8rem;
-} */
-/* End of section taken from
-https://developer.mozilla.org/en-US/Apps/Design/Firefox_OS_building_blocks/Scrolling/2.0 */
 
 #bottom {
     background-color: white;
-    /* color: black; */
-    /* Trigger transition in combination with info.js */
-    /* top: 90vh; */
 }
 
 .dark_theme #bottom {
     background-color: black;
-    /* color: white; */
-}
-
-#filter input-ui {
-    background-color: white;
-    color: black;
 }
 
 .dark_theme #filter input-ui {

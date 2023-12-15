@@ -12,7 +12,7 @@ export class EntryUI extends HTMLElement {
   <pre class="start"></pre>
   <pre class="end"></pre>
   <pre class="duration"></pre>
-  <input class="checked" type="checkbox">
+  <slot></slot>
   <pre class="revisions"></pre>
   <pre class="activity"></pre>
   <div class="view" style="display: none"></div>
@@ -162,6 +162,9 @@ input[type=checkbox]:checked ~ pre.activity {
 
 </style>
 `;
+      this.innerHTML = `
+  <input class="checked" type="checkbox">
+`;
     }
     catch (e) {
       infojs.error(e);
@@ -169,7 +172,7 @@ input[type=checkbox]:checked ~ pre.activity {
   }
   connectedCallback() {
     try {
-      this.checkbox = this.shadow.children[3];
+      this.checkbox = this.children[0];
       this.checked = this.checkbox.checked;
       this.view = this.shadow.children[6];
       // this.view.style.display = 'none';

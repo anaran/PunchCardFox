@@ -9,3 +9,8 @@ a:any-link {
 a:any-link.dark_theme {
     color: lightblue;
 }
+
+/* web components include this file */
+:host-context(.dark_theme) a:any-link {
+    color: lightblue;
+}

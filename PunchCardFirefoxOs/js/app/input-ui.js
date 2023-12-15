@@ -16,6 +16,13 @@ export class InputUI extends HTMLElement {
 <input type="button" class="undo" value="&#x238c;"/>
 <input type="button" class="erase" value="&Cross;"/>
 <style>
+
+:host {
+    background-color: inherit;
+    color: inherit;
+    font-size: inherit;
+}
+
 input {
   font-size: inherit;
 }
@@ -25,9 +32,10 @@ input.val {
   color: inherit;
   font-family: inherit;
   font-size: inherit;
-  padding-inline-end: 1em;
+  padding-inline-end: 1rem;
   width: inherit;
 }
+
 input.erase, input.undo {
   color: inherit;
   padding: 0;
@@ -35,23 +43,29 @@ input.erase, input.undo {
   margin-inline-start: -1.5em;
   /* margin-inline-end: 1.5em; */
   background-color: transparent;
-  width: 1em;
+  width: 1rem;
 }
+
 input:invalid {
   background-color: lightpink;
 }
+
 input.empty ~ input.erase {
   opacity: 0.3;
 }
+
 input:not(.empty) ~ input.undo {
   display: none;
 }
+
 input.undo:not(.undoable) {
   display: none;
 }
+
 input.empty + input.undo.undoable + input.erase {
   display: none;
 }
+
 </style>
 `;
       this.erase = this.shadow.querySelector('input.erase');

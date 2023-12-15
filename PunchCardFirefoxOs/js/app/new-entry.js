@@ -102,51 +102,23 @@ input {
   color: inherit;
   font-size: inherit;
   width: 33ch;
-    /*font-family: monospace;*/
+  font-family: monospace;
 }
 
 .sign, .year, .month, .date, .week, .hour, .minute, .second {
     background-color: inherit;
     color: inherit;
     font-family: monospace;
-    /* margin: 0; */
     padding: 0 0 1rem 0;
     text-align: end;
-    /* border: 0 solid; */
     display: inline-block;
 }
 
 .changed {
-  /*font-weight: bold;
-    color: black;
-    background-color: white;*/
     text-decoration-style: wavy;
     text-decoration-color: red;
     text-decoration-line: underline;
 }
-
-/*:host-context(body.dark_theme) span.changed {
-    color: white;
-    background-color: black;
-    filter: invert(100%);
-}
-
-:host-context(body) span.changed {
-    color: black;
-    background-color: white;
-    filter: invert(100%);
-}*/
-
-/* #new_entry {
-    font-size: 1.5rem;
-    margin: 0;
-    position: fixed;
-    text-align: center;
-    top: 0;
-    left: 0;
-    display: flex;
-    width: 100vw;
-} */
 
 #editor {
     display: flex;
@@ -157,16 +129,13 @@ input {
   color: inherit;
   flex: auto;
   font-size: inherit;
-  resize: both;
+  resize: vertical;
   height: 10ch;
-  /*min-height: 6ch;
-    min-width: 33ch;
-    width: 100%;*/
 }
 
 #save_edit, #quit_edit {
-    min-width: 2em;
-    min-height: 2em;
+    min-width: 2rem;
+    min-height: 2rem;
 }
 </style>
       `;

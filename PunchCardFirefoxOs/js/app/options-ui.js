@@ -84,7 +84,7 @@ export class OptionsUI extends HTMLElement {
       <option>large</option>
       <option>x-large</option>
     </select>
-    <h1 data-l10n-id="punchcard_font_size_title">Punchcard Theme</h1>
+    <h1 data-l10n-id="punchcard_theme_title">Punchcard Theme</h1>
     <select class="persistent" id="punchcard_theme_select">
       <option>Light</option>
       <option>Dark</option>
@@ -93,16 +93,12 @@ export class OptionsUI extends HTMLElement {
   </section>
 </section>
 <style>
+@import url(css/form.css);
 @import url(css/links.css);
 
 pre {
   font-family: FiraSans;
 }
-
-/* html, body {
-  margin: 0;
-  padding: 0.5rem;
-} */
 
 div {
 /*   font-size: small; */
@@ -145,41 +141,6 @@ pre:focus {
       // try {
       infojs.time('options.js');
       var infoNode = this.shadow.getElementById('replication_info');
-      let themeSelect = this.shadow.getElementById ('punchcard_theme_select');
-      // Create the query list.
-      const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
-      // Define a callback function for the event listener.
-      function handleColorThemeChange(evt) {
-        if (evt.matches) {
-          document.body.classList.add('dark_theme');
-        } else {
-          document.body.classList.remove('dark_theme');
-        }
-        infojs.info(evt);
-      }
-      let changeTheme = (element) => {
-        switch (element.value) {
-        case "Light": {
-          mediaQueryList.removeEventListener("change", handleColorThemeChange);
-          document.body.classList.remove('dark_theme');
-          break;
-        }
-        case "Dark": {
-          mediaQueryList.removeEventListener("change", handleColorThemeChange);
-          document.body.classList.add('dark_theme');
-          break;
-        }
-        case "System": {
-          // Add the callback function as a listener to the query list.
-          mediaQueryList.addEventListener("change", handleColorThemeChange);
-          // Run the orientation change handler once.
-          handleColorThemeChange(mediaQueryList);
-          break;
-        }
-        }
-      };
-      changeTheme(themeSelect);
-      themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
       var XHR_TIMEOUT_MS = 65000;
       var cookie;
       var setCookie;
@@ -234,6 +195,41 @@ pre:focus {
           }
         }
       });
+      let themeSelect = this.shadow.getElementById ('punchcard_theme_select');
+      // Create the query list.
+      const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+      // Define a callback function for the event listener.
+      function handleColorThemeChange(evt) {
+        if (evt.matches) {
+          document.body.classList.add('dark_theme');
+        } else {
+          document.body.classList.remove('dark_theme');
+        }
+        infojs.info(evt);
+      }
+      let changeTheme = (element) => {
+        switch (element.value) {
+        case "Light": {
+          mediaQueryList.removeEventListener("change", handleColorThemeChange);
+          document.body.classList.remove('dark_theme');
+          break;
+        }
+        case "Dark": {
+          mediaQueryList.removeEventListener("change", handleColorThemeChange);
+          document.body.classList.add('dark_theme');
+          break;
+        }
+        case "System": {
+          // Add the callback function as a listener to the query list.
+          mediaQueryList.addEventListener("change", handleColorThemeChange);
+          // Run the orientation change handler once.
+          handleColorThemeChange(mediaQueryList);
+          break;
+        }
+        }
+      };
+      changeTheme(themeSelect);
+      themeSelect.addEventListener ('change', (event) => changeTheme(event.target));
       let fontSizeSelect = this.shadow.getElementById ('punchcard_font_size_select');
       let changeFontSize = (element) => {
         document.documentElement.style.fontSize = element.value;
