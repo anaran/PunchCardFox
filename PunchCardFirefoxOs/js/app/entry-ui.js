@@ -12,10 +12,10 @@ export class EntryUI extends HTMLElement {
   <pre class="start"></pre>
   <pre class="end"></pre>
   <pre class="duration"></pre>
-  <slot></slot>
+  <slot name="slot1"></slot>
   <pre class="revisions"></pre>
   <pre class="activity"></pre>
-  <div class="view" style="display: none"></div>
+  <div class="activity" style="display: none"></div>
 <style>
 
 :host>pre {
@@ -66,12 +66,12 @@ pre.activity {
   grid-row: 3;
 }
 
-div.view {
+div.activity {
   grid-column: 1 / 4;
-  grid-row: 3;
+  grid-row: 4;
 }
 
-input[type=checkbox]:checked ~ pre.activity {
+:host(.checked) pre.activity {
   overflow: visible;
   display: block;
   white-space: pre-wrap;
@@ -163,7 +163,7 @@ input[type=checkbox]:checked ~ pre.activity {
 </style>
 `;
       this.innerHTML = `
-  <input class="checked" type="checkbox">
+  <input slot="slot1" type="checkbox">
 `;
     }
     catch (e) {
@@ -173,20 +173,30 @@ input[type=checkbox]:checked ~ pre.activity {
   connectedCallback() {
     try {
       this.checkbox = this.children[0];
-      this.checked = this.checkbox.checked;
+      if (this.checkbox.checked) {
+        this.classList.add('checked');
+      }
+      else {
+        this.classList.remove('checked');
+      }
       this.view = this.shadow.children[6];
       // this.view.style.display = 'none';
       this.checkbox.addEventListener('change', (event) => {
-        this.checked = event.target.checked;
-        if (event.target.checked) {
-          this.activity.style.display = 'none';
-          this.view.innerHTML = marked.parse(this.activity.textContent);
-          this.view.style.display = '';
-        }
-        else {
-          this.view.style.display = 'none';
-          this.activity.style.display = '';
-        }
+      if (event.target.checked) {
+        this.classList.add('checked');
+      }
+      else {
+        this.classList.remove('checked');
+      }
+        // if (event.target.checked) {
+        //   this.activity.style.display = 'none';
+        //   this.view.innerHTML = marked.parse(this.activity.textContent);
+        //   this.view.style.display = '';
+        // }
+        // else {
+        //   this.view.style.display = 'none';
+        //   this.activity.style.display = '';
+        // }
       });
     }
     catch (e) {

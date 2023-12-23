@@ -193,23 +193,19 @@ input {
           // event.stopPropagation();
           ticker();
           let newDateTime;
-          // Note: Number.parseFloat would parse an ISO date string to
-          // the numeric value of its year component!
-          // "2015-03-07..." => 2015
-          // var milliSeconds = Number(event.target.textContent);
-          let milliSeconds = Number(event.target.value);
-          if (Number.isNaN(milliSeconds)) {
-            newDateTime = new Date(event.target.value);
-          }
-          else {
-            newDateTime = new Date(milliSeconds);
-          }
+          newDateTime = new Date(event.target.value);
           if (Number.isNaN(newDateTime.getMilliseconds())) {
-            infojs.error('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).');
+            // Note: Number.parseInt parses an ISO date string to
+            // the numeric value of its year component!
+            // "2015-03-07..." => 2015
+            let milliSeconds = Number.parseInt(event.target.value);
+            newDateTime = new Date(milliSeconds);
+            if (Number.isNaN(newDateTime.getMilliseconds())) {
+              infojs.warn('Ignoring ' + event.target.value + ' (cannot convert to a valid Date).');
+              return;
+            }
           }
-          else {
-            elementUpdater(newDateTime);
-          }
+          elementUpdater(newDateTime);
         }
       };
     }

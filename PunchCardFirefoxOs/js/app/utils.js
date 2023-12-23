@@ -115,10 +115,10 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     if ('end' in doc) {
       let endDate = new Date(doc.end);
       // Legacy values from Sqlite database use 0 for undefined values
-      if (Math.abs(endDate.getTime()) >= 1000) {
+      // if (Math.abs(endDate.getTime()) >= 1000) {
         end.textContent = formatEndDate(endDate);
         duration.textContent = reportDateTimeDiff(startDate, endDate);
-      }
+      // }
     }
     // Element needs some content to receive click event to bring up endMenu.
     if (end.textContent.length == 0) {

@@ -7,6 +7,14 @@ ul.menu {
 
 ul.menu > li {
     display: block;
+    background-color: white;
+    color: black;
+}
+
+.dark_theme ul.menu > li {
+    display: block;
+    background-color: black;
+    color: white;
 }
 
 ul.menu > li > button {

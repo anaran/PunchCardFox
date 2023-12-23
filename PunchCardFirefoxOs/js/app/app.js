@@ -35,16 +35,6 @@ let updateQueryResults = (result) => {
       Array.prototype.forEach.call(resultEntries, (entry) => {
         if (entry.style.display != 'none') {
           entry.checked = !entry.checked;
-          if (entry.checked) {
-            entry.activity.style.display = 'none';
-            entry.view.innerHTML = marked.parse(entry.activity.textContent);
-            entry.view.style.display = '';
-          }
-        else {
-          // entry.checked = false;
-          entry.view.style.display = 'none';
-          entry.activity.style.display = '';
-        }
         }
       });
     });
@@ -684,10 +674,19 @@ document.addEventListener('readystatechange', (event) => {
       let menu = event.composedPath()[0];
       // entry-ui inside shadow dom.
       let entry = event.composedPath()[2];
+      // checkbox is a slotted child, hence the space before :checked.
+      let checkedEntries = document.querySelectorAll('entry-ui :checked')
+      let operationCount = checkedEntries.length;
       if (menu.classList.contains("start")) {
         if (startMenu.style.display == 'none') {
           utilsjs.positionMenu(startMenu, event);
           startMenu.dataset.id = entry.id;
+          if (!entry.checked && operationCount == 1) {
+            document.getElementById('start_at_checked').removeAttribute('disabled');
+          }
+          else {
+            document.getElementById('start_at_checked').setAttribute('disabled', true);
+          }
         }
         else {
           startMenu.style.display = 'none';
@@ -703,6 +702,12 @@ document.addEventListener('readystatechange', (event) => {
           }
           else {
             document.getElementById('end_undefined').removeAttribute('disabled');
+          }
+          if (!entry.checked && operationCount == 1) {
+            document.getElementById('end_at_checked').removeAttribute('disabled');
+          }
+          else {
+            document.getElementById('end_at_checked').setAttribute('disabled', true);
           }
         }
         else {
@@ -729,12 +734,33 @@ document.addEventListener('readystatechange', (event) => {
         }
       }
       if (menu.classList.contains("activity")) {
-        // checkbox is a slotted child, hence the space before :checked.
-        let operationCount = document.querySelectorAll('entry-ui :checked').length;
-        let menu = operationCount > 0 ? operationMenu : activityMenu;
+        if (operationCount > 0) {
+          let title = document.getElementById('operation_menu_title');
+          let ids = Array.from(checkedEntries, elem => elem.parentElement.id);
+          title.textContent = `${operationCount} checked ${ids}`;
+        }
+        let menu = entry.checked ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
           utilsjs.positionMenu(menu, event);
           menu.dataset.id = event.composedPath()[2].id;
+          if (!entry.checked && operationCount == 1) {
+            document.getElementById('activity_at_checked').removeAttribute('disabled');
+          }
+          else {
+            document.getElementById('activity_at_checked').setAttribute('disabled', true);
+          }
+          if (entry.checked && operationCount == 2) {
+            document.getElementById('fill_gap').removeAttribute('disabled');
+          }
+          else {
+            document.getElementById('fill_gap').setAttribute('disabled', true);
+          }
+          if (entry.checked && operationCount == 1) {
+            document.getElementById('delete').removeAttribute('disabled');
+          }
+          else {
+            document.getElementById('delete').setAttribute('disabled', true);
+          }
         }
         else {
           menu.style.display = 'none';
@@ -833,64 +859,112 @@ document.addEventListener('readystatechange', (event) => {
     };
 
     var startNow = function (event) {
-      event.preventDefault();
-      var id = getDataSetIdHideMenu(event);
-      db.get(id).then(function(otherDoc) {
-        var startDate = new Date;
-        var startText = startDate.toJSON();
-        let oldStartText = otherDoc._id.substring(0, 24);
-        var changedStart = !(oldStartText == startText);
-        if (changedStart) {
-          let newDoc = {};
-          otherDoc._deleted = true;
-          db.put(otherDoc).then(function(response) {
-            document.getElementById(response.id).classList.add('deleted');
-          }).catch(function(err) {
-            infojs.error(err, document.getElementById(id).parentElement);
-          });
-          newDoc = {
-            _id: startText + utilsjs.getRandom12HexDigits(),
-            activity: otherDoc.activity
-          };
-          if ('end' in otherDoc) {
-            newDoc.end = otherDoc.end;
-          }
-          db.put(newDoc).then(function(response) {
-            var beforeThisElement = document.getElementById(id);
-            var newEntry = utilsjs.addNewEntry(newDoc, beforeThisElement.parentElement, beforeThisElement);
-            setAvailableRevisionCount(document.getElementById(response.id));
-            newEntry.scrollIntoView({block: "center", inline: "center"});
-            newEntry.activity.classList.add('changed');
-            newEntry.start.classList.add('changed');
-            newEntry.end.classList.add('changed');
-            newEntry.revisions.classList.add('changed');
-          }).catch(function(err) {
-            //errors
-            infojs.error(err, document.getElementById(id).parentElement);
-          });
+      let startText = (new Date).toJSON();
+      startAt.call(this, event, startText);
+    }
+
+    var startAtChecked = function (event) {
+      let startText;
+      let allChecked = document.querySelectorAll('entry-ui :checked');
+      if (allChecked.length == 1) {
+        let id = allChecked[0].parentElement.id;
+        db.get(id).then(function(otherDoc) {
+          // We derive the _id from the start time and have no start property.
+          startText = otherDoc._id;
+          startAt.call(this, event, startText);
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
         }
-      }).catch(function(err) {
-        //errors
-        infojs.error(err, document.getElementById(id).parentElement);
-      });
-      // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
-      // document.location.reload('force');
-    };
+      }
+
+    let startAt = function (event, startText) {
+        event.preventDefault();
+        var id = getDataSetIdHideMenu(event);
+        db.get(id).then(function(otherDoc) {
+          let oldStartText = otherDoc._id.substring(0, 24);
+          var changedStart = !(oldStartText == startText);
+          if (changedStart) {
+            let newDoc = {};
+            otherDoc._deleted = true;
+            db.put(otherDoc).then(function(response) {
+              document.getElementById(response.id).classList.add('deleted');
+            }).catch(function(err) {
+              infojs.error(err, document.getElementById(id).parentElement);
+            });
+            newDoc = {
+              _id: startText + utilsjs.getRandom12HexDigits(),
+              activity: otherDoc.activity
+            };
+            if ('end' in otherDoc) {
+              newDoc.end = otherDoc.end;
+            }
+            db.put(newDoc).then(function(response) {
+              var beforeThisElement = document.getElementById(id);
+              var newEntry = utilsjs.addNewEntry(newDoc, beforeThisElement.parentElement, beforeThisElement);
+              setAvailableRevisionCount(document.getElementById(response.id));
+              newEntry.scrollIntoView({block: "center", inline: "center"});
+              newEntry.activity.classList.add('changed');
+              newEntry.start.classList.add('changed');
+              newEntry.end.classList.add('changed');
+              newEntry.revisions.classList.add('changed');
+            }).catch(function(err) {
+              //errors
+              infojs.error(err, document.getElementById(id).parentElement);
+            });
+          }
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+        // An IndexedDB transaction that was not yet complete has been aborted due to page navigation.
+        // document.location.reload('force');
+      }
+
+    // var startAtChecked = startAt(true);
+
     var startNowItem = document.querySelector('#start_now');
     if (startNowItem) {
       startNowItem.addEventListener('click', startNow);
     }
+
+    var startAtCheckedItem = document.querySelector('#start_at_checked');
+    if (startAtCheckedItem) {
+      // Uses start time of only checked entry
+      startAtCheckedItem.addEventListener('click', startAtChecked);
+    }
+
     var endNow = function (event) {
+      let endText = (new Date).toJSON();
+      endAt.call(this, event, endText);
+    }
+
+    var endAtChecked = function (event) {
+      let endText;
+      let allChecked = document.querySelectorAll('entry-ui :checked');
+      if (allChecked.length == 1) {
+        let id = allChecked[0].parentElement.id;
+        db.get(id).then(function(otherDoc) {
+          endText = otherDoc.end;
+          endAt.call(this, event, endText);
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+        }
+      }
+
+    var endAt = function (event, endText) {
       event.preventDefault();
       var id = getDataSetIdHideMenu(event);
       db.get(id).then(function(otherDoc) {
-        var now = new Date;
         let startText = otherDoc._id.substring(0,24);
-        otherDoc.end = now.toJSON();
+        otherDoc.end = endText;
         return db.put(otherDoc).then(function(response) {
-          utilsjs.updateEntriesElement(id, 'end', utilsjs.formatEndDate(now));
+          utilsjs.updateEntriesElement(id, 'end', utilsjs.formatEndDate(new Date(endText)));
           setAvailableRevisionCount(document.getElementById(id));
-          utilsjs.updateEntriesElement(id, 'duration', utilsjs.reportDateTimeDiff(new Date(startText), now));
+          utilsjs.updateEntriesElement(id, 'duration', utilsjs.reportDateTimeDiff(new Date(startText), new Date(endText)));
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -903,6 +977,10 @@ document.addEventListener('readystatechange', (event) => {
     var endNowItem = document.querySelector('#end_now');
     if (endNowItem) {
       endNowItem.addEventListener('click', endNow);
+    }
+    var endAtCheckedItem = document.querySelector('#end_at_checked');
+    if (endAtCheckedItem) {
+      endAtCheckedItem.addEventListener('click', endAtChecked);
     }
     var endUndefined = function (event) {
       event.preventDefault();
@@ -1047,14 +1125,28 @@ document.addEventListener('readystatechange', (event) => {
     }
 
     var edit = function(event) {
-      // event.preventDefault();
-      // event.stopPropagation();
       let id = getDataSetIdHideMenu(event);
       addNewEdit(id);
     };
+    var view = function(event) {
+      let id = getDataSetIdHideMenu(event);
+      let entry = document.getElementById(id);
+      if (entry.view.style.display == 'none') {
+        entry.view.innerHTML = marked.parse(entry.activity.textContent);
+        entry.view.style.display = '';
+      }
+      else {
+        entry.view.style.display = 'none';
+        entry.view.innerHTML = '';
+      }
+    }
     var editItem = document.querySelector('#edit');
     if (editItem) {
       editItem.addEventListener('click', edit);
+    }
+    var viewItem = document.querySelector('#view');
+    if (viewItem) {
+      viewItem.addEventListener('click', view);
     }
     var editNewCopy = function (event) {
       event.preventDefault();
@@ -1065,27 +1157,42 @@ document.addEventListener('readystatechange', (event) => {
     if (editNewCopyItem) {
       editNewCopyItem.addEventListener('click', editNewCopy);
     }
-    var copyActivity = function(event) {
+
+    var activityAtChecked = function (event) {
+      let activityText;
+      let allChecked = document.querySelectorAll('entry-ui :checked');
+      if (allChecked.length == 1) {
+        let id = allChecked[0].parentElement.id;
+        db.get(id).then(function(otherDoc) {
+          activityText = otherDoc.activity;
+          activityAt.call(this, event, activityText);
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+        }
+      }
+
+    var activityAt = function (event, activityText) {
       event.preventDefault();
-      event.stopPropagation();
       var id = getDataSetIdHideMenu(event);
-      // NOTE: Works, but too silly to be considered.
-      // var activityItem = document.getElementById(id).activity;
-      // var s = getSelection();
-      // s.removeAllRanges();
-      // var r = document.createRange();
-      // r.selectNodeContents(activityItem);
-      // s.addRange(r);
-      // var sel= s.toString();
-      // window.alert(sel);
-    };
-    var copyActivityItem = document.querySelector('#copy_activity_menuitem');
-    if (copyActivityItem) {
-      copyActivityItem.addEventListener('click', copyActivity);
+      db.get(id).then(function(otherDoc) {
+        otherDoc.activity = activityText;
+        return db.put(otherDoc).then(function(response) {
+          utilsjs.updateEntriesElement(id, 'activity', activityText);
+          setAvailableRevisionCount(document.getElementById(id));
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+      }).catch(function(err) {
+        //errors
+        infojs.error(err, document.getElementById(id).parentElement);
+      });
     }
-    var pasteActivityItem = document.querySelector('#paste_activity_menuitem');
-    if (pasteActivityItem) {
-      pasteActivityItem.addEventListener('click', pasteActivity);
+    var activityAtCheckedItem = document.querySelector('#activity_at_checked');
+    if (activityAtCheckedItem) {
+      activityAtCheckedItem.addEventListener('click', activityAtChecked);
     }
     let queryDay = function(event) {
       try {
@@ -1095,8 +1202,8 @@ document.addEventListener('readystatechange', (event) => {
             descending: true,
             limit: 999,
           };
-          options.startkey = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() - 3.6e6 * 24 * 0.5)).toJSON();
-          options.endkey = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() + 3.6e6 * 24 * 0.5)).toJSON();
+          options.query_start = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() - 3.6e6 * 24 * 0.5)).toJSON();
+          options.query_end = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() + 3.6e6 * 24 * 0.5)).toJSON();
           runQuery(options);
         }).catch(function(err) {
           infojs.error(err);
@@ -1117,8 +1224,8 @@ document.addEventListener('readystatechange', (event) => {
           descending: true,
           limit: 999,
         };
-        options.startkey = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() - 3.6e6 * 24 * 3.5)).toJSON();
-        options.endkey = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() + 3.6e6 * 24 * 3.5)).toJSON();
+        options.query_start = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() - 3.6e6 * 24 * 3.5)).toJSON();
+        options.query_end = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() + 3.6e6 * 24 * 3.5)).toJSON();
         runQuery(options);
       }).catch(function(err) {
         infojs.error(err);
@@ -1130,7 +1237,7 @@ document.addEventListener('readystatechange', (event) => {
     }
 
     // Query recent changes when application starts.
-    runQuery({
+    false && runQuery({
       db_changes: true, // run db.changes instead of db.allDocs
       descending: true,
       include_docs: true,
@@ -1185,42 +1292,93 @@ document.addEventListener('readystatechange', (event) => {
     if (repeatNowItem) {
       repeatNowItem.addEventListener('click', repeatNow);
     }
+    var fillGap = function (event) {
+      let id = getDataSetIdHideMenu(event);
+      let allChecked = document.querySelectorAll('entry-ui :checked');
+      if (allChecked.length == 2) {
+        let ids = Array.from(allChecked).map(elem => elem.parentElement.id);
+        db.allDocs({
+          include_docs: true,
+          keys: ids
+        }).then(function(otherDocs) {
+          otherDocs.rows[0].doc.activity
+          let entry = {
+            // If there is no end, take start (_id substring) to be the end.
+            // FIXME: this code assumes descending order!
+          _id: (otherDocs.rows[1].doc.end || otherDocs.rows[1].doc._id.substring(0, 24)) + utilsjs.getRandom12HexDigits(),
+          end: otherDocs.rows[0].doc._id.substring(0, 24),
+          activity: `Gap between ${otherDocs.rows[1].doc.activity.substring(0, 20)}... *and* ${otherDocs.rows[0].doc.activity.substring(0, 20)}...`,
+        };
+        db.put(entry).then(function(response) {
+          entry._id = response.id;
+          // NOTE Don't pass rev if it is the current/new revision.
+          // See showRevisions for its use in HTML id to identify
+          // historic revisions in UI.
+          // entry._rev = response.rev;
+          var beforeThisElement = document.getElementById(id);
+          var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+          setAvailableRevisionCount(document.getElementById(id));
+          newEntry.scrollIntoView({block: "center", inline: "center"});
+          newEntry.activity.classList.add('changed');
+          newEntry.start.classList.add('changed');
+          newEntry.end.classList.add('changed');
+          newEntry.revisions.classList.add('changed');
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+        }).catch(function(err) {
+          //errors
+          infojs.error(err, document.getElementById(id).parentElement);
+        });
+      }
+      // addNewEdit(id, 'new_copy');
+    }
+    var fillGapItem = document.querySelector('#fill_gap');
+    if (fillGapItem) {
+      fillGapItem.addEventListener('click', fillGap);
+    }
     var deleteEntry = function (event) {
+      // just hide menu
+      getDataSetIdHideMenu(event);
       event.preventDefault();
-      var id = getDataSetIdHideMenu(event);
-      db.get(id).then(function(doc) {
-        if (window.confirm('Delete entry? ' + doc.activity)) {
-          // db.remove is not equivalent to db.put with _deleted = true
-          // as might be assumed from
-          // http://pouchdb.com/api.html#delete_document
-          // See
-          // http://pouchdb.com/api.html#filtered-replication
-          // and
-          // https://github.com/pouchdb/pouchdb/issues/4796
-          if (true) {
-            doc._deleted = true;
-            return db.put(doc).then(function(response) {
-              var deletedElement = document.getElementById(id);
-              // Keep this _ separator in sync with function addNewEntry in utils.js
-              deletedElement.id = response.id + '_' + response.rev;
-              deletedElement.classList.add('deleted');
-              // document.location.reload('force');
-            }).catch(function (err) {
-              infojs.error(err);
-            });
+      let allChecked = document.querySelectorAll('entry-ui :checked');
+      if (allChecked.length == 1) {
+        let id = allChecked[0].parentElement.id;
+        db.get(id).then(function(doc) {
+          if (window.confirm('Delete entry? ' + doc.activity)) {
+            // db.remove is not equivalent to db.put with _deleted = true
+            // as might be assumed from
+            // http://pouchdb.com/api.html#delete_document
+            // See
+            // http://pouchdb.com/api.html#filtered-replication
+            // and
+            // https://github.com/pouchdb/pouchdb/issues/4796
+            if (true) {
+              doc._deleted = true;
+              return db.put(doc).then(function(response) {
+                var deletedElement = document.getElementById(id);
+                // Keep this _ separator in sync with function addNewEntry in utils.js
+                deletedElement.id = response.id + '_' + response.rev;
+                deletedElement.classList.add('deleted');
+                // document.location.reload('force');
+              }).catch(function (err) {
+                infojs.error(err);
+              });
+            }
+            else {
+              return db.remove(doc).then(function(response) {
+                // document.location.reload('force');
+              }).catch(function (err) {
+                infojs.error(err, document.getElementById(id).parentElement);
+              });
+            }
           }
-          else {
-            return db.remove(doc).then(function(response) {
-              // document.location.reload('force');
-            }).catch(function (err) {
-              infojs.error(err, document.getElementById(id).parentElement);
-            });
-          }
-        }
-      }).catch(function(err){
-        infojs.error(err);
-        //errors
-      });
+        }).catch(function(err){
+          infojs.error(err);
+          //errors
+        });
+      }
     };
     var deleteEntryItem = document.querySelector('#delete');
     if (deleteEntryItem) {

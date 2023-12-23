@@ -104,10 +104,12 @@ own language (as long as you provide translations).
       <li><button type="button" id="start_now">start now</button></li>
       <li><button type="button" id="query_day">query day around entry</button></li>
       <li><button type="button" id="query_week">query week around entry</button></li>
+      <li><button type="button" disabled=true id="start_at_checked">start at &checkmark;</button></li>
     </ul>
     <ul id="end_menu" class="menu" style="display: none;">
       <li><button type="button" id="end_now">end now</button></li>
       <li><button type="button" id="end_undefined">end undefined</button></li>
+      <li><button type="button" disabled=true id="end_at_checked">end at &checkmark;</button></li>
     </ul>
     <ul id="revisions_menu" class="menu" style="display: none;">
       <li><button type="button" id="show_revisions">show revisions</button></li>
@@ -117,10 +119,13 @@ own language (as long as you provide translations).
       <li><button type="button" id="edit">edit</button></li>
       <li><button type="button" id="edit_new_copy">edit new copy</button></li>
       <li><button type="button" id="repeat_now">repeat now</button></li>
-      <li><button type="button" id="delete">delete</button></li>
+      <li><button type="button" id="view">view</button></li>
+      <li><button type="button" disabled=true id="activity_at_checked">activity at &checkmark;</button></li>
     </ul>
     <ul id="operation_menu" class="menu" style="display: none;">
+      <li id="operation_menu_title"></li>
       <li><button type="button" disabled=true id="fill_gap">fill gap</button></li>
+      <li><button type="button" disabled=true id="delete">delete</button></li>
     </ul>
     <script type="module" src="./js/app/app.js"></script>
   </body>
