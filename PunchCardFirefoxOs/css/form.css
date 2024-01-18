@@ -45,3 +45,8 @@ input {
 .dark_theme :is(button, input)[type=button]:disabled {
     background-color: dimgrey;
 }
+
+input[type=checkbox] {
+    height: 1rem;
+    width: 1rem;
+}
