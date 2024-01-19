@@ -179,12 +179,6 @@ input {
     this.shadow.querySelector ('#save_edit').addEventListener('click', saveEdit, 'capture');
     this.startDateTime = new Date;
     this.endDateTime = new Date;
-    // NOTE: prompt user whether to reload page even when an entry is being edited.
-    window.addEventListener("beforeunload", (event) => {
-      if (document.querySelector('new-entry')) {
-        event.returnValue = "unsaved";
-      }
-    });
     this.setDateFromStringOrNumber = (ticker, elementUpdater) => {
       return (event) => {
         // space

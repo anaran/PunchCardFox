@@ -786,34 +786,6 @@ document.addEventListener('readystatechange', (event) => {
         it.click();
       }
     };
-    let toggleNarrow = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      if (this.classList.contains('narrow')) {
-        this.classList.remove('narrow');
-      }
-      else {
-        this.classList.add('narrow');
-      }
-      recenterCenterElement();
-    };
-    scrollBar.addEventListener('contextmenu', toggleNarrow);
-    // scrollBar.addEventListener('touchstart', log, !'capture');
-    // scrollBar.addEventListener('touchmove', log, !'capture');
-    // scrollBar.addEventListener('touchend', click, !'capture');
-    // scrollBar.addEventListener('touchcancel', log, !'capture');
-    // Array.prototype.forEach.call(links, (link) => {
-    //   link.addEventListener('touchend', click, !'capture');
-    // });
-    // // scrollBar.addEventListener('scroll', log, !'capture');
-    // scrollBar.addEventListener('mousedown', log, !'capture');
-    // scrollBar.addEventListener('mouseup', click, !'capture');
-    // scrollBar.addEventListener('pointerdown', log, !'capture');
-    // scrollBar.addEventListener('pointermove', log, !'capture');
-    // scrollBar.addEventListener('pointerup', log, !'capture');
-    // scrollBar.addEventListener('dragstart', ignore, !'capture');
-    // scrollBar.addEventListener('drag', ignore, !'capture');
-    
     screen.orientation.addEventListener('change', (event) => {
       ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
     }, true);

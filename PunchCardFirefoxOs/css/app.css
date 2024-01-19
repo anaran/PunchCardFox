@@ -57,11 +57,6 @@ nav#punchcard_scrollbar {
     text-align: center;
 }
 
-nav#punchcard_scrollbar.narrow {
-    width: 2rem;
-    text-indent: -2.7em;
-}
-
 nav#punchcard_scrollbar ul {
     background-color: inherit;
     color: inherit;
@@ -80,6 +75,7 @@ section#view-punchcard-list {
     width: 100vw;
     /* right: 0; */
     overflow: scroll;
+    scrollbar-width: none;
 }
 
 nav#punchcard_scrollbar li {

@@ -147,7 +147,6 @@ export class HeaderUI extends HTMLElement {
     // });
   toggleScrollbar = (event) => {
     let scrollBar = document.querySelector('nav#punchcard_scrollbar');
-    event.target.style.opacity = 0.3;
     event.preventDefault();
     event.stopPropagation();
     window.setTimeout((event) => {
@@ -159,7 +158,6 @@ export class HeaderUI extends HTMLElement {
       }
       // recenterCenterElement();
       infojs.warn('FIXME: recenterCenterElement');
-      event.target.style.opacity = 1;
     }, 50, event);
   };
   toggleUnchecked = (event) => {
