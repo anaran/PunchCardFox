@@ -835,15 +835,20 @@ document.addEventListener('readystatechange', (event) => {
       startAt.call(this, event, startText);
     }
 
-    var startAtChecked = function (event) {
+    var startAtCheckedEnd = function (event) {
       let startText;
       let allChecked = document.querySelectorAll('entry-ui :checked');
       if (allChecked.length == 1) {
         let id = allChecked[0].parentElement.id;
         db.get(id).then(function(otherDoc) {
-          // We derive the _id from the start time and have no start property.
-          startText = otherDoc._id;
-          startAt.call(this, event, startText);
+          if ('end' in otherDoc) {
+            // We derive the _id from the start time and have no start property.
+            startText = otherDoc.end;
+            startAt.call(this, event, startText);
+          }
+          else {
+            infojs.error('cannot start at undefined end', document.getElementById(id).parentElement);
+          }
         }).catch(function(err) {
           //errors
           infojs.error(err, document.getElementById(id).parentElement);
@@ -904,7 +909,7 @@ document.addEventListener('readystatechange', (event) => {
     var startAtCheckedItem = document.querySelector('#start_at_checked');
     if (startAtCheckedItem) {
       // Uses start time of only checked entry
-      startAtCheckedItem.addEventListener('click', startAtChecked);
+      startAtCheckedItem.addEventListener('click', startAtCheckedEnd);
     }
 
     var endNow = function (event) {
@@ -912,13 +917,13 @@ document.addEventListener('readystatechange', (event) => {
       endAt.call(this, event, endText);
     }
 
-    var endAtChecked = function (event) {
+    var endAtCheckedStart = function (event) {
       let endText;
       let allChecked = document.querySelectorAll('entry-ui :checked');
       if (allChecked.length == 1) {
         let id = allChecked[0].parentElement.id;
         db.get(id).then(function(otherDoc) {
-          endText = otherDoc.end;
+          endText = otherDoc._id.substring(0,24);
           endAt.call(this, event, endText);
         }).catch(function(err) {
           //errors
@@ -952,7 +957,7 @@ document.addEventListener('readystatechange', (event) => {
     }
     var endAtCheckedItem = document.querySelector('#end_at_checked');
     if (endAtCheckedItem) {
-      endAtCheckedItem.addEventListener('click', endAtChecked);
+      endAtCheckedItem.addEventListener('click', endAtCheckedStart);
     }
     var endUndefined = function (event) {
       event.preventDefault();
@@ -1005,14 +1010,7 @@ document.addEventListener('readystatechange', (event) => {
             return rev.status == 'available' && rev.rev != currentRev;
           }).forEach(function (available, index, obj) {
             db.get(id, { rev: available.rev }).then(function (availableDoc) {
-              var entry = {
-                _rev: availableDoc._rev,
-                _id: availableDoc._id,
-                activity: availableDoc.activity,
-                start: availableDoc.start,
-                end: availableDoc.end
-              };
-              var newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, 
+              var newEntry = utilsjs.addNewEntry(availableDoc, beforeThisElement.parentElement, 
                                                  beforeThisElement, 'addRevisionToElementId');
               newEntry.revisions.textContent = (index + 1) + ' of ' + obj.length + ' revs';
               // NOTE addRevisionToElementId argument makes this more obvious.
@@ -1165,6 +1163,29 @@ document.addEventListener('readystatechange', (event) => {
     var activityAtCheckedItem = document.querySelector('#activity_at_checked');
     if (activityAtCheckedItem) {
       activityAtCheckedItem.addEventListener('click', activityAtChecked);
+    }
+    let queryHour = function(event) {
+      try {
+        let id = getDataSetIdHideMenu(event);
+        db.get(id).then(function(currentDoc) {
+          let options = {
+            descending: true,
+            limit: 999,
+          };
+          options.query_start = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() - 3.6e6 * 0.5)).toJSON();
+          options.query_end = (new Date(new Date(currentDoc._id.substring(0, 24)).getTime() + 3.6e6 * 0.5)).toJSON();
+          runQuery(options);
+        }).catch(function(err) {
+          infojs.error(err);
+        });
+      }
+      catch(err) {
+        infojs.error(err);
+      }
+    };
+    let queryHourItem = document.querySelector('#query_hour');
+    if (queryHourItem) {
+      queryHourItem.addEventListener('click', queryHour);
     }
     let queryDay = function(event) {
       try {

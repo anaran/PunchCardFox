@@ -77,20 +77,24 @@ export let reportDateTimeDiff = (d1, d2) => {
       dtDayFraction = dt % milliSecondsPerDay,
       dtHourFraction = dtDayFraction % 3600000,
       dtMinuteFraction = dtHourFraction % 60000,
-      dtd, dth, dtm, dts;
+      dty, dtd, dtdr, dth, dtm, dts;
   if (dt < 0) {
     dtd = Math.ceil(dt / milliSecondsPerDay);
+    dty = Math.ceil(dtd / 365);
     dth = Math.ceil(dtDayFraction / 3600000);
     dtm = Math.ceil(dtHourFraction / 60000);
     dts = Math.ceil(dtMinuteFraction / 1000);
   }
   else {
     dtd = Math.floor(dt / milliSecondsPerDay);
+    dty = Math.floor(dtd / 365);
     dth = Math.floor(dtDayFraction / 3600000);
     dtm = Math.floor(dtHourFraction / 60000);
     dts = Math.floor(dtMinuteFraction / 1000);
   }
-  return (dt < 0 ? '' : '+') + dtd + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
+  // delta time day remainder
+  dtdr = dtd % 365;
+  return (dt < 0 ? '' : '+') + (dty != 0 ? dty + 'y ' : '') + dtdr + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
 }
 
 export let addNewEntry = function (doc, entries, before, addRevisionToElementId) {
