@@ -236,9 +236,13 @@ export let runQuery = function(arg) {
         }
         changesCount += 1;
         infojs.info(info);
-        if (info.deleted) {
+        if ('_deleted' in info.doc) {
           let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
           entry.classList.add('deleted');
+        }
+        else if ('_conflicts' in info.doc) {
+          let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+          entry.classList.add('conflicts');
         }
         else {
           utilsjs.addNewEntry(info.doc, entries, undefined, !'addRevisionToElementId');
@@ -1229,16 +1233,25 @@ document.addEventListener('readystatechange', (event) => {
       queryWeekItem.addEventListener('click', queryWeek);
     }
 
-    // Query recent changes when application starts.
+    // Query some entries in descending order when application starts.
     false && runQuery({
+      descending: true,
+      include_docs: true,
+      conflicts: true,
+      limit: 29,
+    });
+
+    // Query recent changes when application starts.
+    true && runQuery({
       db_changes: true, // run db.changes instead of db.allDocs
       descending: true,
       include_docs: true,
-      // conflicts: true,
+      conflicts: true,
       limit: 99,
       live: false,
       return_docs: false,
-      since: 'now'
+      since: 'now', // ignored when descending is true
+      style: 'all_docs'
     });
 
     var getDataSetIdHideMenu = function(event) {

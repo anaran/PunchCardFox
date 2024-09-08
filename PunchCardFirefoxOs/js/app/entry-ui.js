@@ -120,6 +120,16 @@ div.activity {
     color: white;
 }
 
+:host(.conflicts) {
+    background-color: orange;
+    color: black;
+}
+
+:host-context(.dark_theme):host(.conflicts) {
+    background-color: darkorange;
+    color: white;
+}
+
 :host(.available) {
     background-color: lightgrey;
 }
