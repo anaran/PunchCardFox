@@ -2,8 +2,8 @@
 
 import * as infojs from './info.js';
 import * as readmejs from './readme.js';
-import '../libs/pouchdb-8.0.1.min.js';
-// import '../libs/pouchdb-8.0.1.js';
+// import '../libs/pouchdb-9.0.0.min.js';
+import '../libs/pouchdb-9.0.0.js';
 import '../libs/pouchdb.all-dbs.js';
 import { PouchdbUI } from './pouchdb-ui.js';
 

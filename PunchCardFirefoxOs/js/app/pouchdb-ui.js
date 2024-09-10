@@ -1,7 +1,7 @@
 'use strict';
 
-import '../libs/pouchdb-8.0.1.min.js';
-// import '../libs/pouchdb-8.0.1.js';
+// import '../libs/pouchdb-9.0.0.min.js';
+import '../libs/pouchdb-9.0.0.js';
 // import '../libs/pouchdb.all-dbs.js';
 
 import * as infojs from './info.js';

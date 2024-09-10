@@ -3,8 +3,8 @@
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
 import * as appjs from './app.js';
-import '../libs/pouchdb-8.0.1.min.js';
-// import '../libs/pouchdb-8.0.1.js';
+// import '../libs/pouchdb-9.0.0.min.js';
+import '../libs/pouchdb-9.0.0.js';
 
 export class OptionsUI extends HTMLElement {
   constructor() {
