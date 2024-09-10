@@ -228,33 +228,64 @@ export let runQuery = function(arg) {
       entries.info = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
       let changesCount = 0;
       infojs.time('db.changes');
-      return db.changes(arg).on('change', function(info) {
-        infojs.timeEnd('db.changes');
-        if (stop_query) {
-          stop_query = false;
-          this.cancel();
-        }
-        changesCount += 1;
-        infojs.info(info);
-        if ('_deleted' in info.doc) {
-          let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
-          entry.classList.add('deleted');
-        }
-        else if ('_conflicts' in info.doc) {
-          let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
-          entry.classList.add('conflicts');
-        }
-        else {
-          utilsjs.addNewEntry(info.doc, entries, undefined, !'addRevisionToElementId');
-        }
-      }).on('error', function (err) {
-        infojs.error({delete_error: err}, entries);
-      }).on('complete', function(info) {
-        infojs.timeEnd('db.changes');
-        infojs.time('query result processing');
-        updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id]);
-        entries.classList.remove('updating');
-      });
+      if (arg.live) {
+        return db.changes(arg).on('change', function(info) {
+          infojs.timeEnd('db.changes');
+          if (stop_query) {
+            stop_query = false;
+            this.cancel();
+          }
+          changesCount += 1;
+          infojs.info(info);
+          if ('_deleted' in info.doc) {
+            let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+            entry.classList.add('deleted');
+          }
+          else if ('_conflicts' in info.doc) {
+            let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+            entry.classList.add('conflicts');
+          }
+          else {
+            utilsjs.addNewEntry(info.doc, entries, undefined, !'addRevisionToElementId');
+          }
+        }).on('error', function (err) {
+          infojs.error({delete_error: err}, entries);
+        }).on('complete', function(info) {
+          infojs.timeEnd('db.changes');
+          infojs.time('query result processing');
+          updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id]);
+          entries.classList.remove('updating');
+        });
+      } else {
+        return db.changes(arg).then(function(result) {
+          infojs.timeEnd('db.changes');
+          if (stop_query) {
+            stop_query = false;
+            this.cancel();
+          }
+          changesCount += result.results.length;
+          infojs.info(result);
+          result.results.forEach((info) => {
+            if ('_deleted' in info.doc) {
+              let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+              entry.classList.add('deleted');
+            }
+            else if ('_conflicts' in info.doc) {
+              let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+              entry.classList.add('conflicts');
+            }
+            else {
+              utilsjs.addNewEntry(info.doc, entries, undefined, !'addRevisionToElementId');
+            }
+          });
+          infojs.timeEnd('db.changes');
+          infojs.time('query result processing');
+          updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id]);
+          entries.classList.remove('updating');
+        }).catch(function (err) {
+          infojs.error({delete_error: err}, entries);
+        });
+      }
     }
     else if (regexp) {
       entries.info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
@@ -1249,7 +1280,7 @@ document.addEventListener('readystatechange', (event) => {
       conflicts: true,
       limit: 99,
       live: false,
-      return_docs: false,
+      // return_docs: false,
       since: 'now', // ignored when descending is true
       style: 'all_docs'
     });
