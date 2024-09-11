@@ -40,8 +40,8 @@ input.erase, input.undo {
   color: inherit;
   padding: 0;
   border: 0;
-  margin-inline-start: -1.5em;
-  /* margin-inline-end: 1.5em; */
+  margin-inline-start: -1.5rem;
+  margin-inline-end: 1rem;
   background-color: transparent;
   width: 1rem;
 }

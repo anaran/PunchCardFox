@@ -5,6 +5,11 @@ select {
     font-size: inherit;
 }
 
+/*
+Firefox does not implement :host-context()
+See
+https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
+*/
 :host-context(.dark_theme) select {
     background-color: black;
     color: white;

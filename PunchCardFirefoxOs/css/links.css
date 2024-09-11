@@ -11,6 +11,11 @@ a:any-link.dark_theme {
 }
 
 /* web components include this file */
+/*
+Firefox does not implement :host-context()
+See
+https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
+*/
 :host-context(.dark_theme) a:any-link {
     color: lightblue;
 }

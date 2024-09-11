@@ -84,6 +84,11 @@ div.activity {
 }
 */
 
+/*
+Firefox does not implement :host-context()
+See
+https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
+*/
 :host-context(.updating) {
     background-color: lightgrey;
 }

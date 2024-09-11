@@ -32,11 +32,11 @@ export class NewEntryUI extends HTMLElement {
     <!-- <pre id="activity" title="activity"
          contenteditable>Activity</pre> -->
   </section>
-  <section>
+  <section class="start_ui">
     <input-ui id="start" type="text"></input-ui>
-      <input type="button" class="start_at_end" value="&UpTeeArrow;"/>
-      <input type="button" id="update_start"
-             value="&circlearrowright;" disabled/>
+    <input type="button" id="start_at_end" value="&UpTeeArrow;"/>
+    <input type="button" id="update_start"
+      value="&circlearrowright;" disabled/>
   </section>
   <section class="start">
     <div class="start_delta_div">
@@ -56,16 +56,12 @@ export class NewEntryUI extends HTMLElement {
       <span class="sign">S</span>
     </div>
   </section>
-  <section>
+  <section class="end_ui">
     <input-ui id="end" type="text"></input-ui>
-    <span>
-      <input type="button" class="end_at_start"
-             value="&DownTeeArrow;"/>
-    </span>
-    <span>
-      <input type="button" id="update_end" value="&circlearrowright;"
-             disabled/>
-    </span>
+    <input type="button" id="end_at_start"
+    value="&DownTeeArrow;"/>
+    <input type="button" id="update_end" value="&circlearrowright;"
+      disabled/>
   </section>
   <section class="end">
     <div class="end_delta_div">
@@ -101,8 +97,14 @@ input {
   background-color: inherit;
   color: inherit;
   font-size: inherit;
-  width: 33ch;
   font-family: monospace;
+  width: calc(100% - 3rem);
+  flex: auto;
+}
+
+#start_at_end, #end_at_start, #update_start, #update_end {
+  width: 1rem;
+  flex: auto;
 }
 
 .sign, .year, .month, .date, .week, .hour, .minute, .second {
@@ -120,7 +122,7 @@ input {
     text-decoration-line: underline;
 }
 
-#editor {
+#editor, .start_ui, .end_ui {
     display: flex;
 }
 
@@ -444,7 +446,7 @@ input {
     this.updateStartButton = this.shadow.querySelector('#update_start');
     this.startUpdater = this.updateDateTime(this.start);
     // let startnow = this.shadow.querySelector('#startnow');
-    this.startAtEnd = this.shadow.querySelector('input.start_at_end');
+    this.startAtEnd = this.shadow.querySelector('#start_at_end');
     this.startAtEnd.addEventListener('click', (event) => {
       setupAutosave(event);
       this.updateStartButton.removeAttribute('disabled');
@@ -481,7 +483,7 @@ input {
     this.updateEndButton = this.shadow.querySelector('#update_end');
     this.endUpdater = this.updateDateTime(this.end);
     // let endnow = this.shadow.querySelector('#endnow');
-    this.endAtStart = this.shadow.querySelector('input.end_at_start');
+    this.endAtStart = this.shadow.querySelector('#end_at_start');
     this.endAtStart.addEventListener('click', (event) => {
       setupAutosave(event);
       this.updateEndButton.removeAttribute('disabled');

@@ -23,6 +23,11 @@ export class EntriesUI extends HTMLElement {
     background-color: lightgrey;
 }
 
+/*
+Firefox does not implement :host-context()
+See
+https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
+*/
 :host-context(.dark_theme):host(.updating) {
     background-color: dimgrey;
 }
