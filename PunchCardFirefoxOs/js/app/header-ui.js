@@ -29,7 +29,8 @@ export class HeaderUI extends HTMLElement {
 <style>
 
 #app_header {
-    color: inherit;
+    background-color: white;
+    color: black;
     display: flex;
     font-size: 6mm;
     margin: 0;
@@ -41,6 +42,8 @@ export class HeaderUI extends HTMLElement {
 }
 
 #app_header > span {
+    background-color: inherit;
+    color: inherit;
     flex: auto;
 }
 
@@ -78,14 +81,14 @@ export class HeaderUI extends HTMLElement {
         this.editNewItem.addEventListener('click', this.toggleEdit);
       }
       let aboutUI = new AboutUI();
-      filter.insertAdjacentElement('afterend', aboutUI);
+      document.querySelector('#top').insertAdjacentElement('afterend', aboutUI);
       if (this.aboutItem) {
         this.aboutItem.addEventListener('click', (event) => {
           aboutUI.toggle(event);
         }, 'capture');
       }
       let optionsUI = new OptionsUI();
-      filter.insertAdjacentElement('afterend', optionsUI);
+      document.querySelector('#top').insertAdjacentElement('afterend', optionsUI);
       if (this.optionsItem) {
         this.optionsItem.addEventListener('click', (event) => {
           optionsUI.toggle(event);
@@ -181,7 +184,7 @@ export class HeaderUI extends HTMLElement {
 
   addNewEdit = (id, copy) => {
     let neu = new NewEntryUI(id, copy);
-    this.filter.insertAdjacentElement('afterend', neu);
+    document.querySelector('#top').insertAdjacentElement('afterend', neu);
   };
 
   toggleEdit = (event) => {

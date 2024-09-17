@@ -12,15 +12,18 @@ import '../libs/marked.min.js';
 let resultIndex = 1;
 let optionsDB = new PouchDB('options');
 let db = new PouchDB('punchcard');
+let query_info = '';
 
 let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   const entries = document.getElementById(result[4]);
   if (result[0]) {
-    entries.info += ` found ${result[2]}`;
+    query_info = `${query_info} found ${result[2]}`;
+    entries.info = `${query_info}`;
   }
   else {
-    entries.info += ` found ${result[3]}`;
+    query_info = `${query_info} found ${result[3]}`;
+    entries.info = `${query_info}`;
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
@@ -84,7 +87,7 @@ let setAvailableRevisionCount = function(entry) {
   // });
 }
 
-let updateScrollLinks = function() {
+export let updateScrollLinks = function() {
   infojs.time('updateScrollLinks');
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   // query result container
@@ -171,7 +174,6 @@ export let runQuery = function(arg) {
     // var obj = db.mapreduce(db);
     // db.query(map, {/*stale: 'ok', */reduce: false,
     let times = [];
-    let stop_query = false;
     infojs.time('runQuery');
     let options = arg || {};
     if (!arg) {
@@ -192,7 +194,7 @@ export let runQuery = function(arg) {
     // Limit query to a maximum of 1000 rows, not to use too much
     // memory in mobile browsers on smartphones
     var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
-    let entries = new EntriesUI('R' + resultIndex);
+    let entries = new EntriesUI('R' + resultIndex, updateScrollLinks);
     const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     var previousEntries = scrollView.querySelector('entries-ui');
     entries.classList.add('updating');
@@ -206,32 +208,16 @@ export let runQuery = function(arg) {
     entries.id = 'R' + resultIndex;
     resultIndex += 1;
     entries.scrollIntoView({block: "center", inline: "center"});
-    var update = entries.update;
-    var close = entries.close;
-    var stop = entries.stop;
-    update.addEventListener('click', function(event) {
-      event.preventDefault();
-      alert('rerun query is not implemented yet. \u221E');
-    });
-    close.addEventListener('click', function(event) {
-      event.preventDefault();
-      scrollView.removeChild(entries);
-      updateScrollLinks();
-    });
-    stop.addEventListener('click', function(event) {
-      event.preventDefault();
-      stop_query = true;
-    });
     let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
     if (arg && arg.db_changes) {
       delete arg.db_changes;
-      entries.info = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
+      query_info = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
+      entries.info = `${query_info}`;
       let changesCount = 0;
       infojs.time('db.changes');
       return db.changes(arg).on('change', function(info) {
         infojs.timeEnd('db.changes');
-        if (stop_query) {
-          stop_query = false;
+        if (entries.stop) {
           this.cancel();
         }
         changesCount += 1;
@@ -257,7 +243,8 @@ export let runQuery = function(arg) {
       });
     }
     else if (regexp) {
-      entries.info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
+      query_info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
+      entries.info = `${query_info}`;
       var changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
       let matchingDeletes = 0;
       db.changes({
@@ -267,8 +254,7 @@ export let runQuery = function(arg) {
         /*style: 'all_docs', */
         since: changesSinceSequence,
       }).on('change', function(info) {
-        if (stop_query) {
-          stop_query = false;
+        if (entries.stop) {
           this.cancel();
         }
         //       PouchDB 5.0.0 (blog post)
@@ -390,11 +376,13 @@ export let runQuery = function(arg) {
       var includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
       var excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
       if (isSearch) {
-        entries.info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
+        query_info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
+        entries.info = `${query_info}`;
         infojs.time('query allDocs search');
       }
       else {
-        entries.info = `Query ${entries.id} limited to ${limit} entries`;
+        query_info = `Query ${entries.id} limited to ${limit} entries`;
+        entries.info = `${query_info}`;
         opts.reduce = false;
         infojs.time('query allDocs');
       }
@@ -428,10 +416,6 @@ export let runQuery = function(arg) {
               doc.rows.shift();
             }
             for (var index = 0; index < doc.rows.length; index++) {
-              if (stop_query) {
-                stop_query = false;
-                return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
-              }
               var row = doc.rows[index];
               if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
                   excludeRegExp && excludeRegExp.test(row.doc.activity)) {
@@ -479,6 +463,10 @@ export let runQuery = function(arg) {
               return resolve([ isSearch, opts, matches, rowCount + doc.rows.length, entries.id]);
             }
             opts.startkey = newStart;
+            entries.info = `${query_info}, processed ${rowCount} ...`;
+            if (entries.stop) {
+              return resolve([isSearch, opts, matches, rowCount, entries.id]);
+            }
             // Just recurse, we already checked for limit and matchLimit above
             return resolve(recursiveQuery(opts, matches, rowCount, entries.id));
           }).catch(function(err) {
@@ -506,7 +494,8 @@ document.addEventListener('readystatechange', (event) => {
   }
   infojs.timeEnd('appjs to readyState complete');
   let headerUI = new HeaderUI();
-  document.body.insertBefore(headerUI, document.body.firstElementChild);
+  // Make header last element to stack on top of others.
+  document.body.insertAdjacentElement('beforeend', headerUI);
   let ORIENTATION = false;
   let SCROLL = false;
   try {
@@ -566,7 +555,7 @@ document.addEventListener('readystatechange', (event) => {
         autosaves = JSON.parse(autosavesJSON);
         Object.keys(autosaves).forEach((autosaveID) => {
           let neu = new NewEntryUI();
-          document.querySelector('#filter').insertAdjacentElement('afterend', neu);
+          document.querySelector('#top').insertAdjacentElement('afterend', neu);
           neu.loadAutosaveGetNewID(autosaveID);
         });
       }
@@ -759,7 +748,7 @@ document.addEventListener('readystatechange', (event) => {
           else {
             document.getElementById('fill_gap').setAttribute('disabled', true);
           }
-          if (entry.checked && operationCount == 1) {
+          if (entry.checked && operationCount > 0) {
             document.getElementById('delete').removeAttribute('disabled');
           }
           else {
@@ -831,7 +820,7 @@ document.addEventListener('readystatechange', (event) => {
 
     var addNewEdit = function(id, copy) {
       let neu = new NewEntryUI(id, copy);
-      document.querySelector('#filter').insertAdjacentElement('afterend', neu);
+      document.querySelector('#top').insertAdjacentElement('afterend', neu);
     };
 
     var startNow = function (event) {
@@ -1349,8 +1338,8 @@ document.addEventListener('readystatechange', (event) => {
       getDataSetIdHideMenu(event);
       event.preventDefault();
       let allChecked = document.querySelectorAll('entry-ui :checked');
-      if (allChecked.length == 1) {
-        let id = allChecked[0].parentElement.id;
+      allChecked.forEach((entry) => {
+        let id = entry.parentElement.id;
         db.get(id).then(function(doc) {
           if (window.confirm('Delete entry? ' + doc.activity)) {
             // db.remove is not equivalent to db.put with _deleted = true
@@ -1384,7 +1373,7 @@ document.addEventListener('readystatechange', (event) => {
           infojs.error(err);
           //errors
         });
-      }
+      });
     };
     var deleteEntryItem = document.querySelector('#delete');
     if (deleteEntryItem) {

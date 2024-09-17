@@ -14,7 +14,7 @@ export class AboutUI extends HTMLElement {
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
 <section id="about" style="display: none;">
-  <h1 data-l10n-id="app_title">Privileged empty app</h1>
+  <h1 data-l10n-id="app_title">About Punchcard</h1>
   <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
   <section>
     <p>
@@ -47,6 +47,14 @@ export class AboutUI extends HTMLElement {
 <style>
 @import url(css/form.css);
 @import url(css/links.css);
+
+#about {
+  height: calc(100vh - 8mm);
+  overflow: scroll;
+  position: relative;
+  scrollbar-width: none;
+  top: 8mm;
+}
 
 #edit_markdown {
   margin:  0.2rem;

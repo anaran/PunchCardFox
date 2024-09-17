@@ -1,5 +1,6 @@
 'use strict';
 
+import * as appjs from './app.js';
 import * as infojs from './info.js';
 import * as utilsjs from './utils.js';
 import { EntriesUI } from './entries-ui.js';
@@ -17,6 +18,7 @@ export class NewEntryUI extends HTMLElement {
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.innerHTML = `
 <section id="new_entry">
+  <h1 data-l10n-id="app_new_entry">New Punchcard Entry</h1>
   <section id="editor">
     <textarea id="activity" placeholder="enter activity"></textarea>
     <span>
@@ -88,18 +90,30 @@ export class NewEntryUI extends HTMLElement {
 </section>
 <style>
 input {
-    background-color: inherit;
-    color: inherit;
-    font-size: inherit;
+  background-color: inherit;
+  color: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
 }
 
 #start, #end {
   background-color: inherit;
   color: inherit;
-  font-size: inherit;
-  font-family: monospace;
-  width: calc(100% - 3rem);
+  display: flex;
   flex: auto;
+  font-family: monospace;
+  font-size: inherit;
+  width: calc(100vw - 4rem);
+}
+
+.start_delta_div, .end_delta_div {
+  background-color: inherit;
+  color: inherit;
+  display: flex;
+  font-family: monospace;
+  font-size: inherit;
+  /* width: 100%; */
 }
 
 #start_at_end, #end_at_start, #update_start, #update_end {
@@ -108,12 +122,12 @@ input {
 }
 
 .sign, .year, .month, .date, .week, .hour, .minute, .second {
-    background-color: inherit;
-    color: inherit;
-    font-family: monospace;
-    padding: 0 0 1rem 0;
-    text-align: end;
-    display: inline-block;
+  background-color: inherit;
+  color: inherit;
+  display: inline-block;
+  flex: auto;
+  font-family: monospace;
+  padding: 0 0 2rem 0;
 }
 
 .changed {
@@ -136,8 +150,7 @@ input {
 }
 
 #save_edit, #quit_edit {
-    min-width: 2rem;
-    min-height: 2rem;
+    width: 1rem;
 }
 </style>
       `;
@@ -161,7 +174,7 @@ input {
       event.preventDefault();
       event.stopPropagation();
       if (!this.activity.value.trim().length || window.confirm("Discard edits?")) {
-        this.scrollView.removeChild(this);
+        document.body.removeChild(this);
       }
       removeAutosave();
     }
@@ -170,7 +183,7 @@ input {
       event.stopPropagation();
       let res = this.save();
       res && res.then((result) => {
-        this.scrollView.removeChild(this);
+        document.body.removeChild(this);
         document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView({block: "center", inline: "center"});
         removeAutosave();
       }).catch((err) => {
@@ -654,7 +667,7 @@ input {
     return new Promise((resolve, reject) => {
       this.entries = document.querySelector('entries-ui#New');
       if (!this.entries) {
-          this.entries = new EntriesUI('New');
+        this.entries = new EntriesUI('New', appjs.updateScrollLinks);
         let cache_section = document.querySelector('#cache_section');
         this.scrollView.insertBefore(this.entries, cache_section);
         this.entries.scrollIntoView({block: "center", inline: "center"});
@@ -680,7 +693,7 @@ input {
             if (changedStart) {
               otherDoc._deleted = true;
               this.db.put(otherDoc).then((response) => {
-                document.getElementById(response.this.databaseID).classList.add('deleted');
+                document.getElementById(response.id).classList.add('deleted');
               }).catch((err) => {
                 infojs.error(err);
                 reject('Cannot delete entry with old start time.\nDiscard edit?'

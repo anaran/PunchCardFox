@@ -18,9 +18,10 @@ export class InputUI extends HTMLElement {
 <style>
 
 :host {
-    background-color: inherit;
-    color: inherit;
-    font-size: inherit;
+  background-color: inherit;
+  color: inherit;
+  font-size: inherit;
+  position: relative;
 }
 
 input {
@@ -32,7 +33,6 @@ input.val {
   color: inherit;
   font-family: inherit;
   font-size: inherit;
-  padding-inline-end: 1rem;
   width: inherit;
 }
 
@@ -40,10 +40,10 @@ input.erase, input.undo {
   color: inherit;
   padding: 0;
   border: 0;
-  margin-inline-start: -1.5rem;
-  margin-inline-end: 1rem;
-  background-color: transparent;
-  width: 1rem;
+  background-color: inherit;
+  position: absolute;
+  right: 0.5rem;
+  /* width: 1rem; */
 }
 
 input:invalid {

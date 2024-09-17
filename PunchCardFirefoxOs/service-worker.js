@@ -20,7 +20,7 @@ self.addEventListener('fetch', function(event) {
         const controller = new AbortController();
         const signal = controller.signal;
         const fetchTimeout = 5000;
-        const timeout = setTimeout(() => { 
+        const timeout = setTimeout(() => {
           controller.abort();
           const msg = `fetch request timed out after ${fetchTimeout} ms for ${event.request.url}`;
           self.clients.get(event.clientId).then((client) => {

@@ -30,6 +30,7 @@ own language (as long as you provide translations).
     <link rel="icon" type="image/png" href="./img/icons/icon16x16.png">
   </head>
   <body role="application">
+    <section id="top"></section>
     <div id="scroll-and-view">
     <nav data-type="scrollbar" id="punchcard_scrollbar">
       <ul>
@@ -65,12 +66,6 @@ own language (as long as you provide translations).
       </ul>
     </nav>
     <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
-      <section id="top"></section>
-      <section id="filter">
-        <span>
-          <input-ui placeholder="filter by activity" type="search"></input-ui>
-        </span>
-      </section>
       <section id="cache_section">
         <fieldset id="cache_versions">
           <legend>Cached Punchcard Versions</legend>
@@ -128,6 +123,11 @@ own language (as long as you provide translations).
       <li><button type="button" disabled=true id="fill_gap">fill gap</button></li>
       <li><button type="button" disabled=true id="delete">delete</button></li>
     </ul>
+    <section id="filter">
+      <span>
+        <input-ui placeholder="filter by activity" type="search"></input-ui>
+      </span>
+    </section>
     <script type="module" src="./js/app/app.js"></script>
   </body>
 </html>

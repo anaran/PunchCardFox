@@ -13,6 +13,7 @@ export class OptionsUI extends HTMLElement {
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
 <section id="options" style="display: none;">
+  <h1 data-l10n-id="app_options">Punchcard Options</h1>
   <section>
     <!-- <span class="persistent" id="include" data-l10n-id="include"contentEditable>bla</span> -->
     <input-ui class="persistent" type="text" id="include" data-l10n-id="include" placeholder="must match"></input-ui>
@@ -22,8 +23,10 @@ export class OptionsUI extends HTMLElement {
     <input class="persistent" type="checkbox" id="descending" data-l10n-id="descendieng" placeholder="descending">
     <input-ui class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id"></input-ui>
     <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ..."></input-ui>
-    <input-ui class="persistent" type="date" id="query_start" data-l10n-id="query_start_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 1, YYYY-MM-DD"></input-ui>
-    <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
+    <div>
+      <input-ui class="persistent" type="date" id="query_start" data-l10n-id="query_start_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 1, YYYY-MM-DD"></input-ui>
+      <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
+    </div>
     <div>
       <input type="checkbox" id="live_changes" name="live_changes"
              value="true" />
@@ -95,6 +98,14 @@ export class OptionsUI extends HTMLElement {
 <style>
 @import url(css/form.css);
 @import url(css/links.css);
+
+#options {
+  height: calc(100vh - 8mm);
+  overflow: scroll;
+  position: relative;
+  scrollbar-width: none;
+  top: 8mm;
+}
 
 pre {
   font-family: FiraSans;

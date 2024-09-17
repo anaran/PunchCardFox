@@ -7,17 +7,18 @@
 
 html {
     font-size: medium;
+    scrollbar-width: none;
 }
 
 body {
     background-color: white;
     color: black;
-    left: 0;
-    margin: 0;
+    /* left: 0; */
+    /* margin: 0; */
     /* Don't refresh page when top of page is reached. */
     overscroll-behavior: none;
-    position: fixed;
-    top: 0;
+    /* position: fixed; */
+    /* top: 0; */
 }
 
 body.dark_theme {
@@ -38,13 +39,10 @@ body.dark_theme {
 
 div#scroll-and-view {
     background-color: inherit;
-    bottom: 0;
     color: inherit;
     display: flex;
-    /* height: calc(100vh - 8mm); */
-    left: 0;
-    position: fixed;
-    right: 0;
+    height: calc(100vh - 8mm);
+    position: relative;
     top: 8mm;
 }
 

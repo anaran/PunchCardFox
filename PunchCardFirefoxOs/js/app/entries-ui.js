@@ -3,7 +3,7 @@
 import * as infojs from './info.js';
 
 export class EntriesUI extends HTMLElement {
-  constructor(id) {
+  constructor(id, update_function) {
     try {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
@@ -43,6 +43,7 @@ div.entries_header a {
 </style>
 `;
       this.id = id;
+      this.update_function = update_function;
     }
     catch (e) {
       infojs.error(e);
@@ -50,10 +51,31 @@ div.entries_header a {
   }
   connectedCallback() {
     try {
+      this.stop_query = false;
       this.span_info = this.shadow.querySelector('span.info');
       this.a_close = this.shadow.querySelector('a.close');
       this.a_update = this.shadow.querySelector('a.update');
       this.a_stop = this.shadow.querySelector('a.stop');
+      // Use arrow function to preserve this value of the enclosing
+      // execution context.
+      this.a_update.addEventListener('click', (event) => {
+        event.preventDefault();
+        alert('rerun query is not implemented yet. \u221E');
+      });
+      // Use arrow function to preserve this value of the enclosing
+      // execution context.
+      this.a_close.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.parentElement.removeChild(this);
+        this.update_function();
+      });
+      // Use arrow function to preserve this value of the enclosing
+      // execution context.
+      this.a_stop.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.stop_query = true;
+      });
+      this.update_function();
     }
     catch (e) {
       infojs.error(e);
@@ -89,25 +111,25 @@ div.entries_header a {
       infojs.error(e);
     }
   }
-  get update() {
-    try {
-      return this.a_update;
-    }
-    catch (e) {
-      infojs.error(e);
-    }
-  }
-  get close() {
-    try {
-      return this.a_close;
-    }
-    catch (e) {
-      infojs.error(e);
-    }
-  }
+  // get update() {
+  //   try {
+  //     return this.a_update;
+  //   }
+  //   catch (e) {
+  //     infojs.error(e);
+  //   }
+  // }
+  // get close() {
+  //   try {
+  //     return this.a_close;
+  //   }
+  //   catch (e) {
+  //     infojs.error(e);
+  //   }
+  // }
   get stop() {
     try {
-      return this.a_stop;
+      return this.stop_query;
     }
     catch (e) {
       infojs.error(e);
