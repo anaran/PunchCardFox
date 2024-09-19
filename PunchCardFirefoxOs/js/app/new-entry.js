@@ -97,6 +97,14 @@ input {
   padding: 0;
 }
 
+#new_entry {
+  height: calc(100vh - 8mm);
+  overflow: scroll;
+  position: relative;
+  scrollbar-width: none;
+  top: 8mm;
+}
+
 #start, #end {
   background-color: inherit;
   color: inherit;

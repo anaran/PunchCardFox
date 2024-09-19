@@ -22,6 +22,7 @@ export class InputUI extends HTMLElement {
   color: inherit;
   font-size: inherit;
   position: relative;
+  display: inline-flex;
 }
 
 input {
@@ -43,7 +44,6 @@ input.erase, input.undo {
   background-color: inherit;
   position: absolute;
   right: 0.5rem;
-  /* width: 1rem; */
 }
 
 input:invalid {
