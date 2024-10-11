@@ -50,10 +50,10 @@ export let init = function (url, renderElement, editElement, toggleElement) {
       edit.style.display = 'none';
       // window.scrollTo(0, 0);
       var render = renderElement;
-      var toggleEdit = function _toggleEdit(event) {
+      var toggleEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
-        let readmeClose = document.getElementById('readme_close');
+        let readmeClose =   document.querySelector('about-ui').shadow.querySelector('#readme_close');
         if (edit.style.display == 'none') {
           edit.style.display = 'block';
           render.style.display = 'none';

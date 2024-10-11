@@ -38,7 +38,7 @@ export class AboutUI extends HTMLElement {
         <p>
           <!-- &#x1f589; is not available in Firefox Beta for Android as of (format-time-string "%Y-%m-%d") "2018-11-15" -->
           <a id="readme_edit_toggle" aria-hidden="true" data-icon="compose" style="visibility: hidden">&#x270e;<!-- &#x270f;&#x2710; --></a>
-          <a id="readme_close" href="#readme_close">Close READMEs</a>
+          <a id="readme_close" href="#readme_close" title="SHIFT+ENTER for newline">Close READMEs</a>
         </p>
         <div id="render_markdown"></div>
         <pre contentEditable id="edit_markdown"></pre>
@@ -63,7 +63,7 @@ export class AboutUI extends HTMLElement {
   margin: 0.3rem;
   border: 1px solid;
   padding: 0.2rem;
-  display: block;
+  display: none;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -73,16 +73,14 @@ export class AboutUI extends HTMLElement {
   border: 1px solid;
   padding: 0.2rem;
   display: none;
-/*   position: absolute; */
-/*   opacity: 1.0; */
-/*   overflow: scroll; */
-/*   top: 0; */
-/*   left: 100%; */
-/*   width: 100%; */
 }
 
 code {
   background-color: lightgray;
+}
+
+:host-context(.dark_theme) code {
+  background-color: dimgray;
 }
 
 /*

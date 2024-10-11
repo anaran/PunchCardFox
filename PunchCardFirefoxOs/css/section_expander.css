@@ -1,9 +1,4 @@
 
-section {
-    background-color: white;
-    color: black;
-}
-
 /* input[type=checkbox] */
 
 #cb1 {
@@ -33,7 +28,6 @@ section {
 }
 
 #cb1 + label>h1 {
-    background-color: white;
     margin: 0;
     font-size: 1.2rem;
     position: sticky;
