@@ -1,0 +1,46 @@
+
+section {
+    background-color: white;
+    color: black;
+}
+
+/* input[type=checkbox] */
+
+#cb1 {
+    display: none;
+}
+
+/* blacktriangleright;	U+025B8 */
+#cb1 + label>h1::before {
+    content: "\25b8  ";
+}
+
+/* blacktriangledown;	U+025BE */
+#cb1:checked + label>h1::before {
+    content: "\25BE  ";
+}
+
+#cb1 ~ section {
+    display: none;
+}
+
+#cb1:checked ~ section {
+    height: calc(100vh - 3rem);
+    position: sticky;
+    top: 3rem;
+    display: block;
+    overscroll-behavior: auto;
+}
+
+#cb1 + label>h1 {
+    background-color: white;
+    margin: 0;
+    font-size: 1.2rem;
+    position: sticky;
+    top: 1.5rem;
+    z-index: 3;
+}
+
+#cb1:checked + label>h1 {
+    z-index: 4;
+}

@@ -2,10 +2,9 @@
 
 import * as infojs from './info.js';
 import { HeaderUI } from './header-ui.js';
-import { AboutUI } from './about-ui.js';
-import { OptionsUI } from './options-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
+import { OptionsUI } from './options-ui.js';
 import { EntriesUI } from './entries-ui.js';
 import '../libs/marked.min.js';
 
@@ -94,8 +93,8 @@ export let updateScrollLinks = function() {
   let entriesNodes = scrollView.querySelectorAll('entries-ui');
   var entryNodes = scrollView.querySelectorAll('entry-ui:not(.filtered)');
   var scrollLinks = document.querySelectorAll('nav[data-type="scrollbar"]>ul>li');
-  var rowsPerLink = (entryNodes.length / (scrollLinks.length - 3));
-  for (var linkIndex = 3; linkIndex < scrollLinks.length; linkIndex++)  {
+  var rowsPerLink = (entryNodes.length / (scrollLinks.length - 2));
+  for (var linkIndex = 2; linkIndex < scrollLinks.length; linkIndex++)  {
     scrollLinks[linkIndex].firstElementChild.style.visibility = 'hidden';
   }
   Array.prototype.forEach.call(scrollView.querySelectorAll('.linked'), function(element) {
@@ -112,8 +111,8 @@ export let updateScrollLinks = function() {
         classList.add('linked');
         // NOTE: this closure will provide the correct link to the asynchronous db.get callback.
         (function () {
-          // Skip over first two links reserved for top and results links.
-          var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 3].firstElementChild;
+          // Skip over first two links reserved for bottom and results links.
+          var link = scrollLinks[Math.floor(scrollIndex / rowsPerLink) + 2].firstElementChild;
           var last = (link == scrollLinks[scrollLinks.length - 1].firstElementChild);
           var result = entryNodes[scrollIndex].parentElement.id;
           if (entryNodes[scrollIndex].classList.contains('deleted')) {
@@ -177,15 +176,7 @@ export let runQuery = function(arg) {
     infojs.time('runQuery');
     let options = arg || {};
     if (!arg) {
-      document.querySelectorAll('.persistent').forEach((item) => {
-        infojs.info(`get persistent input for ${item.id}`);
-        if (item.type == 'checkbox') {
-          options[item.id] = item.checked;
-        }
-        else {
-          options[item.id] = item.value;
-        }
-      });
+      options = document.querySelector('options-ui').options;
     }
     infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
     var dec = !!options.descending;
@@ -211,7 +202,7 @@ export let runQuery = function(arg) {
     let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
     if (arg && arg.db_changes) {
       delete arg.db_changes;
-      query_info = `Query ${entries.id} ${arg.live ? 'live ' : ' '}db changes`;
+      query_info = `Query ${entries.id} ${arg.live ? 'live ' : ''} ${arg.descending ? 'descending' : 'ascending'} db changes`;
       entries.info = `${query_info}`;
       let changesCount = 0;
       infojs.time('db.changes');
@@ -221,6 +212,7 @@ export let runQuery = function(arg) {
           this.cancel();
         }
         changesCount += 1;
+        entries.info = `${query_info}, processed change ${changesCount} ...`;
         infojs.info(info);
         if ('_deleted' in info.doc) {
           let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
@@ -495,7 +487,7 @@ document.addEventListener('readystatechange', (event) => {
   infojs.timeEnd('appjs to readyState complete');
   let headerUI = new HeaderUI();
   // Make header last element to stack on top of others.
-  document.body.insertAdjacentElement('beforeend', headerUI);
+  document.body.insertAdjacentElement('afterbegin', headerUI);
   let ORIENTATION = false;
   let SCROLL = false;
   try {
@@ -555,7 +547,7 @@ document.addEventListener('readystatechange', (event) => {
         autosaves = JSON.parse(autosavesJSON);
         Object.keys(autosaves).forEach((autosaveID) => {
           let neu = new NewEntryUI();
-          document.querySelector('#top').insertAdjacentElement('afterend', neu);
+          headerUI.insertAdjacentElement('afterend', neu);
           neu.loadAutosaveGetNewID(autosaveID);
         });
       }
@@ -563,7 +555,16 @@ document.addEventListener('readystatechange', (event) => {
     loadAutosavedEntries();
     let filter = document.querySelector('#filter input-ui');
     filter.minLength = 4;
-
+    let alpha = document.querySelector('#alpha');
+    alpha.addEventListener('click', (event) => {
+      runQuery({
+        descending: true,
+        include: filter.value,
+        include_docs: true,
+        limit: 29999,
+        match_limit: 999,
+      });
+    });
     let setBackgroundColor = color => {
       window.requestAnimationFrame(function (timestamp) {
         document.body.style.backgroundColor = color;
@@ -591,7 +592,7 @@ document.addEventListener('readystatechange', (event) => {
           node.classList.remove('filtered');
         });
       }
-      headerUI.toggleFilter();
+      // headerUI.toggleFilter();
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
         let firstUnfilteredEntryNode = scrollView.querySelector('entry-ui:not(.filtered)');
@@ -604,9 +605,22 @@ document.addEventListener('readystatechange', (event) => {
     filter.addEventListener('input', event => {
       if (event.target.value == '') {
         filter.classList.add('empty');
+        document.getElementById('alpha').setAttribute('disabled', true);
       }
       else {
         filter.classList.remove('empty');
+        document.getElementById('alpha').removeAttribute('disabled');
+      }
+    });
+    // handle change caused by input-ui erase and undo buttons.
+    filter.addEventListener('change', event => {
+      if (event.target.value == '') {
+        filter.classList.add('empty');
+        document.getElementById('alpha').setAttribute('disabled', true);
+      }
+      else {
+        filter.classList.remove('empty');
+        document.getElementById('alpha').removeAttribute('disabled');
       }
     });
     filter.addEventListener('keyup', event => {
@@ -660,6 +674,9 @@ document.addEventListener('readystatechange', (event) => {
       }
     };
     scrollView.addEventListener('scroll', scrollListener);
+    // window.visualViewport.addEventListener("resize", (event) => {
+    //     infojs.info(event.target);
+    // });
     scrollView.addEventListener('click', function (event) {
       // event.preventDefault();
       // event.stopPropagation();
@@ -820,7 +837,7 @@ document.addEventListener('readystatechange', (event) => {
 
     var addNewEdit = function(id, copy) {
       let neu = new NewEntryUI(id, copy);
-      document.querySelector('#top').insertAdjacentElement('afterend', neu);
+      headerUI.insertAdjacentElement('afterend', neu);
     };
 
     var startNow = function (event) {
@@ -1221,27 +1238,6 @@ document.addEventListener('readystatechange', (event) => {
     if (queryWeekItem) {
       queryWeekItem.addEventListener('click', queryWeek);
     }
-
-    // Query some entries in descending order when application starts.
-    false && runQuery({
-      descending: true,
-      include_docs: true,
-      conflicts: true,
-      limit: 29,
-    });
-
-    // Query recent changes when application starts.
-    true && runQuery({
-      db_changes: true, // run db.changes instead of db.allDocs
-      descending: true,
-      include_docs: true,
-      conflicts: true,
-      limit: 99,
-      live: false,
-      return_docs: false,
-      since: 'now', // ignored when descending is true
-      style: 'all_docs'
-    });
 
     var getDataSetIdHideMenu = function(event) {
       let id = event.target.parentElement.parentElement.dataset.id;

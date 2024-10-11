@@ -32,16 +32,17 @@ input {
 input.val {
   background-color: inherit;
   color: inherit;
+  flex: auto;
   font-family: inherit;
   font-size: inherit;
   width: inherit;
 }
 
 input.erase, input.undo {
+  background-color: transparent;
+  border: 0;
   color: inherit;
   padding: 0;
-  border: 0;
-  background-color: inherit;
   position: absolute;
   right: 0.5rem;
 }

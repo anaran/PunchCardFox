@@ -13,47 +13,49 @@ export class AboutUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
-<section id="about" style="display: none;">
-  <h1 data-l10n-id="app_title">About Punchcard</h1>
-  <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
-  <section>
-    <p>
-      <a id="application_link" href="#application_link">Application Info</a>
-      <a id="application_clear" href="#application_link">Clear</a>
-    </p>
-    <p id="application_info"></p>
-    <p>
-      <a id="databases_link" href="#databases_link">Databases Info</a>
-      <a id="databases_clear" href="#databases_link">Clear</a>
-    </p>
-    <p id="databases_info"></p>
-    <p>
-      <a id="readme_link" href="README.md">README.md</a>
-    </p>
-    <p>
-      <a id="readme2_link" href="README2.md">README2.md</a>
-    </p>
-    <div>
+  <input type="checkbox" id="cb1"><label for="cb1"><h1 data-l10n-id="app_title">About Punchcard</h1>
+  </label>
+  <section id="about">
+    <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
+    <section>
       <p>
-        <!-- &#x1f589; is not available in Firefox Beta for Android as of (format-time-string "%Y-%m-%d") "2018-11-15" -->
-      <a id="readme_edit_toggle" aria-hidden="true" data-icon="compose" style="visibility: hidden">&#x270e;<!-- &#x270f;&#x2710; --></a>
-      <a id="readme_close" href="#readme_close">Close READMEs</a>
-    </p>
-      <div id="render_markdown"></div>
-      <pre contentEditable id="edit_markdown"></pre>
-    </div>
+        <a id="application_link" href="#application_info">Application Info</a>
+        <a id="application_clear" href="#application_info">Clear</a>
+      </p>
+      <p id="application_info"></p>
+      <p>
+        <a id="databases_link" href="#databases_info">Databases Info</a>
+        <a id="databases_clear" href="#databases_info">Clear</a>
+      </p>
+      <p id="databases_info"></p>
+      <p>
+        <a id="readme_link" href="README.md">README.md</a>
+      </p>
+      <p>
+        <a id="readme2_link" href="README2.md">README2.md</a>
+      </p>
+      <div>
+        <p>
+          <!-- &#x1f589; is not available in Firefox Beta for Android as of (format-time-string "%Y-%m-%d") "2018-11-15" -->
+          <a id="readme_edit_toggle" aria-hidden="true" data-icon="compose" style="visibility: hidden">&#x270e;<!-- &#x270f;&#x2710; --></a>
+          <a id="readme_close" href="#readme_close">Close READMEs</a>
+        </p>
+        <div id="render_markdown"></div>
+        <pre contentEditable id="edit_markdown"></pre>
+      </div>
+    </section>
   </section>
 </section>
 <style>
 @import url(css/form.css);
 @import url(css/links.css);
+@import url(css/section_expander.css);
 
 #about {
-  height: calc(100vh - 8mm);
+  height: calc(100vh - 1.5rem);
   overflow: scroll;
-  position: relative;
   scrollbar-width: none;
-  top: 8mm;
+  z-index: 2;
 }
 
 #edit_markdown {
@@ -61,32 +63,9 @@ export class AboutUI extends HTMLElement {
   margin: 0.3rem;
   border: 1px solid;
   padding: 0.2rem;
-  overflow: visible;
   display: block;
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-#render_markdown {
-  margin: 0.5rem;
-  margin: 0.3rem;
-  border: 1px solid;
-  padding: 0.2rem;
-  display: none;
-}
-
-#edit_markdown {
-  margin: 0.3rem;
-  border: 1px solid;
-  padding: 0.2rem;
-  display: none;
-/*   position: absolute; */
-/*   top: 0; */
-/*   overflow: scroll; */
-/*   width: 100%; */
-  white-space: pre-wrap;
-  word-break: break-all;
-/*   left: 0; */
 }
 
 #render_markdown {
@@ -106,7 +85,16 @@ code {
   background-color: lightgray;
 }
 
-:host(:target) {
+/*
+# :target - CSS: Cascading Style Sheets | MDN
+## https://developer.mozilla.org/en-US/docs/Web/CSS/:target
+
+Note: Due to a possible bug in the CSS specification, :target doesn't
+work within a web component because the shadow root doesn't pass the
+target element down to the shadow tree.
+*/
+
+:target {
     border: 0.2rem dashed;
 }
 

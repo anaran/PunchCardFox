@@ -12,8 +12,9 @@ export class OptionsUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
-<section id="options" style="display: none;">
-  <h1 data-l10n-id="app_options">Punchcard Options</h1>
+<input type="checkbox" id="cb1"><label for="cb1"><h1 data-l10n-id="app_options">Punchcard Options</h1>
+</label>
+<section id="options">
   <section>
     <!-- <span class="persistent" id="include" data-l10n-id="include"contentEditable>bla</span> -->
     <input-ui class="persistent" type="text" id="include" data-l10n-id="include" placeholder="must match"></input-ui>
@@ -28,9 +29,16 @@ export class OptionsUI extends HTMLElement {
       <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
     </div>
     <div>
-      <input type="checkbox" id="live_changes" name="live_changes"
-             value="true" />
-      <label for="live_changes">Display Punchcard database changes live</label>
+      <button id="query_current">Query</button> Punchcard database according to current settings.
+    </div>
+    <div>
+      <button id="query_changes">Query</button> Punchcard database 
+      <select id="changes_kind">
+        <option>live</option>
+        <option>ascending</option>
+        <option>descending</option>
+      </select>
+      changes
     </div>
   </section>
   <section>
@@ -58,12 +66,12 @@ export class OptionsUI extends HTMLElement {
     <input type="button" id="options_start_replication" data-l10n-id="options_start_replication" value="now">
     <input type="checkbox" id="options_live_sync">
     <input type="button" id="options_stop_replication" data-l10n-id="options_stop_replication" value="Stop Replication">
-  <h1 data-l10n-id="punchcard_db_title">Punchcard Database</h1>
-      <select id="punchcard_sync_type">
-        <option>Replicate from</option>
-        <option>Replicate to</option>
-        <option selected>Sync with</option>
-      </select>
+    <h1 data-l10n-id="punchcard_db_title">Punchcard Database</h1>
+    <select id="punchcard_sync_type">
+      <option>Replicate from</option>
+      <option>Replicate to</option>
+      <option selected>Sync with</option>
+    </select>
     <input-ui class="persistent" type="text" id="punchcard_db_name" data-l10n-id="db_name" placeholder="database name"></input-ui>
     <input-ui class="persistent" type="number" id="punchcard_doc_size" data-l10n-id="punchcard_doc_size" value="1000"></input-ui>
     <input type="button" id="punchcard_start_replication" data-l10n-id="punchcard_start_replication" value="now">
@@ -98,13 +106,13 @@ export class OptionsUI extends HTMLElement {
 <style>
 @import url(css/form.css);
 @import url(css/links.css);
+@import url(css/section_expander.css);
 
 #options {
-  height: calc(100vh - 8mm);
+  height: calc(100vh - 1.5rem);
   overflow: scroll;
-  position: relative;
   scrollbar-width: none;
-  top: 8mm;
+  z-index: 2;
 }
 
 pre {
@@ -183,28 +191,38 @@ pre:focus {
         });
       });
       // });
-      let liveChanges = this.shadow.getElementById ('live_changes');
-      let liveQuery;
-      liveChanges.addEventListener('change', (event) => {
-        var element = event.target;
-        var value = element.checked;
-        // window.alert(`${element.id} is ${value}`);
-        if (value) {
-          liveQuery = appjs.runQuery({
-            // conflicts: true,
-            db_changes: true, // run db.changes instead of db.allDocs
-            descending: false,
-            include_docs: true,
-            live: true,
-            return_docs: false,
-            since: 'now'
-          });
+    let queryCurrent = this.shadow.getElementById ('query_current');
+    queryCurrent.addEventListener('click', (event) => {
+    appjs.runQuery();
+    });
+      let queryChanges = this.shadow.getElementById ('query_changes');
+      let changesKind = this.shadow.getElementById ('changes_kind');
+      queryChanges.addEventListener('click', (event) => {
+        let options = {
+          conflicts: true,
+          db_changes: true, // run db.changes instead of db.allDocs
+          descending: false,
+          include_docs: true,
+          return_docs: false,
+          style: 'all_docs',
+        };
+        switch (changesKind.value) {
+        case "live": {
+          options.live = true;
+          options.since = 'now';
+          break;
         }
-        else {
-          if (liveQuery) {
-            liveQuery.cancel();
-          }
+        case "ascending": {
+          options.descending = false;
+          break;
         }
+        case "descending": {
+          options.since = 'now';
+          options.descending = true;
+          break;
+        }
+        }
+        appjs.runQuery(options);
       });
       let themeSelect = this.shadow.getElementById ('punchcard_theme_select');
       // Create the query list.
@@ -806,7 +824,20 @@ pre:focus {
     // catch (e) {
     //   window.alert(JSON.stringify(e, null, 2));
     // }
-  }
+   }
+        get options() {
+        let options = {};
+        this.shadow.querySelectorAll('.persistent').forEach((item) => {
+          infojs.info(`get persistent input for ${item.id}`);
+          if (item.type == 'checkbox') {
+            options[item.id] = item.checked;
+          }
+          else {
+            options[item.id] = item.value;
+          }
+        });
+        return options;
+        }
   toggle = (event) => {
     infojs.time('toggleOptionsDisplay');
     event.preventDefault();
@@ -828,17 +859,7 @@ pre:focus {
         event.target.style.opacity = '1.0';
         // document.location.reload('force');
         // document.location.reload();
-        let options = {};
-        this.shadow.querySelectorAll('.persistent').forEach((item) => {
-          infojs.info(`get persistent input for ${item.id}`);
-          if (item.type == 'checkbox') {
-            options[item.id] = item.checked;
-          }
-          else {
-            options[item.id] = item.value;
-          }
-        });
-        appjs.runQuery(options);
+        appjs.runQuery(this.options);
       }
     }
     infojs.timeEnd('toggleOptionsDisplay');

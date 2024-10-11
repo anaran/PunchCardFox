@@ -17,8 +17,9 @@ export class NewEntryUI extends HTMLElement {
     this.copy = copy;
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.innerHTML = `
+<input type="checkbox" id="cb1" checked><label for="cb1"><h1 data-l10n-id="app_new_entry">New Punchcard Entry</h1>
+</label>
 <section id="new_entry">
-  <h1 data-l10n-id="app_new_entry">New Punchcard Entry</h1>
   <section id="editor">
     <textarea id="activity" placeholder="enter activity"></textarea>
     <span>
@@ -38,7 +39,7 @@ export class NewEntryUI extends HTMLElement {
     <input-ui id="start" type="text"></input-ui>
     <input type="button" id="start_at_end" value="&UpTeeArrow;"/>
     <input type="button" id="update_start"
-      value="&circlearrowright;" disabled/>
+           value="&circlearrowright;" disabled/>
   </section>
   <section class="start">
     <div class="start_delta_div">
@@ -61,9 +62,9 @@ export class NewEntryUI extends HTMLElement {
   <section class="end_ui">
     <input-ui id="end" type="text"></input-ui>
     <input type="button" id="end_at_start"
-    value="&DownTeeArrow;"/>
+           value="&DownTeeArrow;"/>
     <input type="button" id="update_end" value="&circlearrowright;"
-      disabled/>
+           disabled/>
   </section>
   <section class="end">
     <div class="end_delta_div">
@@ -89,6 +90,8 @@ export class NewEntryUI extends HTMLElement {
   </section>
 </section>
 <style>
+@import url(css/section_expander.css);
+
 input {
   background-color: inherit;
   color: inherit;
@@ -98,11 +101,12 @@ input {
 }
 
 #new_entry {
-  height: calc(100vh - 8mm);
+  max-height: calc(100vh - 1.5rem);
   overflow: scroll;
-  position: relative;
+  /* position: relative; */
   scrollbar-width: none;
-  top: 8mm;
+  top: 1.5rem;
+  max-width: 36rem;
 }
 
 #start, #end {
@@ -112,7 +116,7 @@ input {
   flex: auto;
   font-family: monospace;
   font-size: inherit;
-  width: calc(100vw - 4rem);
+  width: calc(100% - 4rem);
 }
 
 .start_delta_div, .end_delta_div {
@@ -121,7 +125,6 @@ input {
   display: flex;
   font-family: monospace;
   font-size: inherit;
-  /* width: 100%; */
 }
 
 #start_at_end, #end_at_start, #update_start, #update_end {
@@ -641,6 +644,18 @@ input {
 
   init(id) {
     try {
+      let heading = this.shadow.querySelector('h1[data-l10n-id=app_new_entry]');
+      if (this.databaseID) {
+        if (this.copy) {
+        heading.textContent = 'Edit Copied Punchcard Entry';
+        }
+        else {
+        heading.textContent = 'Edit Punchcard Entry';
+        }
+      }
+      else {
+        heading.textContent = 'New Punchcard Entry';
+      }
       if (id) {
         this.db.get(id).then((otherDoc) => {
           // activity.textContent = otherDoc.activity;

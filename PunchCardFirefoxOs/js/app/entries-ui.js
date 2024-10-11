@@ -23,6 +23,10 @@ export class EntriesUI extends HTMLElement {
     background-color: lightgrey;
 }
 
+:host(:target) .entries_header {
+    border: 0.2rem dashed;
+}
+
 /*
 Firefox does not implement :host-context()
 See

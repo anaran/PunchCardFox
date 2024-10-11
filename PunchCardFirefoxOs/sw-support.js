@@ -184,7 +184,8 @@ if ('serviceWorker' in navigator) {
           Array.prototype.forEach.call(document.querySelectorAll('input.cacheName[type=checkbox]'), (value) => {
             if (value.checked) {
               infojs.info(navigator.serviceWorker.controller);
-              navigator.serviceWorker.controller.postMessage({
+              let c = navigator.serviceWorker.controller;
+              c && c.postMessage({
                 request: 'delete cache',
                 cache: value.id
               });

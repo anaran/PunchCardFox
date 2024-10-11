@@ -21,30 +21,46 @@ export class HeaderUI extends HTMLElement {
   <span class="hide_unchecked"><input type="checkbox"></input></span>
   <span class="app_title" aria-hidden="true">Punchcard v??</span>
   <span class="edit" aria-hidden="true">+</span>
-  <span class="settings" aria-hidden="true">*</span>
-  <span class="about" aria-hidden="true">&hellip;</span>
   <span class="search" aria-hidden="true">&#x1f50d;</span>
   <span class="reload" aria-hidden="true">&circlearrowleft;</span>
 </h1>
 <style>
 
-#app_header {
+:host {
     background-color: white;
     color: black;
+}
+
+:host-context(.dark_theme) {
+    background-color: black;
+    color: white;
+}
+
+#app_header {
+    background-color: inherit;
+    color: inherit;
     display: flex;
-    font-size: 6mm;
+    font-size: 1.2rem;
     margin: 0;
-    /* padding-top: 6mm; */
-    position: fixed;
+    position: sticky;
     text-align: center;
     top: 0;
-    width: 100vw;
+    left: 0;
+    right: 0;
+    bottom: 1.2rem;
+    /* width: 100vw; */
+    z-index: 2;
 }
 
 #app_header > span {
     background-color: inherit;
     color: inherit;
     flex: auto;
+}
+
+input[type=checkbox] {
+    height: 1rem;
+    width: 1rem;
 }
 
 </style>
@@ -81,14 +97,14 @@ export class HeaderUI extends HTMLElement {
         this.editNewItem.addEventListener('click', this.toggleEdit);
       }
       let aboutUI = new AboutUI();
-      document.querySelector('#top').insertAdjacentElement('afterend', aboutUI);
+      this.insertAdjacentElement('afterend', aboutUI);
       if (this.aboutItem) {
         this.aboutItem.addEventListener('click', (event) => {
           aboutUI.toggle(event);
         }, 'capture');
       }
       let optionsUI = new OptionsUI();
-      document.querySelector('#top').insertAdjacentElement('afterend', optionsUI);
+      this.insertAdjacentElement('afterend', optionsUI);
       if (this.optionsItem) {
         this.optionsItem.addEventListener('click', (event) => {
           optionsUI.toggle(event);
@@ -128,12 +144,19 @@ export class HeaderUI extends HTMLElement {
     // event.preventDefault();
       if (this.filter.style['display'] == 'none') {
         this.filter.style['display'] = '';
-        this.filter.querySelector('input-ui').focus();
-        // this.filter.scrollIntoView({block: "center", inline: "center"});
+        this.focusFilter(event);
+        // let options = {block: "center", inline: "center"};
+        let options = {block: "center", inline: "nearest"};
+        // let options = {block: "start", inline: "nearest"};
+        // let options = {block: "end", inline: "nearest"};
+        this.filter.scrollIntoView(options);
       }
       else {
         this.filter.style['display'] = 'none';
       }
+  };
+  focusFilter = (event) => {
+        this.filter.querySelector('input-ui').focus();
   };
     // Don't display filter when application loads.
     // toggleFilter();
@@ -184,7 +207,7 @@ export class HeaderUI extends HTMLElement {
 
   addNewEdit = (id, copy) => {
     let neu = new NewEntryUI(id, copy);
-    document.querySelector('#top').insertAdjacentElement('afterend', neu);
+    this.insertAdjacentElement('afterend', neu);
   };
 
   toggleEdit = (event) => {

@@ -29,14 +29,19 @@ own language (as long as you provide translations).
     <script type="module" src="./js/app/input-ui.js"></script>
     <link rel="icon" type="image/png" href="./img/icons/icon16x16.png">
   </head>
-  <body role="application">
-    <section id="top"></section>
+  <body id="top" role="application">
+    <section id="filter">
+      <span>
+        <input-ui id="filter-input" placeholder="filter by activity" type="search"></input-ui>
+      </span>
+      <button id="alpha" disabled>&alpha;</button>
+      <a href="#bottom">Bottom</a>
+    </section>
     <div id="scroll-and-view">
     <nav data-type="scrollbar" id="punchcard_scrollbar">
       <ul>
-        <li><a href="#top">Top</a></li>
-        <li id="results"></li>
         <li><a href="#bottom">Bottom</a></li>
+        <li id="results"></li>
         <li><a href="#">A</a></li>
         <li><a href="#">B</a></li>
         <li><a href="#">C</a></li>
@@ -65,14 +70,18 @@ own language (as long as you provide translations).
         <li><a href="#">Z</a></li>
       </ul>
     </nav>
-    <section id='view-punchcard-list' role="region" data-state="active" class="view view-noscroll">
+    <section id="view-punchcard-list" role="region" data-state="active" class="view view-noscroll">
       <section id="cache_section">
         <fieldset id="cache_versions">
           <legend>Cached Punchcard Versions</legend>
         </fieldset>
       </section>
       <section id="bottom">
-        <div>&downarrow;</div>
+        <div id="bottom_div">
+          <span>&downarrow;</span>
+          <a href="#top">Top</a>
+          <span class="close">&times;</span>
+        </div>
         <fieldset id="info_categories">
           <legend>Information Logging Categories</legend>
           <div>
@@ -123,11 +132,6 @@ own language (as long as you provide translations).
       <li><button type="button" disabled=true id="fill_gap">fill gap</button></li>
       <li><button type="button" disabled=true id="delete">delete</button></li>
     </ul>
-    <section id="filter">
-      <span>
-        <input-ui placeholder="filter by activity" type="search"></input-ui>
-      </span>
-    </section>
     <script type="module" src="./js/app/app.js"></script>
   </body>
 </html>

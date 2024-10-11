@@ -14,11 +14,15 @@ body {
     background-color: white;
     color: black;
     /* left: 0; */
-    /* margin: 0; */
+    margin: 0;
     /* Don't refresh page when top of page is reached. */
     overscroll-behavior: none;
     /* position: fixed; */
     /* top: 0; */
+    /* height: 100vh; */
+    /* width: 100vw; */
+    /* height: 100%; */
+    /* width: 100%; */
 }
 
 body.dark_theme {
@@ -41,9 +45,10 @@ div#scroll-and-view {
     background-color: inherit;
     color: inherit;
     display: flex;
-    height: calc(100vh - 8mm);
-    position: relative;
-    top: 8mm;
+    height: calc(100vh - 1.5rem);
+    position: sticky;
+    top: 1.5rem;
+    z-index: 3;
 }
 
 nav#punchcard_scrollbar {
@@ -61,11 +66,7 @@ nav#punchcard_scrollbar ul {
     margin: 0;
     padding: 0;
     height: 100%;
-    /*! overflow-x: scroll; */
     display: flex;
-    /*! font-size: 0.9rem; */
-    /*! flex: auto; */
-    /*! flex-direction: column; */
     flex-flow: column;
 }
 
@@ -91,7 +92,7 @@ nav#punchcard_scrollbar li a {
     background-color: inherit;
     color: inherit;
     flex: auto;
-    padding: 0;
+    padding-top: 0.5rem;
     text-decoration: none;
     white-space: pre;
 }
@@ -110,27 +111,45 @@ nav#punchcard_scrollbar li a:hover {
     filter: invert(100%);
 }
 
-#filter input-ui {
-    position: fixed;
-    top: 8mm;
-    left: 8mm;
-    background-color: white;
-    color: black;
+#filter {
+    background-color: inherit;
+    color: inherit;
+    position: relative;
+    top: 0;
+    z-index: 1;
 }
 
-#filter input-ui:focus-within {
+button {
+    background-color: inherit;
     color: inherit;
 }
 
+/* #filter input-ui:focus-within { */
+/*     color: inherit; */
+/* } */
+
 #bottom {
     background-color: white;
+}
+
+#bottom_div {
+    display: flex;
+    text-align: center;
+}
+
+#bottom_div * {
+    flex: auto;
 }
 
 .dark_theme #bottom {
     background-color: black;
 }
 
-.dark_theme #filter input-ui {
-    background-color: black;
-    color: white;
+:target {
+    border: 0.2rem dashed;
 }
+
+/* .dark_theme #filter input-ui { */
+/*     background-color: black; */
+/*     color: white; */
+/* } */

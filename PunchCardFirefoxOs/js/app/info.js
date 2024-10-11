@@ -77,14 +77,14 @@ function _infojs(info, element, append) {
       element.parentElement.style.right = '0';
       element.parentElement.style.top = '10%';
       element.parentElement.style.position = 'absolute';
-      element.parentElement.firstElementChild.addEventListener('click', function(event) {
-        event.preventDefault();
-        element.parentElement.style.transition = 'top 0.5s';
+      element.parentElement.firstElementChild.firstElementChild.addEventListener('click', function(event) {
+        // event.preventDefault();
+        element.parentElement.style.transition = 'top 1s';
         element.parentElement.style.top = '100%';
         window.setTimeout(() => {
-          event.target.parentElement.style.position = null;
+          element.parentElement.style.position = 'static';
           element.parentElement.style.transition = null;
-        }, 1000);
+        }, 2000);
       });
     }
     if (niu instanceof InfoUI && 'textContent' in niu) {
