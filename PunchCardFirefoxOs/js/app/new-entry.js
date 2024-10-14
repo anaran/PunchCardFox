@@ -692,7 +692,7 @@ input {
       if (!this.entries) {
         this.entries = new EntriesUI('New', appjs.updateScrollLinks);
         let cache_section = document.querySelector('#cache_section');
-        this.scrollView.insertBefore(this.entries, cache_section);
+        this.scrollView.insertAdjacentElement('beforeend', this.entries);
         this.entries.scrollIntoView({block: "center", inline: "center"});
         this.entries.info = 'New Entries';
       }
