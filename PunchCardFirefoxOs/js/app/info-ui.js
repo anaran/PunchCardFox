@@ -12,18 +12,30 @@ export class InfoUI extends HTMLElement {
       this.shadow.innerHTML = `
 <pre></pre>
 <style>
-pre {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
-}
+  .error {
+      background-color: red;
+  }
+  .warning {
+      background-color: orange;
+  }
+  :host-context(.dark_theme) .error {
+      background-color: darkred;
+  }
+  :host-context(.dark_theme) .warning {
+      background-color: darkorange;
+  }
+  pre {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+  }
 
-pre.selected {
-  overflow: visible;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
+  pre.selected {
+      overflow: visible;
+      white-space: pre-wrap;
+      word-break: break-all;
+  }
 </style>
 `;
       this.pre = this.shadow.querySelector('pre');

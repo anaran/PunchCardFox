@@ -51,12 +51,6 @@ export class AboutUI extends HTMLElement {
 @import url(css/links.css);
 @import url(css/section_expander.css);
 
-#about {
-  /* height: calc(100vh - 1.5rem); */
-  overflow: scroll;
-  scrollbar-width: none;
-}
-
 #edit_markdown {
   margin:  0.2rem;
   margin: 0.3rem;

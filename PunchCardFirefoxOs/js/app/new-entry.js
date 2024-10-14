@@ -102,10 +102,6 @@ input {
 
 #new_entry {
   max-height: calc(100vh - 1.5rem);
-  overflow: scroll;
-  /* position: relative; */
-  scrollbar-width: none;
-  top: 1.5rem;
   max-width: 36rem;
 }
 

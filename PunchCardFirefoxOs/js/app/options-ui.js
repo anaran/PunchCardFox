@@ -108,12 +108,6 @@ export class OptionsUI extends HTMLElement {
 @import url(css/links.css);
 @import url(css/section_expander.css);
 
-#options {
-  /* height: calc(100vh - 1.5rem); */
-  overflow: scroll;
-  scrollbar-width: none;
-}
-
 pre {
   font-family: FiraSans;
 }

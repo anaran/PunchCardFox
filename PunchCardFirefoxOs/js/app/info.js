@@ -46,7 +46,7 @@ export let error = (error, element, append) => {
     _infojs(`\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n`, element, append);
   }
   else {
-    _infojs(error, element, append);
+    _infojs(error, element, append, 'error');
   }
 }
 
@@ -62,31 +62,22 @@ export let infojs = (info, element, append) => {
 
 export let warn = (info, element, append) => {
   if (localStorage.getItem('info-warning')) {
-    _infojs(info, element, append);
+    _infojs(info, element, append, 'warning');
   }
 }
 
-function _infojs(info, element, append) {
+function _infojs(info, element, append, type) {
   let niu;
   let where = (new Error).stack.split('\n')[ERROR_STACK_INDEX].replace(/\s+at\s+/, '');
+  let place = element;
   where = where.replace(localStorage.getItem('serviceworker-scope'), '');
   try {
     niu = new InfoUI();
+    if (type) {
+      niu.classList.add(type);
+    }
     if (!element) {
-      element = document.getElementById('info');
-      // element.parentElement.style.left = '0';
-      // element.parentElement.style.right = '0';
-      // element.parentElement.style.top = '10%';
-      // element.parentElement.style.position = 'absolute';
-      // element.parentElement.firstElementChild.firstElementChild.addEventListener('click', function(event) {
-      //   // event.preventDefault();
-      //   element.parentElement.style.transition = 'top 1s';
-      //   element.parentElement.style.top = '100%';
-      //   window.setTimeout(() => {
-      //     element.parentElement.style.position = 'static';
-      //     element.parentElement.style.transition = null;
-      //   }, 2000);
-      // });
+      place = document.getElementById('info');
     }
     if (niu instanceof InfoUI && 'textContent' in niu) {
       if (typeof info == 'string') {
@@ -96,10 +87,15 @@ function _infojs(info, element, append) {
         niu.textContent = `"${where}@${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
       }
       if (append) {
-        element.appendChild(niu);
+        place.insertAdjacentElement('beforerend', niu);
       }
       else {
-        element.insertBefore(niu, element.firstElementChild);
+        place.insertAdjacentElement('afterbegin', niu);
+      }
+      if (!element) {
+        document.getElementById('cb2').checked = true;
+        place.parentElement.style.zIndex = '2';
+        niu.scrollIntoView();
       }
     }
     else {

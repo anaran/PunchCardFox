@@ -30,7 +30,9 @@
     position: sticky;
     top: 3rem;
     display: block;
-    overscroll-behavior: auto;
+    overscroll-behavior: contain;
+    overflow: scroll;
+    scrollbar-width: none;
     z-index: 1;
 }
 
