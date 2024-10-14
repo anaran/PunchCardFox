@@ -26,9 +26,9 @@
 }
 
 .cb1:checked + label + * {
-    max-height: calc(100vh - 3rem);
+    max-height: calc(100vh - 1.5rem);
     position: sticky;
-    top: 3rem;
+    top: 1.5rem;
     display: block;
     overscroll-behavior: contain;
     overflow: scroll;
@@ -46,5 +46,13 @@
     position: sticky;
     top: 1.5rem;
     z-index: 1;
+    overscroll-behavior: contain;
+    overflow: scroll;
+    scrollbar-width: none;
     background-color: inherit;
+}
+
+.cb1:checked + label > * {
+    top: 0;
+    z-index: 2;
 }

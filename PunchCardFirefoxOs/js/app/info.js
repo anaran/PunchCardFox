@@ -92,7 +92,7 @@ function _infojs(info, element, append, type) {
       else {
         place.insertAdjacentElement('afterbegin', niu);
       }
-      if (!element) {
+      if (!element && type) {
         document.getElementById('cb2').checked = true;
         place.parentElement.style.zIndex = '2';
         niu.scrollIntoView();
