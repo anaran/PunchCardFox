@@ -1,40 +1,48 @@
 
+:host {
+    color: inherit;
+    background-color: inherit;
+}
+
 /* input[type=checkbox] */
 
-#cb1 {
+.cb1 {
     display: none;
 }
 
 /* blacktriangleright;	U+025B8 */
-#cb1 + label>h1::before {
+.cb1 + label > *::before {
     content: "\25b8  ";
 }
 
 /* blacktriangledown;	U+025BE */
-#cb1:checked + label>h1::before {
+.cb1:checked + label > *::before {
     content: "\25BE  ";
 }
 
-#cb1 ~ section {
+.cb1 + label + * {
     display: none;
+    background-color: inherit;
 }
 
-#cb1:checked ~ section {
-    height: calc(100vh - 3rem);
+.cb1:checked + label + * {
+    max-height: calc(100vh - 3rem);
     position: sticky;
     top: 3rem;
     display: block;
     overscroll-behavior: auto;
+    z-index: 1;
 }
 
-#cb1 + label>h1 {
+.cb1 + label {
+    background-color: inherit;
+}
+
+.cb1 + label > * {
     margin: 0;
     font-size: 1.2rem;
     position: sticky;
     top: 1.5rem;
-    z-index: 3;
-}
-
-#cb1:checked + label>h1 {
-    z-index: 4;
+    z-index: 1;
+    background-color: inherit;
 }

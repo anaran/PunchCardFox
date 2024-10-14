@@ -17,11 +17,11 @@ let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   const entries = document.getElementById(result[4]);
   if (result[0]) {
-    query_info = `${query_info} found ${result[2]}`;
+    query_info = `${query_info}, processed ${result[3]},  found ${result[2]}`;
     entries.info = `${query_info}`;
   }
   else {
-    query_info = `${query_info} found ${result[3]}`;
+    query_info = `${query_info} processed ${result[3]}`;
     entries.info = `${query_info}`;
   }
   infojs.timeEnd('query result processing');
@@ -169,8 +169,10 @@ export let stringToRegexp = function(str) {
 
 export let runQuery = function(arg) {
   try {
+    // Wrap in closure to isolate concurrent queries.
+    ((arg) => {
     // db.query(map, {reduce: false, /*startkey: "2010-06-24T15:44:08", endkey: "2010-06-25T15:44:08", */limit: 33, include_docs: true, descending: false}, function(err, doc) {
-    // var obj = db.mapreduce(db);
+    // let obj = db.mapreduce(db);
     // db.query(map, {/*stale: 'ok', */reduce: false,
     let times = [];
     infojs.time('runQuery');
@@ -179,23 +181,24 @@ export let runQuery = function(arg) {
       options = document.querySelector('options-ui').options;
     }
     infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
-    var dec = !!options.descending;
-    var limit = options.limit ? Number(options.limit) : 100;
-    var matchLimit = options.match_limit ? Number(options.match_limit) : 50;
+    let dec = !!options.descending;
+    let limit = options.limit ? Number(options.limit) : 100;
+    let matchLimit = options.match_limit ? Number(options.match_limit) : 50;
     // Limit query to a maximum of 1000 rows, not to use too much
     // memory in mobile browsers on smartphones
-    var opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
-    let entries = new EntriesUI('R' + resultIndex, updateScrollLinks);
-    const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-    var previousEntries = scrollView.querySelector('entries-ui');
-    entries.classList.add('updating');
-    var cacheSection = document.querySelector('#cache_section');
-    if (previousEntries) {
-      scrollView.insertBefore(entries, previousEntries);
-    }
-    else {
-      scrollView.insertBefore(entries, cacheSection);
-    }
+    let opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
+      let entries = new EntriesUI('R' + resultIndex, updateScrollLinks);
+      const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
+    // let previousEntries = scrollView.querySelector('entries-ui');
+      entries.classList.add('updating');
+      scrollView.insertAdjacentElement ('afterbegin', entries);
+    // let cacheSection = document.querySelector('#cache_section');
+    // if (previousEntries) {
+    //   scrollView.insertBefore(entries, previousEntries);
+    // }
+    // else {
+    //   scrollView.insertBefore(entries, cacheSection);
+    // }
     entries.id = 'R' + resultIndex;
     resultIndex += 1;
     entries.scrollIntoView({block: "center", inline: "center"});
@@ -212,7 +215,7 @@ export let runQuery = function(arg) {
           this.cancel();
         }
         changesCount += 1;
-        entries.info = `${query_info}, processed change ${changesCount} ...`;
+        entries.info = `${query_info}, processed ${changesCount} changes ...`;
         infojs.info(info);
         if ('_deleted' in info.doc) {
           let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
@@ -237,7 +240,7 @@ export let runQuery = function(arg) {
     else if (regexp) {
       query_info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
       entries.info = `${query_info}`;
-      var changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
+      let changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
       let matchingDeletes = 0;
       db.changes({
         descending: dec,
@@ -272,14 +275,14 @@ export let runQuery = function(arg) {
           if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
             // infojs.info({get: otherDoc}, entries);
             // Adding revision to id allows us to add document back
-            var entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
+            let entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
             entry.classList.add('deleted');
           }
         }).catch(function (err) {
           infojs.error(err, document.getElementById(id).parentElement);
         });
         // }).on('change', function(info) {
-        //   var entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+        //   let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
       }).on('error', function (err) {
         infojs.error({delete_error: err}, entries);
       }).on('complete', function(info) {
@@ -319,15 +322,15 @@ export let runQuery = function(arg) {
       //   startDate = options.startkey;
       // }
       // // else {
-      // //   var start = document.querySelector('#query_start');
-      // //   var startDate = start.valueAsDate;
+      // //   let start = document.querySelector('#query_start');
+      // //   let startDate = start.valueAsDate;
       // // }
       // if (options.endkey) {
       //   endDate = options.endkey;
       // }
       // // else {
-      // //   var end = document.querySelector('#query_end');
-      // //   var endDate = end.valueAsDate;
+      // //   let end = document.querySelector('#query_end');
+      // //   let endDate = end.valueAsDate;
       // // }
       // if (startDate && endDate && startDate > endDate) {
       //   [ startDate, endDate ] = [ endDate, startDate ];
@@ -364,11 +367,11 @@ export let runQuery = function(arg) {
       if (dec) {
         [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
       }
-      var isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
-      var includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
-      var excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
+      let isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
+      let includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
+      let excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
       if (isSearch) {
-        query_info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries, ` : ''}`;
+        query_info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries` : ''}`;
         entries.info = `${query_info}`;
         infojs.time('query allDocs search');
       }
@@ -382,7 +385,7 @@ export let runQuery = function(arg) {
       // for (; rowCount < limit; loops++) {
       let recursiveQuery = (opts, matches, rowCount) => {
         return new Promise((resolve, reject) => {
-          var query;
+          let query;
           // if (options.deleted_id) {
           //   return;
           // }
@@ -407,8 +410,8 @@ export let runQuery = function(arg) {
             if ('startkey' in opts && rowCount && doc.rows.length) {
               doc.rows.shift();
             }
-            for (var index = 0; index < doc.rows.length; index++) {
-              var row = doc.rows[index];
+            for (let index = 0; index < doc.rows.length; index++) {
+              let row = doc.rows[index];
               if ((includeRegExp && !includeRegExp.test(row.doc.activity)) ||
                   excludeRegExp && excludeRegExp.test(row.doc.activity)) {
                 // forEach function return becomes continue in for loop.
@@ -419,7 +422,7 @@ export let runQuery = function(arg) {
                   continue;
                 }
               }
-              var entry;
+              let entry;
               if (!('activity' in row.doc)) {
                 // FIXME
                 // allDocs query finds design documents too.
@@ -455,12 +458,12 @@ export let runQuery = function(arg) {
               return resolve([ isSearch, opts, matches, rowCount + doc.rows.length, entries.id]);
             }
             opts.startkey = newStart;
-            entries.info = `${query_info}, processed ${rowCount} ...`;
+            entries.info = `${query_info}, processed ${rowCount} entries ...`;
             if (entries.stop) {
               return resolve([isSearch, opts, matches, rowCount, entries.id]);
             }
             // Just recurse, we already checked for limit and matchLimit above
-            return resolve(recursiveQuery(opts, matches, rowCount, entries.id));
+            return resolve(recursiveQuery(opts, matches, rowCount));
           }).catch(function(err) {
             infojs.error(err, document.getElementById(id).parentElement);
           });
@@ -468,6 +471,7 @@ export let runQuery = function(arg) {
       };
       recursiveQuery(opts, matches, rowCount).then(updateQueryResults);
     }
+    })(arg);
   }
   catch(err) {
     infojs.error(err);
@@ -555,14 +559,16 @@ document.addEventListener('readystatechange', (event) => {
     loadAutosavedEntries();
     let filter = document.querySelector('#filter input-ui');
     filter.minLength = 4;
-    let alpha = document.querySelector('#alpha');
-    alpha.addEventListener('click', (event) => {
+    let queryFilter = document.querySelector('#query_filter');
+    queryFilter.addEventListener('click', (event) => {
+      event.preventDefault();
+      let options = document.querySelector('options-ui').options;
       runQuery({
-        descending: true,
+        descending: options.descending,
         include: filter.value,
         include_docs: true,
-        limit: 29999,
-        match_limit: 999,
+        limit: options.limit,
+        match_limit: options.match_limit
       });
     });
     let setBackgroundColor = color => {
@@ -602,27 +608,18 @@ document.addEventListener('readystatechange', (event) => {
       infojs.timeEnd('updating');
     };
     let timeoutId;
-    filter.addEventListener('input', event => {
+    let updateQueryButton = event => {
       if (event.target.value == '') {
         filter.classList.add('empty');
-        document.getElementById('alpha').setAttribute('disabled', true);
+        document.getElementById('query_filter').style.visibility = 'hidden';
       }
       else {
         filter.classList.remove('empty');
-        document.getElementById('alpha').removeAttribute('disabled');
+        document.getElementById('query_filter').style.visibility = null;
       }
-    });
-    // handle change caused by input-ui erase and undo buttons.
-    filter.addEventListener('change', event => {
-      if (event.target.value == '') {
-        filter.classList.add('empty');
-        document.getElementById('alpha').setAttribute('disabled', true);
-      }
-      else {
-        filter.classList.remove('empty');
-        document.getElementById('alpha').removeAttribute('disabled');
-      }
-    });
+    };
+    filter.addEventListener('input', updateQueryButton);
+    filter.addEventListener('change', updateQueryButton);
     filter.addEventListener('keyup', event => {
       // infojs.info('^- updating filter -^');
       // infojs.info(event);
@@ -1108,6 +1105,18 @@ document.addEventListener('readystatechange', (event) => {
       let id = getDataSetIdHideMenu(event);
       addNewEdit(id);
     };
+    var query = function(event) {
+      let id = getDataSetIdHideMenu(event);
+      let entry = document.getElementById(id);
+      let options = document.querySelector('options-ui').options;
+      runQuery({
+        descending: options.descending,
+        include: entry.activity.textContent,
+        include_docs: true,
+        limit: options.limit,
+        match_limit: options.match_limit
+      });
+    }
     var view = function(event) {
       let id = getDataSetIdHideMenu(event);
       let entry = document.getElementById(id);
@@ -1123,6 +1132,10 @@ document.addEventListener('readystatechange', (event) => {
     var editItem = document.querySelector('#edit');
     if (editItem) {
       editItem.addEventListener('click', edit);
+    }
+    var queryItem = document.querySelector('#query');
+    if (queryItem) {
+      queryItem.addEventListener('click', query);
     }
     var viewItem = document.querySelector('#view');
     if (viewItem) {

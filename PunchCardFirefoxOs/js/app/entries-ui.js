@@ -8,6 +8,7 @@ export class EntriesUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
+<input type="checkbox" id="cb1" class="cb1" checked><label for="cb1">
 <div class="entries_header">
   <a class="add">&plus;</a>
   <a class="close">&Cross;</a>
@@ -15,9 +16,10 @@ export class EntriesUI extends HTMLElement {
   <a class="stop">&Omega;</a>
   <span class="info">result header</span>
 </div>
+  </label>
 <slot></slot>
 <style>
-
+@import url(css/section_expander.css);
  
 :host(.updating) {
     background-color: lightgrey;
@@ -25,6 +27,11 @@ export class EntriesUI extends HTMLElement {
 
 :host(:target) .entries_header {
     border: 0.2rem dashed;
+}
+
+slot {
+  overflow: auto;
+  scrollbar-width: none;
 }
 
 /*

@@ -9,8 +9,9 @@ let ERROR_STACK_INDEX = navigator.userAgent.match(/Firefox/i) ? 2 : 3;
 let times = {};
 
 function getAllPropertyNames(obj, props = []) {
-  // console.log(obj.constructor.name, props);
-  if (obj.constructor.name == 'Object') {
+  if (typeof obj == 'undefined') {
+    return obj;
+  } else if (obj.constructor.name == 'Object') {
     // console.log(obj.constructor.name, props);
     return props.length ? props : null;
     // return props;
@@ -73,19 +74,19 @@ function _infojs(info, element, append) {
     niu = new InfoUI();
     if (!element) {
       element = document.getElementById('info');
-      element.parentElement.style.left = '0';
-      element.parentElement.style.right = '0';
-      element.parentElement.style.top = '10%';
-      element.parentElement.style.position = 'absolute';
-      element.parentElement.firstElementChild.firstElementChild.addEventListener('click', function(event) {
-        // event.preventDefault();
-        element.parentElement.style.transition = 'top 1s';
-        element.parentElement.style.top = '100%';
-        window.setTimeout(() => {
-          element.parentElement.style.position = 'static';
-          element.parentElement.style.transition = null;
-        }, 2000);
-      });
+      // element.parentElement.style.left = '0';
+      // element.parentElement.style.right = '0';
+      // element.parentElement.style.top = '10%';
+      // element.parentElement.style.position = 'absolute';
+      // element.parentElement.firstElementChild.firstElementChild.addEventListener('click', function(event) {
+      //   // event.preventDefault();
+      //   element.parentElement.style.transition = 'top 1s';
+      //   element.parentElement.style.top = '100%';
+      //   window.setTimeout(() => {
+      //     element.parentElement.style.position = 'static';
+      //     element.parentElement.style.transition = null;
+      //   }, 2000);
+      // });
     }
     if (niu instanceof InfoUI && 'textContent' in niu) {
       if (typeof info == 'string') {
@@ -102,11 +103,11 @@ function _infojs(info, element, append) {
       }
     }
     else {
-      window.alert(`"${where}@${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`);
+      window.prompt('debug info', `"${where}@${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`);
     }
   }
   catch (e) {
     // window.alert(niu && niu.textContent);
-    window.alert(JSON.stringify(e, getAllPropertyNames(e), 2));
+    window.prompt('catch debug info', JSON.stringify(e, getAllPropertyNames(e), 2));
   }
 };

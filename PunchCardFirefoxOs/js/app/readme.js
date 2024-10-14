@@ -1,6 +1,7 @@
 'use strict';
 
 import '../libs/marked.min.js';
+import * as infojs from './info.js';
 
 var XHR_TIMEOUT_MS = 0;
 export let init = function (url, renderElement, editElement, toggleElement) {
@@ -11,7 +12,7 @@ export let init = function (url, renderElement, editElement, toggleElement) {
     var renderer = (function() {
       var renderer = new marked.Renderer();
       renderer.heading = function(text, level, raw) {
-        var anchor = this.options.headerPrefix + raw.toLowerCase().replace(/[^\w]+/g, '-');
+        var anchor = raw.toLowerCase().replace(/[^\w]+/g, '-');
         toc.push({
           anchor: anchor,
           level: level,
@@ -121,16 +122,19 @@ export let init = function (url, renderElement, editElement, toggleElement) {
             var html = marked.parse(request.response);
             let tocHTML = '<h1 id="table-of-contents">Index</h1>\n<ul>\n';
             tocHTML += '<li><a href="#readme_edit_toggle">Top</a></li>\n';
+            infojs.info(toc);
             toc.forEach(function (entry) {
               tocHTML += '<li><a href="#'+entry.anchor+'">'+entry.text+'</a></li>\n';
             });
             tocHTML += '</ul>\n';
             render.innerHTML = html + tocHTML;
             render.addEventListener('click', (event) => {
-              // infojs.info(event.composedPath());
-              let u = event.target.href.split('#')[1];
-              let t = render.parentElement.querySelector(`#${u}`);
-              t.scrollIntoView(/*{block: "center", inline: "center"}*/);
+              if ('href' in event.target) {
+                infojs.info(event.target.href);
+                let u = event.target.href.split('#')[1];
+                let t = render.parentElement.querySelector(`#${u}`);
+                t.scrollIntoView(/*{block: "center", inline: "center"}*/);
+              }
             });
           }
           if (edit.textContent) {

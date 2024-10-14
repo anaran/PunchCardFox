@@ -10,6 +10,7 @@ let cachedVersion = undefined;
 self.addEventListener('fetch', function(event) {
   const successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
   let request = event.request;
+  // TODO: Use a nonce here?
   let url = request.url;
   event.respondWith(
     caches.open(cachedVersion || version).then(function(cache) {
@@ -39,6 +40,7 @@ self.addEventListener('fetch', function(event) {
           client.postMessage({
             request: 'info',
             message: `event.request ${event.request.url} ${event.request.url.match(self.registration.scope) ? 'matches' : 'does not match'} scope`,
+            where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2],
             scope: self.registration.scope
           });
         }).catch(err => {
@@ -67,7 +69,8 @@ self.addEventListener('fetch', function(event) {
               client && client.postMessage({
                 request: 'info',
                 message: `cache.put ${event.request.url}`,
-                scope: self.registration.scope
+                scope: self.registration.scope,
+                where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
               });
             });
             cache.put(event.request, response.clone());
@@ -134,6 +137,19 @@ self.addEventListener("message", function(e) {
   }
   case 'delete cache': {
     self.caches.delete(e.data.cache);
+    e.source.postMessage({
+      request: 'info',
+      message: `self.caches.delete(${e.data.cache})`,
+      scope: self.registration.scope
+    });
+    self.caches.keys().then((keys) => {
+      e.source.postMessage({
+        request: 'info',
+        message: `self.caches.keys after delete: (${keys})`,
+        where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2],
+        scope: self.registration.scope
+      });
+    });
     break;
   }
   case 'version': {

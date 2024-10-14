@@ -74,7 +74,7 @@ input[type=checkbox] {
   connectedCallback() {
     try {
       this.filter = document.querySelector('#filter');
-      this.toggleFilter();
+      // this.toggleFilter();
       this.hideUncheckedItem = this.shadow.querySelector('.hide_unchecked');
       this.scrollbaritem = this.shadow.querySelector('span.scrollbar');
       this.titleItem = this.shadow.querySelector('span.app_title');

@@ -48,7 +48,7 @@ div#scroll-and-view {
     height: calc(100vh - 1.5rem);
     position: sticky;
     top: 1.5rem;
-    z-index: 3;
+    z-index: 1;
 }
 
 nav#punchcard_scrollbar {
@@ -75,6 +75,7 @@ section#view-punchcard-list {
     /* right: 0; */
     overflow: scroll;
     scrollbar-width: none;
+    background-color: inherit;
 }
 
 nav#punchcard_scrollbar li {
@@ -117,6 +118,16 @@ nav#punchcard_scrollbar li a:hover {
     position: relative;
     top: 0;
     z-index: 1;
+}
+
+about-ui {
+    background-color: inherit;
+    color: inherit;
+}
+
+options-ui {
+    background-color: inherit;
+    color: inherit;
 }
 
 button {

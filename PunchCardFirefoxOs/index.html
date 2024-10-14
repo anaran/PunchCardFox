@@ -19,6 +19,7 @@ https://developer.mozilla.org/Mozilla/Mobile/Viewport_meta_tag
 -->
     <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, user-scalable=no, user-scalable=0">
     <link rel="stylesheet" href="./css/app.css">
+    <link rel="stylesheet" href="./css/section_expander.css">
     <!--
 The following two lines are for loading the localisations library
 and the localisation data-so people can use the app in their
@@ -30,11 +31,46 @@ own language (as long as you provide translations).
     <link rel="icon" type="image/png" href="./img/icons/icon16x16.png">
   </head>
   <body id="top" role="application">
+    <input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="cache_title">Punchcard Versions</h1>
+      </label>
+      <section id="cache_section">
+        <fieldset id="cache_versions">
+          <legend>Cached Punchcard Versions</legend>
+        </fieldset>
+      </section>
+      <input type="checkbox" id="cb2" class="cb1"><label for="cb2"><h1 data-l10n-id="console_title">Punchcard Console</h1>
+      </label>
+      <section id="bottom">
+        <div id="bottom_div">
+          <span>&downarrow;</span>
+          <a href="#top">Top</a>
+          <span class="close">&times;</span>
+        </div>
+        <fieldset id="info_categories">
+          <legend>Information Logging Categories</legend>
+          <div>
+            <input type="checkbox" id="info-warning" name="category"
+                   value="warning" />
+            <label for="info-warning">Warnings</label>
+          </div>
+          <div>
+            <input type="checkbox" id="info-information" name="category"
+                   value="information" />
+            <label for="info-information">Information</label>
+          </div>
+          <div>
+            <input type="checkbox" id="info-performance" name="category"
+                   value="performance" />
+            <label for="info-performance">Performance</label>
+          </div>
+        </fieldset>
+        <span id="info"></span>
+      </section>
     <section id="filter">
       <span>
         <input-ui id="filter-input" placeholder="filter by activity" type="search"></input-ui>
       </span>
-      <button id="alpha" disabled>&alpha;</button>
+      <a id="query_filter" href="query_filter" style="visibility: hidden;">Query</a>
       <a href="#bottom">Bottom</a>
     </section>
     <div id="scroll-and-view">
@@ -71,38 +107,7 @@ own language (as long as you provide translations).
       </ul>
     </nav>
     <section id="view-punchcard-list" role="region" data-state="active" class="view view-noscroll">
-      <section id="cache_section">
-        <fieldset id="cache_versions">
-          <legend>Cached Punchcard Versions</legend>
-        </fieldset>
-      </section>
-      <section id="bottom">
-        <div id="bottom_div">
-          <span>&downarrow;</span>
-          <a href="#top">Top</a>
-          <span class="close">&times;</span>
-        </div>
-        <fieldset id="info_categories">
-          <legend>Information Logging Categories</legend>
-          <div>
-            <input type="checkbox" id="info-warning" name="category"
-                   value="warning" />
-            <label for="info-warning">Warnings</label>
-          </div>
-          <div>
-            <input type="checkbox" id="info-information" name="category"
-                   value="information" />
-            <label for="info-information">Information</label>
-          </div>
-          <div>
-            <input type="checkbox" id="info-performance" name="category"
-                   value="performance" />
-            <label for="info-performance">Performance</label>
-          </div>
-        </fieldset>
-        <span id="info"></span>
-      </section>
-      </section>
+    </section>
     </div>
     <ul id="start_menu" class="menu" style="display: none;">
       <li><button type="button" id="start_now">start now</button></li>
@@ -124,6 +129,7 @@ own language (as long as you provide translations).
       <li><button type="button" id="edit">edit</button></li>
       <li><button type="button" id="edit_new_copy">edit new copy</button></li>
       <li><button type="button" id="repeat_now">repeat now</button></li>
+      <li><button type="button" id="query">query activity</button></li>
       <li><button type="button" id="view">view</button></li>
       <li><button type="button" disabled=true id="activity_at_checked">activity at &checkmark;</button></li>
     </ul>

@@ -17,7 +17,7 @@ export class NewEntryUI extends HTMLElement {
     this.copy = copy;
     this.shadow = this.attachShadow({ mode: 'open' });
     this.shadow.innerHTML = `
-<input type="checkbox" id="cb1" checked><label for="cb1"><h1 data-l10n-id="app_new_entry">New Punchcard Entry</h1>
+<input type="checkbox" id="cb1" class="cb1" checked><label for="cb1"><h1 data-l10n-id="app_new_entry">New Punchcard Entry</h1>
 </label>
 <section id="new_entry">
   <section id="editor">

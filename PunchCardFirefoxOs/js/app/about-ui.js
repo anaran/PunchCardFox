@@ -13,7 +13,7 @@ export class AboutUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
-  <input type="checkbox" id="cb1"><label for="cb1"><h1 data-l10n-id="app_title">About Punchcard</h1>
+  <input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="app_title">About Punchcard</h1>
   </label>
   <section id="about">
     <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
@@ -52,10 +52,9 @@ export class AboutUI extends HTMLElement {
 @import url(css/section_expander.css);
 
 #about {
-  height: calc(100vh - 1.5rem);
+  /* height: calc(100vh - 1.5rem); */
   overflow: scroll;
   scrollbar-width: none;
-  z-index: 2;
 }
 
 #edit_markdown {

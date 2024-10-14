@@ -12,18 +12,18 @@ export class OptionsUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
-<input type="checkbox" id="cb1"><label for="cb1"><h1 data-l10n-id="app_options">Punchcard Options</h1>
+<input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="app_options">Punchcard Options</h1>
 </label>
 <section id="options">
   <section>
     <!-- <span class="persistent" id="include" data-l10n-id="include"contentEditable>bla</span> -->
-    <input-ui class="persistent" type="text" id="include" data-l10n-id="include" placeholder="must match"></input-ui>
-    <input-ui class="persistent" type="text" id="exclude" data-l10n-id="exclude" placeholder="must not match"></input-ui>
+    <input-ui class="persistent" type="text" id="include" data-l10n-id="include" placeholder="must match activity"></input-ui>
+    <input-ui class="persistent" type="text" id="exclude" data-l10n-id="exclude" placeholder="must not match activity"></input-ui>
     <input-ui class="persistent" type="number" id="match_limit" data-l10n-id="match_limit" placeholder="match count"></input-ui>
     <input-ui class="persistent" type="number" id="limit" data-l10n-id="limit" placeholder="entries count"></input-ui>
     <input class="persistent" type="checkbox" id="descending" data-l10n-id="descendieng" placeholder="descending">
-    <input-ui class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="deleted id"></input-ui>
-    <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="Changes since sequence ..."></input-ui>
+    <input-ui class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="must match deleted activity"></input-ui>
+    <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="since sequence or now"></input-ui>
     <div>
       <input-ui class="persistent" type="date" id="query_start" data-l10n-id="query_start_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 1, YYYY-MM-DD"></input-ui>
       <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
@@ -109,10 +109,9 @@ export class OptionsUI extends HTMLElement {
 @import url(css/section_expander.css);
 
 #options {
-  height: calc(100vh - 1.5rem);
+  /* height: calc(100vh - 1.5rem); */
   overflow: scroll;
   scrollbar-width: none;
-  z-index: 2;
 }
 
 pre {
