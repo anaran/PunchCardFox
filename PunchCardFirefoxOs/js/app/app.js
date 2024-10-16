@@ -11,18 +11,15 @@ import '../libs/marked.min.js';
 let resultIndex = 1;
 let optionsDB = new PouchDB('options');
 let db = new PouchDB('punchcard');
-let query_info = '';
 
 let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   const entries = document.getElementById(result[4]);
   if (result[0]) {
-    query_info = `${query_info}, processed ${result[3]},  found ${result[2]}`;
-    entries.info = `${query_info}`;
+    entries.info = `${result[5]}, processed ${result[3]},  found ${result[2]}`;
   }
   else {
-    query_info = `${query_info} processed ${result[3]}`;
-    entries.info = `${query_info}`;
+    entries.info = `${result[5]} processed ${result[3]}`;
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
@@ -176,6 +173,7 @@ export let runQuery = function(arg) {
     // db.query(map, {/*stale: 'ok', */reduce: false,
     let times = [];
     infojs.time('runQuery');
+      let query_info = '';
     let options = arg || {};
     if (!arg) {
       options = document.querySelector('options-ui').options;
@@ -203,8 +201,9 @@ export let runQuery = function(arg) {
     resultIndex += 1;
     entries.scrollIntoView({block: "center", inline: "center"});
     let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
-    if (arg && arg.db_changes) {
-      delete arg.db_changes;
+      if (arg && arg.db_changes) {
+        // Do not pass on to db.changes(arg)
+        delete arg.db_changes;
       query_info = `Query ${entries.id} ${arg.live ? 'live ' : ''} ${arg.descending ? 'descending' : 'ascending'} db changes`;
       entries.info = `${query_info}`;
       let changesCount = 0;
@@ -218,22 +217,22 @@ export let runQuery = function(arg) {
         entries.info = `${query_info}, processed ${changesCount} changes ...`;
         infojs.info(info);
         if ('_deleted' in info.doc) {
-          let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+          let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
           entry.classList.add('deleted');
         }
         else if ('_conflicts' in info.doc) {
-          let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
+          let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
           entry.classList.add('conflicts');
         }
         else {
-          utilsjs.addNewEntry(info.doc, entries, undefined, !'addRevisionToElementId');
+          utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, !'addRevisionToElementId');
         }
       }).on('error', function (err) {
         infojs.error({delete_error: err}, entries);
       }).on('complete', function(info) {
         infojs.timeEnd('db.changes');
         infojs.time('query result processing');
-        updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id]);
+        updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id, query_info]);
         entries.classList.remove('updating');
       });
     }
@@ -287,7 +286,7 @@ export let runQuery = function(arg) {
         infojs.error({delete_error: err}, entries);
       }).on('complete', function(info) {
         infojs.time('query result processing');
-        updateQueryResults([!'isSearch', arg, !'matches', entries.querySelectorAll('entry-ui.deleted').length, entries.id]);
+        updateQueryResults([!'isSearch', arg, !'matches', entries.querySelectorAll('entry-ui.deleted').length, entries.id, query_info]);
       });
       // db.get(options.deleted_id, {
       //   // rev: info.doc._rev,
@@ -383,7 +382,7 @@ export let runQuery = function(arg) {
       }
       let rowCount = 0,  matches = 0, loops = 1;
       // for (; rowCount < limit; loops++) {
-      let recursiveQuery = (opts, matches, rowCount) => {
+      let recursiveQuery = (opts, matches, rowCount, query_info) => {
         return new Promise((resolve, reject) => {
           let query;
           // if (options.deleted_id) {
@@ -416,7 +415,7 @@ export let runQuery = function(arg) {
                   excludeRegExp && excludeRegExp.test(row.doc.activity)) {
                 // forEach function return becomes continue in for loop.
                 if (rowCount + index + 1 == limit) {
-                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id, query_info]);
                 }
                 else {
                   continue;
@@ -429,7 +428,7 @@ export let runQuery = function(arg) {
                 // Let's just warn about that for now:
                 infojs.warn(`Found document ${row.id} with no activity`);
                 if (rowCount + index + 1 == limit) {
-                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id, query_info]);
                 }
                 else {
                   continue;
@@ -439,15 +438,15 @@ export let runQuery = function(arg) {
               if (isSearch) {
                 matches += 1;
                 if (matchLimit && (matches == matchLimit)) {
-                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                  return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id, query_info]);
                 }
               }
               if (rowCount + index + 1 == limit) {
-                return resolve([ isSearch, opts, matches, rowCount + index + 1, entries.id]);
+                return resolve([isSearch, opts, matches, rowCount + index + 1, entries.id, query_info]);
               }
             }
             if (doc.rows.length == 0) {
-              return resolve([ isSearch, opts, matches, rowCount, entries.id]);
+              return resolve([isSearch, opts, matches, rowCount, entries.id, query_info]);
             }
             rowCount += doc.rows.length;
             // Must not drop random part of ID to distinguish
@@ -455,21 +454,21 @@ export let runQuery = function(arg) {
             let newStart = doc.rows[doc.rows.length - 1].doc._id;
             // startkey would not change, no use to carry on.
             if (newStart == opts.startkey) {
-              return resolve([ isSearch, opts, matches, rowCount + doc.rows.length, entries.id]);
+              return resolve([isSearch, opts, matches, rowCount + doc.rows.length, entries.id, query_info]);
             }
             opts.startkey = newStart;
             entries.info = `${query_info}, processed ${rowCount} entries ...`;
             if (entries.stop) {
-              return resolve([isSearch, opts, matches, rowCount, entries.id]);
+              return resolve([isSearch, opts, matches, rowCount, entries.id, query_info]);
             }
             // Just recurse, we already checked for limit and matchLimit above
-            return resolve(recursiveQuery(opts, matches, rowCount));
+            return resolve(recursiveQuery(opts, matches, rowCount, query_info));
           }).catch(function(err) {
             infojs.error(err, document.getElementById(id).parentElement);
           });
         });
       };
-      recursiveQuery(opts, matches, rowCount).then(updateQueryResults);
+      recursiveQuery(opts, matches, rowCount, query_info).then(updateQueryResults);
     }
     })(arg);
   }

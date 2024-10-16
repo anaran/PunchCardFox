@@ -34,9 +34,9 @@ export class OptionsUI extends HTMLElement {
     <div>
       <button id="query_changes">Query</button> Punchcard database 
       <select id="changes_kind">
-        <option>live</option>
         <option>ascending</option>
         <option>descending</option>
+        <option>live</option>
       </select>
       changes
     </div>

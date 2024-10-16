@@ -127,7 +127,7 @@ export let init = function (url, renderElement, editElement, toggleElement) {
               tocHTML += '<li><a href="#'+entry.anchor+'">'+entry.text+'</a></li>\n';
             });
             tocHTML += '</ul>\n';
-            render.innerHTML = html + tocHTML;
+            render.innerHTML = tocHTML + html;
             render.addEventListener('click', (event) => {
               if ('href' in event.target) {
                 infojs.info(event.target.href);

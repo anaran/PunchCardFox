@@ -43,7 +43,7 @@ export let timeEnd = (label) => {
 
 export let error = (error, element, append) => {
   if (error instanceof Error) {
-    _infojs(`\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n`, element, append);
+    _infojs(`\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n`, element, append, 'error');
   }
   else {
     _infojs(error, element, append, 'error');

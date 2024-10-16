@@ -10,14 +10,25 @@
     display: none;
 }
 
+/* Vee;	U+022C1	⋁ */
+/* vee;	U+02228	∨ */
+/* Wedge;	U+022C0	⋀ */
+/* wedge;	U+02227	∧ */
+/* /\* bigvee;	U+022C1	⋁ *\/ */
+/* bigwedge;	U+022C0	⋀ */
+/* /\* blacktriangle;	U+025B4	▴ *\/ */
+/* blacktriangledown;	U+025BE	▾ */
+/* /\* bigtriangledown;	U+025BD	▽ *\/ */
+/* bigtriangleup;	U+025B3	△ */
+
 /* blacktriangleright;	U+025B8 */
 .cb1 + label > *::before {
-    content: "\25b8  ";
+    content: "\25b4  ";
 }
 
 /* blacktriangledown;	U+025BE */
 .cb1:checked + label > *::before {
-    content: "\25BE  ";
+    content: "\25be  ";
 }
 
 .cb1 + label + * {
@@ -26,11 +37,11 @@
 }
 
 .cb1:checked + label + * {
-    max-height: calc(100vh - 1.5rem);
+    max-height: calc(100vh - 3rem);
     position: sticky;
     top: 1.5rem;
     display: block;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
     overflow: scroll;
     scrollbar-width: none;
     z-index: 1;

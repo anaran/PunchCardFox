@@ -30,7 +30,7 @@ export class EntriesUI extends HTMLElement {
 }
 
 slot {
-  overflow: auto;
+  overflow: scroll;
   scrollbar-width: none;
 }
 
