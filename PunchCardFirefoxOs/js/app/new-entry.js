@@ -106,14 +106,17 @@ input {
 }
 
 #start, #end {
-  background-color: inherit;
-  color: inherit;
-  display: flex;
-  flex: auto;
   font-family: monospace;
-  font-size: inherit;
   width: calc(100% - 4rem);
 }
+
+  .warning {
+      background-color: orange;
+  }
+
+  :host-context(.dark_theme) .warning {
+      background-color: darkorange;
+  }
 
 .start_delta_div, .end_delta_div {
   background-color: inherit;
@@ -470,6 +473,7 @@ input {
     this.startAtEnd.addEventListener('click', (event) => {
       setupAutosave(event);
       this.updateStartButton.removeAttribute('disabled');
+      this.start.classList.remove('updating');
       this.tack.removeCallback(this.updateStart);
       this.startDateTime = this.getDateTime(this.end);
       this.startUpdater(this.startDateTime);
@@ -507,6 +511,7 @@ input {
     this.endAtStart.addEventListener('click', (event) => {
       setupAutosave(event);
       this.updateEndButton.removeAttribute('disabled');
+      this.end.classList.remove('updating');
       this.tack.removeCallback(this.updateEnd);
       this.endDateTime = this.getDateTime(this.start);
       this.endUpdater(this.endDateTime);
@@ -595,19 +600,23 @@ input {
       setupAutosave(event);
       this.tack.removeCallback.bind(this.tack)(this.updateStart);
       this.updateStartButton.removeAttribute('disabled');
+      this.start.classList.remove('updating');
     }));
     this.end.addEventListener('click', ((event) => {
       setupAutosave(event);
       this.tack.removeCallback.bind(this.tack)(this.updateEnd);
       this.updateEndButton.removeAttribute('disabled');
+      this.end.classList.remove('updating');
     }));
     this.updateStartButton.addEventListener('click', ((event) => {
       this.tack.addCallback.bind(this.tack)(this.updateStart);
-      event.target.setAttribute('disabled', true)
+      event.target.setAttribute('disabled', true);
+      this.start.classList.add('updating');
     }));
     this.updateEndButton.addEventListener('click', ((event) => {
       this.tack.addCallback.bind(this.tack)(this.updateEnd);
-      event.target.setAttribute('disabled', true)
+      event.target.setAttribute('disabled', true);
+      this.end.classList.add('updating');
     }));
     this.tack.start();
     this.init(this.databaseID);
@@ -643,10 +652,20 @@ input {
       let heading = this.shadow.querySelector('h1[data-l10n-id=app_new_entry]');
       if (this.databaseID) {
         if (this.copy) {
-        heading.textContent = 'Edit Copied Punchcard Entry';
+          heading.textContent = 'Edit Copied Punchcard Entry';
+          // this.start.classList.add('warning');
+          this.start.addEventListener('input', (event) => {
+            if (new Date(this.start.value).toString() == (new Date(this.databaseID.substring(0, 24))).toString()) {
+              this.start.classList.add('warning');
+              infojs.warn('Copied entry has same start time as original entry');
+            }
+            else {
+              this.start.classList.remove('warning');
+            }
+          });
         }
         else {
-        heading.textContent = 'Edit Punchcard Entry';
+          heading.textContent = 'Edit Punchcard Entry';
         }
       }
       else {
@@ -672,7 +691,9 @@ input {
       }
       else {
         this.tack.addCallback(this.updateStart);
+        this.start.classList.add('updating');
         this.tack.addCallback(this.updateEnd);
+        this.end.classList.add('updating');
       }
       this.scrollIntoView({block: "start", inline: "start"});
       this.activity.focus();
@@ -768,6 +789,17 @@ input {
         });
       }
       else {
+        if (this.databaseID && this.copy) {
+          if (new Date(this.start.value).toString() == (new Date(this.databaseID.substring(0, 24))).toString()) {
+            if (window.confirm('Save copied entry with same start time as original entry?')) {
+              infojs.warn('Saving copied entry with same start time as original entry at your request');
+            }
+            else {
+              reject('Please adjust start time of copied entry before saving');
+              return;
+            }
+          }
+        }
         var entry = {
           // activity: activity.textContent,
           activity: this.activity.value,

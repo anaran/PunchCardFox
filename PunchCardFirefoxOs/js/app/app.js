@@ -156,7 +156,8 @@ export let updateScrollLinks = function() {
 };
 
 export let stringToRegexp = function(str) {
-  let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/);
+  // Match multiple lines.
+  let captureGroups = str.match(/^\/?(.+?)(?:\/([gims]*))?$/s);
   // Default to ignore case.
   // Regexp syntax requires at least a slash at end, possibly followed by flags.
   return captureGroups &&
@@ -562,6 +563,9 @@ document.addEventListener('readystatechange', (event) => {
     queryFilter.addEventListener('click', (event) => {
       event.preventDefault();
       let options = document.querySelector('options-ui').options;
+      // We're not finished updating, but result entries header is now
+      // shown as updating.
+      filter.classList.remove('updating');
       runQuery({
         descending: options.descending,
         include: filter.value,
@@ -616,6 +620,9 @@ document.addEventListener('readystatechange', (event) => {
         filter.classList.remove('empty');
         document.getElementById('query_filter').style.visibility = null;
       }
+      // Filter value has been updating (is changed) since last Query
+      // or filter operation (Enter).
+      filter.classList.add('updating');
     };
     filter.addEventListener('input', updateQueryButton);
     filter.addEventListener('change', updateQueryButton);
@@ -626,6 +633,7 @@ document.addEventListener('readystatechange', (event) => {
       // which we use as workaround.
       if (event.key == 'Enter') {
         updateFilter(event);
+        filter.classList.remove('updating');
       }
     });
 
@@ -634,17 +642,17 @@ document.addEventListener('readystatechange', (event) => {
     let recenterCenterElement = () => {
       if (elementAtCenter) {
         scrollView.removeEventListener('scroll', scrollListener);
-        ORIENTATION && console.log('remove scrollListener');
-        ORIENTATION && console.log(elementAtCenter.innerText);
+        infojs.info(`remove scrollListener`, undefined, undefined, 'orientation');
+        infojs.info( `${elementAtCenter.innerText}`, undefined, undefined, 'orientation');
         // window.setTimeout(() => {
         // window.requestAnimationFrame(function (timestamp) {
           elementAtCenter.scrollIntoView({block: "center", inline: "center"});
-          ORIENTATION && console.log(scrollView.scrollTop);
+          infojs.info( `${scrollView.scrollTop}`, undefined, undefined, 'orientation');
         // });
         // }, 50);
         window.setTimeout(() => {
           scrollView.addEventListener('scroll', scrollListener);
-          ORIENTATION && console.log('add scrollListener');
+          infojs.info(`add scrollListener`, undefined, undefined, 'orientation');
         }, 1000);
       }
     };
@@ -793,11 +801,12 @@ document.addEventListener('readystatechange', (event) => {
       }
     };
     screen.orientation.addEventListener('change', (event) => {
-      ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
+      infojs.info(`screen.orientation,  ${event.type},  ${event.eventPhase},  ${screen.orientation.type}`, undefined, undefined, 'orientation');
+      infojs.info( `${event.type}, ${scrollView.scrollTop}`, undefined, undefined, 'orientation');
     }, true);
     screen.orientation.addEventListener('change', (event) => {
-      ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
-      ORIENTATION && console.log(event.type, scrollView.scrollTop);
+      infojs.info(`screen.orientation,  ${event.type},  ${event.eventPhase},  ${screen.orientation.type}`, undefined, undefined, 'orientation');
+      infojs.info( `${event.type}, ${scrollView.scrollTop}`, undefined, undefined, 'orientation');
       // [
       //   startMenu,
       //   endMenu,
@@ -822,13 +831,13 @@ document.addEventListener('readystatechange', (event) => {
     });
     // All these listener capture values report Event.AT_TARGET
     // screen.orientation.addEventListener('change', (event) => {
-    //   ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
+    //   infojs.info(`screen.orientation, ${event.type}, ${event.eventPhase}, ${screen}, ${event}`, undefined, undefined, 'orientation');
     // }, true);
     // screen.orientation.addEventListener('change', (event) => {
-    //   ORIENTATION && console.log("orientation.orientation", event.type, event.eventPhase, screen, event);
+    //   infojs.info(`screen.orientation, ${event.type}, ${event.eventPhase}, ${screen}, ${event}`, undefined, undefined, 'orientation');
     // }, false);
     // screen.orientation.onchange = function (arg) {
-    //   ORIENTATION && console.log("The orientation of the screen is: " + screen.orientation, screen, arg);
+    //   infojs.info(`The orientation of the screen is: ${screen.orientation}, ${screen}, ${arg}`, undefined, undefined, 'orientation');
     // };
 
     var addNewEdit = function(id, copy) {

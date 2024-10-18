@@ -25,6 +25,19 @@ export class InputUI extends HTMLElement {
   display: inline-flex;
 }
 
+:host(.updating) {
+    background-color: lightgrey;
+}
+
+/*
+Firefox does not implement :host-context()
+See
+https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
+*/
+:host-context(.dark_theme):host(.updating) {
+    background-color: dimgrey;
+}
+
 input {
   font-size: inherit;
 }
@@ -74,7 +87,7 @@ input.empty + input.undo.undoable + input.erase {
       this.inp = this.shadow.querySelector('input.val');
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   connectedCallback() {
@@ -122,7 +135,7 @@ input.empty + input.undo.undoable + input.erase {
       }
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   static get observedAttributes() {
@@ -154,7 +167,7 @@ input.empty + input.undo.undoable + input.erase {
       }
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   get type() {
@@ -162,7 +175,7 @@ input.empty + input.undo.undoable + input.erase {
       return this.inp.getAttribute('type');
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   set type(newType) {
@@ -174,16 +187,18 @@ input.empty + input.undo.undoable + input.erase {
       return this.inp.value;
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   set value(newValue) {
     try {
       this.setAttribute('value', newValue);
       this.inp.value = newValue;
+      this.inp.dispatchEvent(new Event('input'));
+
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   get valueAsDate() {
@@ -191,7 +206,7 @@ input.empty + input.undo.undoable + input.erase {
       return this.inp.valueAsDate;
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   addEventListener(...args) {
@@ -199,7 +214,7 @@ input.empty + input.undo.undoable + input.erase {
       this.inp.addEventListener(...args);
     }
     catch (err) {
-      infojs.error(err, document.body, "append");
+      infojs.error(err);
     }
   }
   blur() {

@@ -50,9 +50,9 @@ export let error = (error, element, append) => {
   }
 }
 
-export let info = (info, element, append) => {
+export let info = (info, element, append, type) => {
   if (localStorage.getItem('info-information')) {
-    _infojs(info, element, append);
+    _infojs(info, element, append, type);
   }
 }
 

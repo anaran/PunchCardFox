@@ -20,18 +20,20 @@ export class EntriesUI extends HTMLElement {
 <slot></slot>
 <style>
 @import url(css/section_expander.css);
- 
-:host(.updating) {
-    background-color: lightgrey;
-}
 
-:host(:target) .entries_header {
-    border: 0.2rem dashed;
+/* Override top offset of section_expander.css, since entries are not */
+/* top-level sections. */
+.cb1 + label > * {
+    top: 0;
 }
 
 slot {
   overflow: scroll;
   scrollbar-width: none;
+}
+
+:host(.updating) {
+    background-color: lightgrey;
 }
 
 /*
@@ -49,6 +51,10 @@ div.entries_header {
 
 div.entries_header a {
     padding: 0.5rem;
+}
+
+:host(:target) .entries_header {
+    border: 0.2rem dashed;
 }
 
 </style>

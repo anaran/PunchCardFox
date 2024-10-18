@@ -14,21 +14,21 @@
 /* vee;	U+02228	∨ */
 /* Wedge;	U+022C0	⋀ */
 /* wedge;	U+02227	∧ */
-/* /\* bigvee;	U+022C1	⋁ *\/ */
+/* bigvee;	U+022C1	⋁ */
 /* bigwedge;	U+022C0	⋀ */
-/* /\* blacktriangle;	U+025B4	▴ *\/ */
+/* blacktriangle;	U+025B4	▴ */
 /* blacktriangledown;	U+025BE	▾ */
-/* /\* bigtriangledown;	U+025BD	▽ *\/ */
+/* bigtriangledown;	U+025BD	▽ */
 /* bigtriangleup;	U+025B3	△ */
 
-/* blacktriangleright;	U+025B8 */
+/* blacktriangledown;	U+025BE	▾ */
 .cb1 + label > *::before {
-    content: "\25b4  ";
+    content: "\25be  ";
 }
 
-/* blacktriangledown;	U+025BE */
+/* blacktriangle;	U+025B4	▴ */
 .cb1:checked + label > *::before {
-    content: "\25be  ";
+    content: "\25b4  ";
 }
 
 .cb1 + label + * {
