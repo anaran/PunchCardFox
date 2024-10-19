@@ -185,21 +185,19 @@ export let runQuery = function(arg) {
     let matchLimit = options.match_limit ? Number(options.match_limit) : 50;
     // Limit query to a maximum of 1000 rows, not to use too much
     // memory in mobile browsers on smartphones
-    let opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
-      let entries = new EntriesUI('R' + resultIndex, updateScrollLinks);
+      let opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
+      let entries;
       const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-    // let previousEntries = scrollView.querySelector('entries-ui');
+      if (options.rerun) {
+        entries = document.querySelector(`#${options.rerun}`);
+      } else {
+        entries = new EntriesUI('R' + resultIndex, updateScrollLinks);
+        scrollView.insertAdjacentElement ('afterbegin', entries);
+        entries.id = 'R' + resultIndex;
+        entries.dataset.query = JSON.stringify(options);
+        resultIndex += 1;
+      }
       entries.classList.add('updating');
-      scrollView.insertAdjacentElement ('afterbegin', entries);
-    // let cacheSection = document.querySelector('#cache_section');
-    // if (previousEntries) {
-    //   scrollView.insertBefore(entries, previousEntries);
-    // }
-    // else {
-    //   scrollView.insertBefore(entries, cacheSection);
-    // }
-    entries.id = 'R' + resultIndex;
-    resultIndex += 1;
     entries.scrollIntoView({block: "center", inline: "center"});
     let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
       if (arg && arg.db_changes) {

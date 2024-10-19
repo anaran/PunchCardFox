@@ -98,13 +98,13 @@ nav#punchcard_scrollbar li a {
 }
 
 nav#punchcard_scrollbar li a.deleted {
-    /* background-color: white; */
-    color: red;
+    background-color: red;
+    color: white;
 }
 
 .dark_theme nav#punchcard_scrollbar li a.deleted {
-    /* background-color: white; */
-    color: darkred;
+    background-color: orangered;
+    color: black;
 }
 
 nav#punchcard_scrollbar li a:hover {

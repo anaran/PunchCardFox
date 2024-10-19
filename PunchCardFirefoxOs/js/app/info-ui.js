@@ -18,7 +18,7 @@ export class InfoUI extends HTMLElement {
   }
 
   :host-context(.dark_theme) .error {
-      background-color: darkred;
+      background-color: orangered;
   }
 
   .warning {

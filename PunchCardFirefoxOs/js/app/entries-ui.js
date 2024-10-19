@@ -1,6 +1,7 @@
 'use strict';
 
 import * as infojs from './info.js';
+import * as appjs from './app.js';
 
 export class EntriesUI extends HTMLElement {
   constructor(id, update_function) {
@@ -76,8 +77,21 @@ div.entries_header a {
       // Use arrow function to preserve this value of the enclosing
       // execution context.
       this.a_update.addEventListener('click', (event) => {
-        event.preventDefault();
-        alert('rerun query is not implemented yet. \u221E');
+        try {
+          event.preventDefault();
+          // alert('rerun query is not implemented yet. \u221E');
+          const options = JSON.parse(this.dataset.query);
+          options.rerun = this.id;
+          infojs.warn(`runQuery(${options})`);
+          const element = document.getElementById("idOfParent");
+          while (this.firstChild) {
+            this.removeChild(this.firstChild);
+          }
+          appjs.runQuery(options);
+        }
+        catch (e) {
+          infojs.error(e);
+        }
       });
       // Use arrow function to preserve this value of the enclosing
       // execution context.
@@ -128,14 +142,6 @@ div.entries_header a {
       infojs.error(e);
     }
   }
-  // get update() {
-  //   try {
-  //     return this.a_update;
-  //   }
-  //   catch (e) {
-  //     infojs.error(e);
-  //   }
-  // }
   // get close() {
   //   try {
   //     return this.a_close;
@@ -146,7 +152,10 @@ div.entries_header a {
   // }
   get stop() {
     try {
-      return this.stop_query;
+      let stop = this.stop_query;
+      // Clear on read. Could create race condition with a_stop click listener
+      this.stop_query = false;
+      return stop;
     }
     catch (e) {
       infojs.error(e);

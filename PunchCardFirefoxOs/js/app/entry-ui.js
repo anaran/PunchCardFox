@@ -121,7 +121,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
 }
 
 :host-context(.dark_theme):host(.deleted) {
-    background-color: darkred;
+    background-color: orangered;
     color: white;
 }
 
