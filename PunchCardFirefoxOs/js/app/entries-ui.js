@@ -82,8 +82,7 @@ div.entries_header a {
           // alert('rerun query is not implemented yet. \u221E');
           const options = JSON.parse(this.dataset.query);
           options.rerun = this.id;
-          infojs.warn(`runQuery(${options})`);
-          const element = document.getElementById("idOfParent");
+          infojs.info(`rerun runQuery(${JSON.stringify(options, null, 2)})`);
           while (this.firstChild) {
             this.removeChild(this.firstChild);
           }
@@ -126,17 +125,17 @@ div.entries_header a {
     //   infojs.error(e);
     // }
   }
-  get info() {
-    try {
-      return this.span_info.textContent;
-    }
-    catch (e) {
-      infojs.error(e);
-    }
-  }
+  // get info() {
+  //   try {
+  //     return this.span_info.textContent;
+  //   }
+  //   catch (e) {
+  //     infojs.error(e);
+  //   }
+  // }
   set info(text) {
     try {
-      this.span_info.textContent = text;
+      this.span_info.innerHTML = text;
     }
     catch (e) {
       infojs.error(e);

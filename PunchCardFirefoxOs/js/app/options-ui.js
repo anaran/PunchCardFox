@@ -569,6 +569,7 @@ pre:focus {
       // include.addEventListener('search', (event) => {
       //   console.log(event.type, event);
       // });
+      // FIXME: Remove dead code
       var searchMatchingActivities = () => {
         var includeRegExp = new RegExp(include.value, include_case.checked ? '' : 'i');
         var excludeRegExp = new RegExp(exclude.value, exclude_case.checked ? '' : 'i');
@@ -801,7 +802,7 @@ pre:focus {
       infojs.timeEnd('options.js');
     }
     catch(err) {
-            infojs.error(err);
+      infojs.error(err);
     }
   }
   static get observedAttributes() {
@@ -817,20 +818,28 @@ pre:focus {
     // catch (e) {
     //   window.alert(JSON.stringify(e, null, 2));
     // }
-   }
-        get options() {
-        let options = {};
-        this.shadow.querySelectorAll('.persistent').forEach((item) => {
-          infojs.info(`get persistent input for ${item.id}`);
-          if (item.type == 'checkbox') {
-            options[item.id] = item.checked;
-          }
-          else {
-            options[item.id] = item.value;
-          }
-        });
-        return options;
-        }
+  }
+  get options() {
+    let options = {};
+    this.shadow.querySelectorAll('.persistent').forEach((item) => {
+      infojs.info(`get persistent input for ${item.id}`);
+      switch (item.type) {
+      case "checkbox": {
+        options[item.id] = item.checked;
+        break;
+      }
+      case "number": {
+        options[item.id] = Number(item.value);
+        break;
+      }
+      default: {
+        options[item.id] = item.value;
+        break;
+      }
+      }
+    });
+    return options;
+  }
   toggle = (event) => {
     infojs.time('toggleOptionsDisplay');
     event.preventDefault();

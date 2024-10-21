@@ -11,15 +11,22 @@ import '../libs/marked.min.js';
 let resultIndex = 1;
 let optionsDB = new PouchDB('options');
 let db = new PouchDB('punchcard');
+let ascending = "&uparrow;";
+let descending = "&downarrow;";
+let changes = "&vzigzag;";
+let live = "&ofcir;";
+let must_match = "&approx;";
+let must_not_match = "&napprox;";
+let processed = "&circlearrowright;";
 
 let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
   const entries = document.getElementById(result[4]);
   if (result[0]) {
-    entries.info = `${result[5]}, processed ${result[3]},  found ${result[2]}`;
+    entries.info = `${result[5]}, ${processed} ${result[3]},  found ${result[2]}`;
   }
   else {
-    entries.info = `${result[5]} processed ${result[3]}`;
+    entries.info = `${result[5]} ${processed} ${result[3]}`;
   }
   infojs.timeEnd('query result processing');
   updateScrollLinks();
@@ -175,11 +182,18 @@ export let runQuery = function(arg) {
     let times = [];
     infojs.time('runQuery');
       let query_info = '';
-    let options = arg || {};
-    if (!arg) {
-      options = document.querySelector('options-ui').options;
-    }
-    infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
+      let options = document.querySelector('options-ui').options;
+      infojs.info(`runQuery options = ${JSON.stringify(options, null, 2)}`);
+      if (arg) {
+        for (let key in arg) {
+          options[key] = arg[key];
+        }
+        // These are not used for the query itself:
+        delete options.rerun;
+        delete options.db_changes;
+      }
+      infojs.info(`runQuery arg = ${JSON.stringify(arg, null, 2)}`);
+      infojs.info(`runQuery options =  ${JSON.stringify(options, null, 2)}`);
     let dec = !!options.descending;
     let limit = options.limit ? Number(options.limit) : 100;
     let matchLimit = options.match_limit ? Number(options.match_limit) : 50;
@@ -188,32 +202,30 @@ export let runQuery = function(arg) {
       let opts = { include_docs: true, descending: dec, limit: Math.min(limit, 1000) };
       let entries;
       const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
-      if (options.rerun) {
-        entries = document.querySelector(`#${options.rerun}`);
+      if (arg && arg.rerun) {
+        entries = document.querySelector(`#${arg.rerun}`);
       } else {
         entries = new EntriesUI('R' + resultIndex, updateScrollLinks);
         scrollView.insertAdjacentElement ('afterbegin', entries);
         entries.id = 'R' + resultIndex;
-        entries.dataset.query = JSON.stringify(options);
+        entries.dataset.query = arg ? JSON.stringify(arg) : JSON.stringify(options);
         resultIndex += 1;
       }
       entries.classList.add('updating');
-    entries.scrollIntoView({block: "center", inline: "center"});
-    let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
+      entries.scrollIntoView({block: "center", inline: "center"});
+      let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
       if (arg && arg.db_changes) {
-        // Do not pass on to db.changes(arg)
-        delete arg.db_changes;
-      query_info = `Query ${entries.id} ${arg.live ? 'live ' : ''} ${arg.descending ? 'descending' : 'ascending'} db changes`;
+        query_info = `${entries.id} ${changes} ${options.live ? `${live} ` : ``} ${options.descending ? `${descending}` : `${ascending}`}`;
       entries.info = `${query_info}`;
       let changesCount = 0;
       infojs.time('db.changes');
-      return db.changes(arg).on('change', function(info) {
+      return db.changes(options).on('change', function(info) {
         infojs.timeEnd('db.changes');
         if (entries.stop) {
           this.cancel();
         }
         changesCount += 1;
-        entries.info = `${query_info}, processed ${changesCount} changes ...`;
+        entries.info = `${query_info}, ${processed} ${changesCount}`;
         infojs.info(info);
         if ('_deleted' in info.doc) {
           let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
@@ -236,7 +248,7 @@ export let runQuery = function(arg) {
       });
     }
     else if (regexp) {
-      query_info = `Search ${entries.id} for deleted activity matching "${regexp.toString()}"`;
+      query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} ${entries.id} ${must_match} "${regexp.toString()}"`;
       entries.info = `${query_info}`;
       let changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
       let matchingDeletes = 0;
@@ -369,12 +381,12 @@ export let runQuery = function(arg) {
       let includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
       let excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
       if (isSearch) {
-        query_info = `Search ${entries.id} limited to ${matchLimit} matches of "${includeRegExp}" ${excludeRegExp ? ` (but not "${excludeRegExp}")` : ''}${limit ? `, limited to ${limit} entries` : ''}`;
+        query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} &le; ${matchLimit} ${must_match} "${includeRegExp}" ${excludeRegExp ? ` ${must_not_match} "${excludeRegExp}"` : ''}${limit ? `, &le; ${limit} entries` : ''}`;
         entries.info = `${query_info}`;
         infojs.time('query allDocs search');
       }
       else {
-        query_info = `Query ${entries.id} limited to ${limit} entries`;
+        query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} &le; ${limit} entries`;
         entries.info = `${query_info}`;
         opts.reduce = false;
         infojs.time('query allDocs');
@@ -456,7 +468,7 @@ export let runQuery = function(arg) {
               return resolve([isSearch, opts, matches, rowCount + doc.rows.length, entries.id, query_info]);
             }
             opts.startkey = newStart;
-            entries.info = `${query_info}, processed ${rowCount} entries ...`;
+            entries.info = `${query_info}, ${processed} ${rowCount}`;
             if (entries.stop) {
               return resolve([isSearch, opts, matches, rowCount, entries.id, query_info]);
             }

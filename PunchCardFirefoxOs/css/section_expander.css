@@ -58,7 +58,7 @@
     top: 1.5rem;
     z-index: 1;
     overscroll-behavior: contain;
-    overflow: scroll;
+    overflow: visible;
     scrollbar-width: none;
     background-color: inherit;
 }
