@@ -2,9 +2,7 @@
 
 import * as infojs from './info.js';
 import * as appjs from './app.js';
-import { AboutUI } from './about-ui.js';
 import { NewEntryUI }  from './new-entry.js';
-import { OptionsUI } from './options-ui.js';
 
 export class HeaderUI extends HTMLElement {
   constructor() {
@@ -20,7 +18,6 @@ export class HeaderUI extends HTMLElement {
   <span class="scrollbar" aria-hidden="true">&equiv;</span>
   <span class="hide_unchecked"><input type="checkbox"></input></span>
   <span class="app_title" aria-hidden="true">Punchcard v??</span>
-  <span class="edit" aria-hidden="true">+</span>
   <span class="search" aria-hidden="true">&#x1f50d;</span>
   <span class="reload" aria-hidden="true">&circlearrowleft;</span>
 </h1>
@@ -78,12 +75,8 @@ input[type=checkbox] {
       this.hideUncheckedItem = this.shadow.querySelector('.hide_unchecked');
       this.scrollbaritem = this.shadow.querySelector('span.scrollbar');
       this.titleItem = this.shadow.querySelector('span.app_title');
-      this.optionsItem = this.shadow.querySelector('span.settings');
       this.reloadItem = this.shadow.querySelector('span.reload');
       this.searchItem = this.shadow.querySelector('span.search');
-      this.aboutItem = this.shadow.querySelector('span.about');
-      this.editNewItem = this.shadow.querySelector('span.edit');
-      this.editNewItem = this.shadow.querySelector('span.edit');
       if (this.scrollbaritem) {
         this.scrollbaritem.addEventListener('click', this.toggleScrollbar);
       }
@@ -92,23 +85,6 @@ input[type=checkbox] {
       }
       if (this.hideUncheckedItem) {
         this.hideUncheckedItem.addEventListener('change', this.toggleUnchecked);
-      }
-      if (this.editNewItem) {
-        this.editNewItem.addEventListener('click', this.toggleEdit);
-      }
-      let aboutUI = new AboutUI();
-      this.insertAdjacentElement('afterend', aboutUI);
-      if (this.aboutItem) {
-        this.aboutItem.addEventListener('click', (event) => {
-          aboutUI.toggle(event);
-        }, 'capture');
-      }
-      let optionsUI = new OptionsUI();
-      this.insertAdjacentElement('afterend', optionsUI);
-      if (this.optionsItem) {
-        this.optionsItem.addEventListener('click', (event) => {
-          optionsUI.toggle(event);
-        }, 'capture');
       }
       if (this.reloadItem) {
         this.reloadItem.addEventListener('click', this.reloadApp, 'capture');
@@ -203,17 +179,6 @@ input[type=checkbox] {
       });
       checkbox.disabled = false;
     }, 50, event);
-  }
-
-  addNewEdit = (id, copy) => {
-    let neu = new NewEntryUI(id, copy);
-    this.insertAdjacentElement('afterend', neu);
-  };
-
-  toggleEdit = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        this.addNewEdit(undefined);
   }
 
   searchFilter = (event) => {

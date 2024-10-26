@@ -4,6 +4,7 @@ import * as infojs from './info.js';
 import { HeaderUI } from './header-ui.js';
 import * as utilsjs from './utils.js';
 import { NewEntryUI }  from './new-entry.js';
+import { AboutUI } from './about-ui.js';
 import { OptionsUI } from './options-ui.js';
 import { EntriesUI } from './entries-ui.js';
 import '../libs/marked.min.js';
@@ -213,32 +214,35 @@ export let runQuery = function(arg) {
       }
       entries.classList.add('updating');
       entries.scrollIntoView({block: "center", inline: "center"});
-      let regexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
+      let deletedActivityRegexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
       if (arg && arg.db_changes) {
         query_info = `${entries.id} ${changes} ${options.live ? `${live} ` : ``} ${options.descending ? `${descending}` : `${ascending}`}`;
       entries.info = `${query_info}`;
       let changesCount = 0;
       infojs.time('db.changes');
-      return db.changes(options).on('change', function(info) {
-        infojs.timeEnd('db.changes');
-        if (entries.stop) {
-          this.cancel();
-        }
-        changesCount += 1;
-        entries.info = `${query_info}, ${processed} ${changesCount}`;
-        infojs.info(info);
-        if ('_deleted' in info.doc) {
-          let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
-          entry.classList.add('deleted');
-        }
-        else if ('_conflicts' in info.doc) {
-          let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
-          entry.classList.add('conflicts');
-        }
-        else {
-          utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, !'addRevisionToElementId');
-        }
-      }).on('error', function (err) {
+        let query = db.changes(options).on('change', function(info) {
+          infojs.timeEnd('db.changes');
+          // The stop flag will only cancel on a susequent change.
+          // See the click listener below which will call
+          // query.cancel() immediately.
+          if (entries.stop) {
+            this.cancel();
+          }
+          changesCount += 1;
+          entries.info = `${query_info}, ${processed} ${changesCount}`;
+          infojs.info(info);
+          if ('_deleted' in info.doc) {
+            let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
+            entry.classList.add('deleted');
+          }
+          else if ('_conflicts' in info.doc) {
+            let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
+            entry.classList.add('conflicts');
+          }
+          else {
+            utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, !'addRevisionToElementId');
+          }
+        }).on('error', function (err) {
         infojs.error({delete_error: err}, entries);
       }).on('complete', function(info) {
         infojs.timeEnd('db.changes');
@@ -246,9 +250,18 @@ export let runQuery = function(arg) {
         updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id, query_info]);
         entries.classList.remove('updating');
       });
+        // Since a db.changes promise returns immediately we can use a
+        // click listener to call cancel at any time, without waiting
+        // for a change event.
+        let stop = entries.shadow.querySelector('a.stop');
+        stop.addEventListener('click', (event) => {
+        event.preventDefault();
+          query.cancel();
+      });
+        return query;
     }
-    else if (regexp) {
-      query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} ${entries.id} ${must_match} "${regexp.toString()}"`;
+    else if (deletedActivityRegexp) {
+      query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} ${entries.id} ${must_match} "${deletedActivityRegexp.toString()}"`;
       entries.info = `${query_info}`;
       let changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
       let matchingDeletes = 0;
@@ -282,7 +295,7 @@ export let runQuery = function(arg) {
           revs: true,
           open_revs: "all"
         }).then(function (otherDoc) {
-          if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(regexp)) {
+          if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(deletedActivityRegexp)) {
             // infojs.info({get: otherDoc}, entries);
             // Adding revision to id allows us to add document back
             let entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
@@ -502,6 +515,23 @@ document.addEventListener('readystatechange', (event) => {
   let headerUI = new HeaderUI();
   // Make header last element to stack on top of others.
   document.body.insertAdjacentElement('afterbegin', headerUI);
+  let scrollAndView = document.querySelector('#scroll-and-view');
+  let aboutUI = new AboutUI();
+  headerUI.insertAdjacentElement('afterend', aboutUI);
+  let optionsUI = new OptionsUI();
+  headerUI.insertAdjacentElement('afterend', optionsUI);
+  let addFilterAsEntry = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    let neu = new NewEntryUI();
+    neu.shadow.querySelector('#activity').value = document.querySelector('#filter input-ui').value;
+    headerUI.insertAdjacentElement('afterend', neu);
+  };
+  let editNewItem = document.querySelector('button.edit');
+  if (editNewItem) {
+    editNewItem.addEventListener('click', addFilterAsEntry);
+  }
+
   let ORIENTATION = false;
   let SCROLL = false;
   try {
@@ -624,11 +654,11 @@ document.addEventListener('readystatechange', (event) => {
     let updateQueryButton = event => {
       if (event.target.value == '') {
         filter.classList.add('empty');
-        document.getElementById('query_filter').style.visibility = 'hidden';
+        document.getElementById('query_filter').disabled = true;
       }
       else {
         filter.classList.remove('empty');
-        document.getElementById('query_filter').style.visibility = null;
+        document.getElementById('query_filter').disabled = null;
       }
       // Filter value has been updating (is changed) since last Query
       // or filter operation (Enter).
@@ -1035,11 +1065,11 @@ document.addEventListener('readystatechange', (event) => {
             return rev.status == 'available' && rev.rev != currentRev;
           }).forEach(function (available, index, obj) {
             db.get(id, { rev: available.rev }).then(function (availableDoc) {
+              // NOTE addRevisionToElementId argument makes is
+              // possible to restore specific revision of document.
               var newEntry = utilsjs.addNewEntry(availableDoc, beforeThisElement.parentElement, 
                                                  beforeThisElement, 'addRevisionToElementId');
               newEntry.revisions.textContent = (index + 1) + ' of ' + obj.length + ' revs';
-              // NOTE addRevisionToElementId argument makes this more obvious.
-              // newEntry.id = entry._id + '.' + entry._rev;
               newEntry.scrollIntoView({block: "center", inline: "center"});
               if (availableDoc._deleted) {
                 newEntry.classList.add('deleted');

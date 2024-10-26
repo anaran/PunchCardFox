@@ -134,9 +134,10 @@ button {
     color: inherit;
 }
 
-/* #filter input-ui:focus-within { */
-/*     color: inherit; */
-/* } */
+#filter-input {
+    overflow: scroll;
+    scrollbar-width: none;
+}
 
 #bottom {
     background-color: white;
