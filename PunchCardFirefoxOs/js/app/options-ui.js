@@ -21,9 +21,7 @@ export class OptionsUI extends HTMLElement {
     <input-ui class="persistent" type="text" id="exclude" data-l10n-id="exclude" placeholder="must not match activity"></input-ui>
     <input-ui class="persistent" type="number" id="match_limit" data-l10n-id="match_limit" placeholder="match count"></input-ui>
     <input-ui class="persistent" type="number" id="limit" data-l10n-id="limit" placeholder="entries count"></input-ui>
-    <input class="persistent" type="checkbox" id="descending" data-l10n-id="descendieng" placeholder="descending">
-    <input-ui class="persistent" type="text" id="deleted_id" data-l10n-id="deleted_id" placeholder="must match deleted activity"></input-ui>
-    <input-ui class="persistent" type="number" id="changes_since_sequence" data-l10n-id="changes_since_sequence_id" placeholder="since sequence or now"></input-ui>
+    <input class="persistent" type="checkbox" id="descending" data-l10n-id="descendieng" placeholder="descending"><label for="descending">descending</label>
     <div>
       <input-ui class="persistent" type="date" id="query_start" data-l10n-id="query_start_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 1, YYYY-MM-DD"></input-ui>
       <input-ui class="persistent" type="date" id="query_end" data-l10n-id="query_end_id" pattern="\d{4}(-\d{1,2}){0,2}" placeholder="start date limit 2, YYYY-MM-DD"></input-ui>
@@ -33,11 +31,9 @@ export class OptionsUI extends HTMLElement {
     </div>
     <div>
       <button id="query_changes">Query</button> Punchcard database 
-      <select id="changes_kind">
-        <option>live</option>
-        <option>ascending</option>
-        <option>descending</option>
-      </select>
+    <input class="persistent" type="checkbox" id="live" data-l10n-id="live" placeholder="live"><label for="live">live</label>
+    <input class="persistent" type="checkbox" id="deleted" data-l10n-id="deleted" placeholder="deleted"><label for="deleted">deleted</label>
+    <input class="persistent" type="checkbox" id="conflicts" data-l10n-id="conflicts" placeholder="conflicts"><label for="conflicts">conflicts</label>
       changes
     </div>
   </section>
@@ -189,31 +185,18 @@ pre:focus {
     appjs.runQuery();
     });
       let queryChanges = this.shadow.getElementById ('query_changes');
-      let changesKind = this.shadow.getElementById ('changes_kind');
+      let liveChanges = this.shadow.getElementById ('live');
+      let deletedChanges = this.shadow.getElementById ('deleted');
+      let conflictsChanges = this.shadow.getElementById ('conflicts');
       queryChanges.addEventListener('click', (event) => {
         let options = {
-          conflicts: true,
           db_changes: true, // run db.changes instead of db.allDocs
-          descending: false,
           include_docs: true,
           return_docs: false,
           style: 'all_docs',
-        };
-        switch (changesKind.value) {
-        case "live": {
-          options.live = true;
+        }
+        if (liveChanges.checked) {
           options.since = 'now';
-          break;
-        }
-        case "ascending": {
-          options.descending = false;
-          break;
-        }
-        case "descending": {
-          options.since = 'now';
-          options.descending = true;
-          break;
-        }
         }
         appjs.runQuery(options);
       });

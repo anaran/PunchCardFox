@@ -14,6 +14,7 @@ let optionsDB = new PouchDB('options');
 let db = new PouchDB('punchcard');
 let ascending = "&uparrow;";
 let descending = "&downarrow;";
+let deleted = "&nexists;";
 let changes = "&vzigzag;";
 let live = "&ofcir;";
 let must_match = "&approx;";
@@ -214,12 +215,15 @@ export let runQuery = function(arg) {
       }
       entries.classList.add('updating');
       entries.scrollIntoView({block: "center", inline: "center"});
-      let deletedActivityRegexp = options.deleted_id && options.deleted_id.length && stringToRegexp(options.deleted_id.trim());
+      let isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
+      let includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
+      let excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
       if (arg && arg.db_changes) {
-        query_info = `${entries.id} ${changes} ${options.live ? `${live} ` : ``} ${options.descending ? `${descending}` : `${ascending}`}`;
+        query_info = `${entries.id} ${changes} ${options.live ? `${live} ` : ``} ${options.descending ? `${descending}` : `${ascending}`} &le; ${matchLimit} ${includeRegExp ? ` ${must_match} "${includeRegExp}"` : ''} ${excludeRegExp ? ` ${must_not_match} "${excludeRegExp}"` : ''}${limit ? `, &le; ${limit} entries` : ''}`;
       entries.info = `${query_info}`;
-      let changesCount = 0;
-      infojs.time('db.changes');
+        let changesCount = 0;
+        infojs.time('db.changes');
+        let matches = 0;
         let query = db.changes(options).on('change', function(info) {
           infojs.timeEnd('db.changes');
           // The stop flag will only cancel on a susequent change.
@@ -229,154 +233,52 @@ export let runQuery = function(arg) {
             this.cancel();
           }
           changesCount += 1;
+          if ((includeRegExp && !includeRegExp.test(info.doc.activity)) ||
+              excludeRegExp && excludeRegExp.test(info.doc.activity)) {
+            return;
+          }
           entries.info = `${query_info}, ${processed} ${changesCount}`;
           infojs.info(info);
           if ('_deleted' in info.doc) {
             let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
             entry.classList.add('deleted');
+            if (options.deleted) {
+              matches += 1; 
+            }
           }
           else if ('_conflicts' in info.doc) {
             let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
             entry.classList.add('conflicts');
+            if (options.conflicts) {
+              matches += 1;
+            }
           }
-          else {
+          else if (!options.deleted && !options.conflicts) {
             utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, !'addRevisionToElementId');
+            matches += 1;
+          }
+          if (matches == matchLimit) {
+            this.cancel();
           }
         }).on('error', function (err) {
-        infojs.error({delete_error: err}, entries);
-      }).on('complete', function(info) {
-        infojs.timeEnd('db.changes');
-        infojs.time('query result processing');
-        updateQueryResults([!'isSearch', arg, !'matches', changesCount, entries.id, query_info]);
-        entries.classList.remove('updating');
-      });
+          infojs.error({delete_error: err}, entries);
+        }).on('complete', function(info) {
+          infojs.timeEnd('db.changes');
+          infojs.time('query result processing');
+          updateQueryResults([includeRegExp || excludeRegExp || options.conflicts || options.deleted, arg, matches, changesCount, entries.id, query_info]);
+          entries.classList.remove('updating');
+        });
         // Since a db.changes promise returns immediately we can use a
         // click listener to call cancel at any time, without waiting
         // for a change event.
         let stop = entries.shadow.querySelector('a.stop');
         stop.addEventListener('click', (event) => {
-        event.preventDefault();
+          event.preventDefault();
           query.cancel();
-      });
+        });
         return query;
     }
-    else if (deletedActivityRegexp) {
-      query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} ${entries.id} ${must_match} "${deletedActivityRegexp.toString()}"`;
-      entries.info = `${query_info}`;
-      let changesSinceSequence = options.changes_since_sequence ? Number(options.changes_since_sequence) : 'now';
-      let matchingDeletes = 0;
-      db.changes({
-        descending: dec,
-        include_docs: true,
-        limit: limit,
-        /*style: 'all_docs', */
-        since: changesSinceSequence,
-      }).on('change', function(info) {
-        if (entries.stop) {
-          this.cancel();
-        }
-        //       PouchDB 5.0.0 (blog post)
-
-        // Removed PouchDB.destroy(); use db.destroy() instead
-        // Removed 'create', 'update', 'delete' events; use 'change' instead
-        // Removed idb-alt adapter
-
-        // infojs.infojs({delete: info}, entries);
-        // db.allDocs({
-        //   include_docs: true,
-        //   keys: [info.id]
-        // }).then(function (otherDoc) {
-        //   infojs.infojs({otherDoc: otherDoc}, entries);
-        // }).catch(function (err) {
-        //   infojs.infojs({all_docs_error: err}, entries);
-        // });
-        db.get(info.doc._id, {
-          rev: info.doc._rev,
-          revs: true,
-          open_revs: "all"
-        }).then(function (otherDoc) {
-          if (otherDoc[0].ok && otherDoc[0].ok._deleted && otherDoc[0].ok.activity && otherDoc[0].ok.activity.match(deletedActivityRegexp)) {
-            // infojs.info({get: otherDoc}, entries);
-            // Adding revision to id allows us to add document back
-            let entry = utilsjs.addNewEntry(otherDoc[0].ok, entries, undefined, 'addRevisionToElementId');
-            entry.classList.add('deleted');
-          }
-        }).catch(function (err) {
-          infojs.error(err, document.getElementById(id).parentElement);
-        });
-        // }).on('change', function(info) {
-        //   let entry = utilsjs.addNewEntry(info.doc, entries, undefined, 'addRevisionToElementId');
-      }).on('error', function (err) {
-        infojs.error({delete_error: err}, entries);
-      }).on('complete', function(info) {
-        infojs.time('query result processing');
-        updateQueryResults([!'isSearch', arg, !'matches', entries.querySelectorAll('entry-ui.deleted').length, entries.id, query_info]);
-      });
-      // db.get(options.deleted_id, {
-      //   // rev: info.doc._rev,
-      //   revs: true,
-      //   open_revs: "all"
-      // }).then(function (otherDoc) {
-      //   infojs.info({get:otherDoc}, entries);
-      //   otherDoc[0].ok._revisions.ids.forEach(function (rev) {
-      //     // infojs.info({ _revisions: [ info.doc._rev, otherDoc[0].ok._revisions.start + '-' + rev ]}, entries);
-      //     db.get(otherDoc[0].ok._id, {
-      //       open_revs: [otherDoc[0].ok._revisions.start + '-' + rev]
-      //     }).then(function (otherDoc) {
-      //       // db.get(otherDoc[0].ok._id, rev).then(function (otherDoc) {
-      //       if (otherDoc[0].missing || otherDoc[0].ok._deleted) {
-      //         // if (otherDoc[0].ok && !otherDoc[0].ok._deleted) {
-      //       }
-      //       else {
-      //       }
-      //       infojs.info({ 'rev': otherDoc }, entries);
-      //     }).catch(function (err) {
-      //       infojs.error({rev_error: err}, entries);
-      //     });
-      //   });
-      // }).catch(function (err) {
-      //   infojs.error({get_error:err}, entries);
-      // });
-    }
     else {
-      // if (document.querySelector('#new_entry').style.display != 'none') {
-      // let startDate, endDate;
-      // if (options.startkey) {
-      //   startDate = options.startkey;
-      // }
-      // // else {
-      // //   let start = document.querySelector('#query_start');
-      // //   let startDate = start.valueAsDate;
-      // // }
-      // if (options.endkey) {
-      //   endDate = options.endkey;
-      // }
-      // // else {
-      // //   let end = document.querySelector('#query_end');
-      // //   let endDate = end.valueAsDate;
-      // // }
-      // if (startDate && endDate && startDate > endDate) {
-      //   [ startDate, endDate ] = [ endDate, startDate ];
-      // }
-      // // start.value = startDate.toString();
-      // // end.value = endDate.toString();
-      // if (startDate) {
-      //   if (dec) {
-      //     opts.endkey = startDate;
-      //   }
-      //   else {
-      //     opts.startkey = startDate;
-      //   }
-      // }
-      // if (endDate) {
-      //   if (dec) {
-      //     opts.startkey = endDate;
-      //   }
-      //   else {
-      //     opts.endkey = endDate;
-      //   }
-      // }
-      // // }
       if (options.query_start) {
         opts.startkey = options.query_start;
       }
@@ -390,11 +292,8 @@ export let runQuery = function(arg) {
       if (dec) {
         [opts.startkey, opts.endkey] = [opts.endkey, opts.startkey];
       }
-      let isSearch = ((options.include && options.include.length) || (options.exclude && options.exclude.length));
-      let includeRegExp = (options.include && options.include.length) ? stringToRegexp(options.include.trim()) : undefined;
-      let excludeRegExp = (options.exclude && options.exclude.length) ? stringToRegexp(options.exclude.trim()) : undefined;
       if (isSearch) {
-        query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} &le; ${matchLimit} ${must_match} "${includeRegExp}" ${excludeRegExp ? ` ${must_not_match} "${excludeRegExp}"` : ''}${limit ? `, &le; ${limit} entries` : ''}`;
+        query_info = `${entries.id} ${options.descending ? `${descending}` : `${ascending}`} &le; ${matchLimit} ${includeRegExp ? ` ${must_match} "${includeRegExp}"` : ''} ${excludeRegExp ? ` ${must_not_match} "${excludeRegExp}"` : ''}${limit ? `, &le; ${limit} entries` : ''}`;
         entries.info = `${query_info}`;
         infojs.time('query allDocs search');
       }
