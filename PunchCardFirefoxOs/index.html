@@ -40,27 +40,28 @@ own language (as long as you provide translations).
       </section>
       <input type="checkbox" id="cb2" class="cb1"><label for="cb2"><h1 data-l10n-id="console_title">Punchcard Console</h1>
       </label>
-      <section id="bottom">
-        <div id="bottom_div">
-          <a href="#top">Top</a>
-          <a href="#clear">Clear</a>
+      <section>
+        <div>
         </div>
         <fieldset id="info_categories">
-          <legend>Information Logging Categories</legend>
+          <legend>Information Logging Categories <button id="clear_console">Clear All</button></legend>
           <div>
             <input type="checkbox" id="info-warning" name="category"
                    value="warning" />
             <label for="info-warning">Warnings</label>
+            <button id="clear_warning_all">Clear</button>
           </div>
           <div>
             <input type="checkbox" id="info-information" name="category"
                    value="information" />
             <label for="info-information">Information</label>
+            <button id="clear_information_all">Clear</button>
           </div>
           <div>
             <input type="checkbox" id="info-performance" name="category"
                    value="performance" />
             <label for="info-performance">Performance</label>
+            <button id="clear_performance_all">Clear</button>
           </div>
         </fieldset>
         <span id="info"></span>
@@ -75,7 +76,7 @@ own language (as long as you provide translations).
     <div id="scroll-and-view">
     <nav data-type="scrollbar" id="punchcard_scrollbar">
       <ul>
-        <li><a href="#bottom">Bottom</a></li>
+        <li><a href="#top">Top</a><a href="#bottom">Bottom</a></li>
         <li id="results"></li>
         <li><a href="#">A</a></li>
         <li><a href="#">B</a></li>
@@ -102,7 +103,7 @@ own language (as long as you provide translations).
         <li><a href="#">W</a></li>
         <li><a href="#">X</a></li>
         <li><a href="#">Y</a></li>
-        <li><a href="#">Z</a></li>
+        <li id="bottom"><a href="#">Z</a></li>
       </ul>
     </nav>
     <section id="view-punchcard-list" role="region" data-state="active" class="view view-noscroll">

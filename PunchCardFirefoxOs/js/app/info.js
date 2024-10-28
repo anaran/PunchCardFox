@@ -33,10 +33,10 @@ export let time = (label) => {
 export let timeEnd = (label) => {
   if (localStorage.getItem('info-performance')) {
     if (times[label]) {
-      _infojs(`${label}: ${Date.now() - (times[label])[1]}ms`);
+      _infojs(`${label}: ${Date.now() - (times[label])[1]}ms`, undefined, undefined, 'perf');
     }
     else {
-      _infojs(`Timer '${label}' does not exist`);
+      _infojs(`Timer '${label}' does not exist`, undefined, undefined, 'perf');
     }
   }
 }

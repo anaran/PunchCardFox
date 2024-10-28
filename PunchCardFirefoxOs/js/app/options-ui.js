@@ -74,7 +74,7 @@ export class OptionsUI extends HTMLElement {
     <input type="checkbox" id="punchcard_live_sync">
     <input type="button" id="punchcard_stop_replication" data-l10n-id="punchcard_stop_replication" value="Stop Replication">
     <p>
-      <a href="#clear_replication_info" id="clear_replication_info">Clear info</a>
+      <button id="clear_replication_info">Clear info</button>
       <select id="verbosity">
         <option>silent</option>
         <option selected>quiet</option>
@@ -330,8 +330,6 @@ pre:focus {
       var infoNode = this.shadow.getElementById('replication_info');
       var clearNode = this.shadow.getElementById('clear_replication_info');
       clearNode.addEventListener('click', (event) => {
-        // NOTE Do not go to link, which is somewhat disruptive.
-        event.preventDefault();
         if (!infoNode.childElementCount) {
         }
         else {

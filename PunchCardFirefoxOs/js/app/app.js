@@ -479,6 +479,32 @@ document.addEventListener('readystatechange', (event) => {
         }
       });
     });
+    let infoNode = document.getElementById('info');
+    let clearConsoleNode = document.getElementById('clear_console');
+    let clearWarningNode = document.getElementById('clear_warning_all');
+    let clearInfoNode = document.getElementById('clear_information_all');
+    let clearPerformanceNode = document.getElementById('clear_performance_all');
+    clearConsoleNode.addEventListener('click', (event) => {
+        infoNode.querySelectorAll('info-ui').forEach((elem) => {
+            infoNode.removeChild(elem);
+          });
+      });
+    clearWarningNode.addEventListener('click', (event) => {
+        infoNode.querySelectorAll('info-ui.warning').forEach((elem) => {
+            infoNode.removeChild(elem);
+          });
+      });
+    clearInfoNode.addEventListener('click', (event) => {
+        infoNode.querySelectorAll('info-ui:not([class])').forEach((elem) => {
+            infoNode.removeChild(elem);
+          });
+      });
+    clearPerformanceNode.addEventListener('click', (event) => {
+        infoNode.querySelectorAll('info-ui.perf').forEach((elem) => {
+            infoNode.removeChild(elem);
+          });
+      });
+
     window.addEventListener('storage', (event) => {
       infojs.info(event);
     });

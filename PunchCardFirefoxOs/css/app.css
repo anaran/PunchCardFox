@@ -156,6 +156,11 @@ button {
     background-color: black;
 }
 
+label[for|=info] {
+    display: inline-block;
+    width: 10rem;
+}
+
 :target {
     border: 0.2rem dashed;
 }
