@@ -79,7 +79,6 @@ div.entries_header a {
       this.a_update.addEventListener('click', (event) => {
         try {
           event.preventDefault();
-          // alert('rerun query is not implemented yet. \u221E');
           const options = JSON.parse(this.dataset.query);
           options.rerun = this.id;
           infojs.info(`rerun runQuery(${JSON.stringify(options, null, 2)})`);

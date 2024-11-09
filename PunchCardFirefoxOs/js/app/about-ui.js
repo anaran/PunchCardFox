@@ -274,11 +274,12 @@ target element down to the shadow tree.
     ];
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
-    // try {
-    // }
-    // catch (e) {
-    //   window.alert(JSON.stringify(e, null, 2));
-    // }
+    try {
+      infojs.info(`new value ${newValue} for attribute ${name}`);
+    }
+    catch (e) {
+      infojs.error(e);
+    }
   }
   toggle = (event) => {
     event.preventDefault();

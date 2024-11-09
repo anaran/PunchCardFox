@@ -420,15 +420,44 @@ document.addEventListener('readystatechange', (event) => {
   let optionsUI = new OptionsUI();
   headerUI.insertAdjacentElement('afterend', optionsUI);
   let addFilterAsEntry = (event) => {
+    let text = document.querySelector('#filter input-ui').value.trim();
+    if (text.length == 0) {
+      let error_message = `Please enter some filter text to be added as entry`;
+      window.alert(error_message);
+      infojs.error(error_message);
+      return;
+    }
+    let entry = {
+      _id: (new Date()).toJSON() + utilsjs.getRandom12HexDigits(),
+      activity: text,
+    };
+    db.put(entry).then(function(response) {
+      entry._id = response.id;
+      // NOTE Don't pass rev if it is the current/new revision.
+      // See showRevisions for its use in HTML id to identify
+      // historic revisions in UI.
+      // entry._rev = response.rev;
+      let newEntry = utilsjs.addNewEntry(entry, utilsjs.getNewEntriesUI());
+      newEntry.scrollIntoView({block: "center", inline: "center"});
+      newEntry.activity.classList.add('changed');
+      newEntry.start.classList.add('changed');
+      newEntry.end.classList.add('changed');
+      newEntry.revisions.classList.add('changed');
+    }).catch(function(err) {
+      infojs.error(err);
+    });
+  };
+  let editFilterAsNewEntry = (event) => {
     event.preventDefault();
     event.stopPropagation();
     let neu = new NewEntryUI();
-    neu.shadow.querySelector('#activity').value = document.querySelector('#filter input-ui').value;
+    neu.shadow.querySelector('#activity').value = document.querySelector('#filter input-ui').value.trim();
     headerUI.insertAdjacentElement('afterend', neu);
   };
   let editNewItem = document.querySelector('button.edit');
   if (editNewItem) {
     editNewItem.addEventListener('click', addFilterAsEntry);
+    editNewItem.addEventListener('contextmenu', editFilterAsNewEntry);
   }
 
   let ORIENTATION = false;
@@ -766,44 +795,20 @@ document.addEventListener('readystatechange', (event) => {
       }
     };
     screen.orientation.addEventListener('change', (event) => {
-      infojs.info(`screen.orientation,  ${event.type},  ${event.eventPhase},  ${screen.orientation.type}`, undefined, undefined, 'orientation');
-      infojs.info( `${event.type}, ${scrollView.scrollTop}`, undefined, undefined, 'orientation');
-    }, true);
-    screen.orientation.addEventListener('change', (event) => {
-      infojs.info(`screen.orientation,  ${event.type},  ${event.eventPhase},  ${screen.orientation.type}`, undefined, undefined, 'orientation');
-      infojs.info( `${event.type}, ${scrollView.scrollTop}`, undefined, undefined, 'orientation');
-      // [
-      //   startMenu,
-      //   endMenu,
-      //   revisionsMenu,
-      //   activityMenu
-      // ].some(function (menu) {
-      //   if (menu.style.display == 'block') {
-      //     // window.requestAnimationFrame(function (timestamp) {
-      //     window.setTimeout(() => {
-      //       let element = document.getElementById(menu.dataset.id);
-      //       console.log(element, element.id, menu.dataset.id);
-      //       console.log(event.type, scrollView.scrollTop);
-      //       element.scrollIntoView({block: "center", inline: "center"});
-      //       console.log(event.type, scrollView.scrollTop);
-      //     }, 500);
-      //     // });
-      //     return true;
-      //   }
-      //   // console.log(`centering ${menu.dataset.id}`);
-      // });
+      infojs.info(screen, undefined, undefined, 'orientation');
+      infojs.info(screen.orientation, undefined, undefined, 'orientation');
+      infojs.info(event, undefined, undefined, 'orientation');
+      // Following (now commented out)  line reports this info in console:
+      // "ScreenOrientation.<anonymous> (js/app/app.js:795:14)@2024-11-08T17:02:46.967Z": TypeError: Converting circular structure to JSON
+      //     --> starting at object with constructor 'HTMLDocument'
+      //     |     property 'firstElementChild' -> object with constructor 'HTMLHtmlElement'
+      //     |     property 'attributes' -> object with constructor 'NamedNodeMap'
+      //     |     property 'lang' -> object with constructor 'Attr'
+      //     --- property 'ownerDocument' closes the circle
+      // infojs.info(scrollView, undefined, undefined, 'orientation');
+      infojs.info(JSON.stringify(scrollView, ['className', 'constructor', 'id', 'localName', 'scrollTop'], 2), undefined, undefined, 'orientation');
       recenterCenterElement();
     });
-    // All these listener capture values report Event.AT_TARGET
-    // screen.orientation.addEventListener('change', (event) => {
-    //   infojs.info(`screen.orientation, ${event.type}, ${event.eventPhase}, ${screen}, ${event}`, undefined, undefined, 'orientation');
-    // }, true);
-    // screen.orientation.addEventListener('change', (event) => {
-    //   infojs.info(`screen.orientation, ${event.type}, ${event.eventPhase}, ${screen}, ${event}`, undefined, undefined, 'orientation');
-    // }, false);
-    // screen.orientation.onchange = function (arg) {
-    //   infojs.info(`The orientation of the screen is: ${screen.orientation}, ${screen}, ${arg}`, undefined, undefined, 'orientation');
-    // };
 
     var addNewEdit = function(id, copy) {
       let neu = new NewEntryUI(id, copy);

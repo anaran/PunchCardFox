@@ -15,18 +15,22 @@ export class InfoUI extends HTMLElement {
 
   .error {
       background-color: red;
+      color: white;
   }
 
   :host-context(.dark_theme) .error {
       background-color: orangered;
+      color: white;
   }
 
   .warning {
       background-color: orange;
+      color: white;
   }
 
   :host-context(.dark_theme) .warning {
       background-color: darkorange;
+      color: white;
   }
 
   .orientation {
@@ -35,6 +39,7 @@ export class InfoUI extends HTMLElement {
 
   :host-context(.dark_theme) .orientation {
       background-color: darkgreen;
+      color: white;
   }
 
   pre {

@@ -167,7 +167,6 @@ input {
   }
   connectedCallback() {
     this.db = new PouchDB('punchcard');
-    this.scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
     let removeAutosave = () => {
       let autosavesJSON = localStorage.getItem('autosaves');
       let autosaves = {};
@@ -533,12 +532,13 @@ input {
       try {
         let paste = (event.clipboardData || window.clipboardData).getData('text');
         let entry = JSON.parse(paste);
-        event.preventDefault();
-        if (this.activity.value) {
-          alert('JSON entry can only be pasted to replace empty entry.');
-          return;
-        }
         if  ('activity' in entry && 'start' in entry) {
+          event.preventDefault();
+          if (this.activity.value) {
+            alert('JSON entry can only be pasted to replace empty entry.');
+            infojs.error('JSON entry can only be pasted to replace empty entry.');
+            return;
+          }
           this.tack.removeCallback.bind(this.tack)(this.updateStart);
           this.updateStartButton.removeAttribute('disabled');
           this.tack.removeCallback.bind(this.tack)(this.updateEnd);
@@ -552,7 +552,7 @@ input {
         }
       }
       catch(err) {
-        infojs.info(err);
+        infojs.error(err);
       };
     }
     this.activity.addEventListener('paste', maybePasteJSON, 'capture');
@@ -705,14 +705,7 @@ input {
 
   save() {
     return new Promise((resolve, reject) => {
-      this.entries = document.querySelector('entries-ui#New');
-      if (!this.entries) {
-        this.entries = new EntriesUI('New', appjs.updateScrollLinks);
-        let cache_section = document.querySelector('#cache_section');
-        this.scrollView.insertAdjacentElement('beforeend', this.entries);
-        this.entries.scrollIntoView({block: "center", inline: "center"});
-        this.entries.info = 'New Entries';
-      }
+      this.entries = utilsjs.getNewEntriesUI();
       if (this.databaseID && !this.copy) {
         let oldStartString = (new Date(this.databaseID.substring(0, 24))).toString();
         this.db.get(this.databaseID).then((otherDoc) => {

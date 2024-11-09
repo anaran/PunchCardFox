@@ -9,14 +9,10 @@ let ERROR_STACK_INDEX = navigator.userAgent.match(/Firefox/i) ? 2 : 3;
 let times = {};
 
 function getAllPropertyNames(obj, props = []) {
-  if (typeof obj == 'undefined') {
-    return obj;
-  } else if (obj.constructor.name == 'Object') {
-    // console.log(obj.constructor.name, props);
-    return props.length ? props : null;
-    // return props;
+  if (typeof obj == 'undefined'
+      || obj.constructor.name == 'Object') {
+    return props;
   } else {
-    // console.log(obj, props);
     return getAllPropertyNames(Object.getPrototypeOf(obj), props.concat(Object.getOwnPropertyNames(obj)));
   }
 }
@@ -42,12 +38,7 @@ export let timeEnd = (label) => {
 }
 
 export let error = (error, element, append) => {
-  if (error instanceof Error) {
-    _infojs(`\nname: ${error.name}\nmessage: ${error.message}\nstack: ${error.stack}\n`, element, append, 'error');
-  }
-  else {
-    _infojs(error, element, append, 'error');
-  }
+  _infojs(error, element, append, 'error');
 }
 
 export let info = (info, element, append, type) => {
@@ -71,6 +62,7 @@ function _infojs(info, element, append, type) {
   let where = (new Error).stack.split('\n')[ERROR_STACK_INDEX].replace(/\s+at\s+/, '');
   let place = element;
   where = where.replace(localStorage.getItem('serviceworker-scope'), '');
+  let stringified = info;
   try {
     niu = new InfoUI();
     if (type) {
@@ -79,31 +71,59 @@ function _infojs(info, element, append, type) {
     if (!element) {
       place = document.getElementById('info');
     }
-    if (niu instanceof InfoUI && 'textContent' in niu) {
-      if (typeof info == 'string') {
-        niu.textContent = `"${where}@${(new Date).toJSON()}": ${info}`;
+  }
+  catch (e) {
+    window.prompt('copy/paste info', `"${where}@${(new Date).toJSON()}": ${e}`);
+  }
+  try {
+    let props = getAllPropertyNames(info);
+    if (typeof info != 'string') {
+      if (props.length) {
+        stringified = `in ${info.constructor.name} `+ JSON.stringify(info, props, 2);
       }
       else {
-        niu.textContent = `"${where}@${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`;
+        stringified = `in ${info.constructor.name} `+ JSON.stringify(info, null, 2);
       }
+      // When using a regular expression search value, it must be global.
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll#non-global_regex_throws
+      stringified = stringified.replaceAll(
+        new RegExp(localStorage.getItem('serviceworker-scope') + '([^"])', 'g'),
+        '$1');
+      stringified = stringified.replaceAll('\\n', '\n');
+    }
+  }
+  catch (e) {
+    if (niu instanceof InfoUI && 'textContent' in niu) {
+      niu.textContent = `"${where}@${(new Date).toJSON()}": ${e}`;
+      niu.classList.replace(type, 'error');
       if (append) {
         place.insertAdjacentElement('beforerend', niu);
       }
       else {
         place.insertAdjacentElement('afterbegin', niu);
       }
-      if (!element && type) {
+      if (!element && niu.classList.contains('error')
+          && !document.getElementById('cb2').checked) {
         document.getElementById('cb2').checked = true;
-        place.parentElement.style.zIndex = '2';
+        place.parentElement.style.zIndex = '1';
         niu.scrollIntoView();
       }
     }
+    return;
+  }
+  if (niu instanceof InfoUI && 'textContent' in niu) {
+    niu.textContent = `"${where}@${(new Date).toJSON()}": ${stringified}`;
+    if (append) {
+      place.insertAdjacentElement('beforerend', niu);
+    }
     else {
-      window.prompt('debug info', `"${where}@${(new Date).toJSON()}": ${JSON.stringify(info, getAllPropertyNames(info), 2)}`);
+      place.insertAdjacentElement('afterbegin', niu);
+    }
+    if (!element && niu.classList.contains('error')
+          && !document.getElementById('cb2').checked) {
+      document.getElementById('cb2').checked = true;
+      place.parentElement.style.zIndex = '1';
+      niu.scrollIntoView();
     }
   }
-  catch (e) {
-    // window.alert(niu && niu.textContent);
-    window.prompt('catch debug info', JSON.stringify(e, getAllPropertyNames(e), 2));
-  }
-};
+}

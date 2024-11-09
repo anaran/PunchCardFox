@@ -1,7 +1,9 @@
 'use strict';
 
+import * as appjs from './app.js';
 import * as infojs from './info.js';
 import * as entryui from './entry-ui.js';
+import { EntriesUI } from './entries-ui.js';
 
 export let getRandom12HexDigits = () => {
   return (Math.floor(Math.random() * (2**48 - 1))).toString(16).padStart(12, '0');
@@ -95,6 +97,24 @@ export let reportDateTimeDiff = (d1, d2) => {
   // delta time day remainder
   dtdr = dtd % 365;
   return (dt < 0 ? '' : '+') + (dty != 0 ? dty + 'y ' : '') + dtdr + 'd ' + pad(dth, 2) + 'h ' + pad(dtm, 2) + 'm ' + pad(dts, 2) + 's'
+}
+
+export let getNewEntriesUI = function() {
+  try {
+    let scrollView = document.querySelector('#view-punchcard-list');
+    let entries = document.querySelector('entries-ui#New');
+    if (!entries) {
+      entries = new EntriesUI('New', appjs.updateScrollLinks);
+      let cache_section = document.querySelector('#cache_section');
+      scrollView.insertAdjacentElement('beforeend', entries);
+      entries.scrollIntoView({block: "center", inline: "center"});
+      entries.info = 'New Entries';
+    }
+    return entries;
+  }
+  catch (err) {
+    infojs.error(err);
+  }
 }
 
 export let addNewEntry = function (doc, entries, before, addRevisionToElementId) {

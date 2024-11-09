@@ -411,7 +411,7 @@ pre:focus {
               break;
             }
             default:
-              infojs.info({ 'unknown sync type': syncType }, infoNode);
+              infojs.error({ 'unknown sync type': syncType }, infoNode);
             }
             var myInfo = {};
             dbSync.on('change', (info) => {
@@ -693,15 +693,15 @@ pre:focus {
               infojs.error(request.responseText);
             }
             var infoNode = this.shadow.getElementById('replication_info');
-            infojs.info('request.readyState = ' + request.readyState, infoNode);
-            infojs.info('request.status = ' + request.status, infoNode);
-            infojs.info('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders(), infoNode);
-            infojs.info('request.responseText = ' + request.responseText, infoNode);
-            infojs.info('request.response = ' + request.response, infoNode);
-            infojs.info('request.response.cookies = ' + request.response.cookies, infoNode);
-            // alert('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders());
-            infojs.info('request.getResponseHeader("Cookie") = ' + request.getResponseHeader('Cookie'), infoNode);
-            infojs.info('request.getResponseHeader("Set-Cookie") = ' + request.getResponseHeader('Set-Cookie'), infoNode);
+            infojs.info(request, infoNode);
+            // infojs.info('request.status = ' + request.status, infoNode);
+            // infojs.info('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders(), infoNode);
+            // infojs.info('request.responseText = ' + request.responseText, infoNode);
+            // infojs.info('request.response = ' + request.response, infoNode);
+            // infojs.info('request.response.cookies = ' + request.response.cookies, infoNode);
+            // // alert('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders());
+            // infojs.info('request.getResponseHeader("Cookie") = ' + request.getResponseHeader('Cookie'), infoNode);
+            // infojs.info('request.getResponseHeader("Set-Cookie") = ' + request.getResponseHeader('Set-Cookie'), infoNode);
             setCookie = request.getResponseHeader('Set-Cookie');
             if (setCookie) {
               cookie = 
@@ -733,13 +733,14 @@ pre:focus {
         request.onload = () => {
           if (request.readyState == request.DONE) {
             if (request.statusText != 'OK') {
-              infojs.info(request.statusText);
-              infojs.info(request.responseText);
+              infojs.info(request);
+              // infojs.info(request.responseText);
             }
             var infoNode = this.shadow.getElementById('replication_info');
-            infojs.info('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders(), infoNode);
-            infojs.info('request.responseText = ' + request.responseText, infoNode);
-            infojs.info('request.response = ' + request.response, infoNode);
+            infojs.info(request);
+            // infojs.info('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders(), infoNode);
+            // infojs.info('request.responseText = ' + request.responseText, infoNode);
+            // infojs.info('request.response = ' + request.response, infoNode);
             // alert('request.getAllResponseHeaders() = ' + request.getAllResponseHeaders());
             // alert('request.getResponseHeader("Set-Cookie") = ' + request.getResponseHeader('Set-Cookie'));
             var data = request.response && JSON.parse(request.response);
@@ -759,15 +760,8 @@ pre:focus {
         if (event.type == 'error') {
           infojs.error(`Network request failed. Browser is ${window.navigator.onLine ? 'online' : 'offline'}`);
         }
-        showError(errorMessage);
-      };
-
-      var showError = (text) => {
-        var infoNode = this.shadow.getElementById('replication_info');
-        infojs.error(text, infoNode);
-        // errorMsg.textContent = text;
-        // errorMsg.hidden = false;
-        // results.hidden = true;
+        let infoNode = this.shadow.getElementById('replication_info');
+        infojs.error(errorMessage, infoNode);
       };
 
       var start = () => {

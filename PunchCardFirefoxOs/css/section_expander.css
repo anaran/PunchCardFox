@@ -18,17 +18,18 @@
 /* bigwedge;	U+022C0	⋀ */
 /* blacktriangle;	U+025B4	▴ */
 /* blacktriangledown;	U+025BE	▾ */
+/* blacktriangleright;	U+025B8	▸ */
 /* bigtriangledown;	U+025BD	▽ */
 /* bigtriangleup;	U+025B3	△ */
 
-/* blacktriangledown;	U+025BE	▾ */
 .cb1 + label > *::before {
     content: "\25be  ";
+    /* font-family: monospace; */
 }
 
-/* blacktriangle;	U+025B4	▴ */
 .cb1:checked + label > *::before {
-    content: "\25b4  ";
+    content: "\25b8  ";
+    /* font-family: monospace; */
 }
 
 .cb1 + label + * {
