@@ -227,7 +227,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/:host-context
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
     try {
-      infojs.info(`new value ${newValue} for attribute ${name}`);
+      infojs.info(`attribute ${name} changed from ${oldValue} to ${newValue}`);
     }
     catch (e) {
       infojs.error(e);

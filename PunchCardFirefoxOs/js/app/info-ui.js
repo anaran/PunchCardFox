@@ -1,5 +1,7 @@
 'use strict';
 
+import * as infojs from './info.js';
+
 export class InfoUI extends HTMLElement {
   constructor() {
     try {
@@ -66,6 +68,7 @@ export class InfoUI extends HTMLElement {
   connectedCallback() {
     try {
       this.pre.addEventListener('click', event => {
+        event.preventDefault();
         if (event.target.classList.contains('selected')) {
           event.target.classList.remove('selected');
         }
@@ -90,6 +93,7 @@ export class InfoUI extends HTMLElement {
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
     try {
+      infojs.info(`attribute ${name} changed from ${oldValue} to ${newValue}`);
       this.pre.setAttribute(name, newValue);
     }
     catch (e) {

@@ -248,6 +248,10 @@ if ('serviceWorker' in navigator) {
         infojs.info(e.data, infoNode);
         break;
       }
+      case 'warn': {
+        infojs.warn(e.data, infoNode);
+        break;
+      }
       case 'version': {
         document.querySelector('header-ui').title = e.data.message;
         break;

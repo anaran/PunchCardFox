@@ -71,7 +71,6 @@ input[type=checkbox] {
   connectedCallback() {
     try {
       this.filter = document.querySelector('#filter');
-      // this.toggleFilter();
       this.hideUncheckedItem = this.shadow.querySelector('.hide_unchecked');
       this.scrollbaritem = this.shadow.querySelector('span.scrollbar');
       this.titleItem = this.shadow.querySelector('span.app_title');
@@ -80,9 +79,14 @@ input[type=checkbox] {
       if (this.scrollbaritem) {
         this.scrollbaritem.addEventListener('click', this.toggleScrollbar);
       }
-      if (this.titleItem) {
-        this.titleItem.addEventListener('click', this.toggleFilter);
-      }
+      // Clicking (checking) the filter section (cb3) should do the same as clicking the title.
+      const cbFilter = document.getElementById('cb3');
+      cbFilter.addEventListener('change', () => {
+        if (cbFilter.checked) {
+          this.focusFilter(event);
+        }
+      });
+
       if (this.hideUncheckedItem) {
         this.hideUncheckedItem.addEventListener('change', this.toggleUnchecked);
       }
@@ -116,21 +120,6 @@ input[type=checkbox] {
   get title() {
     return this.titleItem.textContent;
   }
-  toggleFilter = (event) => {
-    // event.preventDefault();
-      if (this.filter.style['display'] == 'none') {
-        this.filter.style['display'] = '';
-        this.focusFilter(event);
-        // let options = {block: "center", inline: "center"};
-        let options = {block: "center", inline: "nearest"};
-        // let options = {block: "start", inline: "nearest"};
-        // let options = {block: "end", inline: "nearest"};
-        this.filter.scrollIntoView(options);
-      }
-      else {
-        this.filter.style['display'] = 'none';
-      }
-  };
   focusFilter = (event) => {
         this.filter.querySelector('input-ui').focus();
   };
@@ -164,6 +153,7 @@ input[type=checkbox] {
   };
   toggleUnchecked = (event) => {
     let checkbox = event.target;
+    // Disable checkbox UI while toggling of entries is in progress.
     checkbox.disabled = true;
     event.preventDefault();
     event.stopPropagation();

@@ -13,7 +13,7 @@ export class AboutUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
-  <input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="app_title">About Punchcard</h1>
+  <input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="app_title"><span class="first">&top;</span><span class="last">&bottom;</span> About Punchcard</h1>
   </label>
   <section id="about">
     <p data-l10n-id="app_description">This app is empty. Fill it with your own stuff!</p>
@@ -23,6 +23,11 @@ export class AboutUI extends HTMLElement {
         <a id="application_clear" href="#application_info">Clear</a>
       </p>
       <p id="application_info"></p>
+      <p>
+        <a id="server_link" href="#server_info">Server Info</a>
+        <a id="server_clear" href="#server_info">Clear</a>
+      </p>
+      <p id="server_info"></p>
       <p>
         <a id="databases_link" href="#databases_info">Databases Info</a>
         <a id="databases_clear" href="#databases_info">Clear</a>
@@ -47,47 +52,47 @@ export class AboutUI extends HTMLElement {
   </section>
 </section>
 <style>
-@import url(css/form.css);
-@import url(css/links.css);
-@import url(css/section_expander.css);
+  @import url(css/form.css);
+  @import url(css/links.css);
+  @import url(css/section_expander.css);
 
-#edit_markdown {
-  margin:  0.2rem;
-  margin: 0.3rem;
-  border: 1px solid;
-  padding: 0.2rem;
-  display: none;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
+  #edit_markdown {
+      margin:  0.2rem;
+      margin: 0.3rem;
+      border: 1px solid;
+      padding: 0.2rem;
+      display: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+  }
 
-#render_markdown {
-  margin: 0.3rem;
-  border: 1px solid;
-  padding: 0.2rem;
-  display: none;
-}
+  #render_markdown {
+      margin: 0.3rem;
+      border: 1px solid;
+      padding: 0.2rem;
+      display: none;
+  }
 
-code {
-  background-color: lightgray;
-}
+  code {
+      background-color: lightgray;
+  }
 
-:host-context(.dark_theme) code {
-  background-color: dimgray;
-}
+  :host-context(.dark_theme) code {
+      background-color: dimgray;
+  }
 
-/*
+  /*
 # :target - CSS: Cascading Style Sheets | MDN
 ## https://developer.mozilla.org/en-US/docs/Web/CSS/:target
 
 Note: Due to a possible bug in the CSS specification, :target doesn't
 work within a web component because the shadow root doesn't pass the
 target element down to the shadow tree.
-*/
+ */
 
-:target {
-    border: 0.2rem dashed;
-}
+  :target {
+      border: 0.2rem dashed;
+  }
 
 </style>
 `;
@@ -101,10 +106,23 @@ target element down to the shadow tree.
     try {
       var databasesLinkNode = this.shadow.getElementById('databases_link');
       var applicationLinkNode = this.shadow.getElementById('application_link');
+      var serverLinkNode = this.shadow.getElementById('server_link');
       var databasesInfoNode = this.shadow.getElementById('databases_info');
       var applicationInfoNode = this.shadow.getElementById('application_info');
+      var serverInfoNode = this.shadow.getElementById('server_info');
       var databasesClearNode = this.shadow.getElementById('databases_clear');
       var applicationClearNode = this.shadow.getElementById('application_clear');
+      var serverClearNode = this.shadow.getElementById('server_clear');
+      let first_about = this.shadow.querySelector('h1[data-l10n-id=app_title]>.first');
+      let last_about = this.shadow.querySelector('h1[data-l10n-id=app_title]>.last');
+      first_about.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.shadow.querySelector('#about').firstElementChild.scrollIntoView({block: "center", inline: "center"});
+      });
+      last_about.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.shadow.querySelector('#about').lastElementChild.scrollIntoView({block: "center", inline: "center"});
+      });
       databasesClearNode.addEventListener('click', function (event) {
         // NOTE Do not go to link, which is somewhat disruptive.
         event.preventDefault();
@@ -114,6 +132,11 @@ target element down to the shadow tree.
         // NOTE Do not go to link, which is somewhat disruptive.
         event.preventDefault();
         applicationInfoNode.textContent = '';
+      });
+      serverClearNode.addEventListener('click', function (event) {
+        // NOTE Do not go to link, which is somewhat disruptive.
+        event.preventDefault();
+        serverInfoNode.textContent = '';
       });
       databasesLinkNode.addEventListener('click', function (event) {
         try {
@@ -219,6 +242,29 @@ target element down to the shadow tree.
           };
         }
       });
+      serverLinkNode.addEventListener('click', function (event) {
+        // NOTE Do not go to link, which is somewhat disruptive.
+        event.preventDefault();
+        // event.stopPropagation();
+        let destination = localStorage.getItem('protocol') +
+            localStorage.getItem('hostportpath');
+        async function getServerInfo() {
+          try {
+            const response = await fetch(destination);
+            if (!response.ok) {
+              infojs.error(response, serverInfoNode);
+            }
+            else {
+              const json = await response.json();
+              infojs.infojs(json, serverInfoNode);
+            }
+          }
+          catch (error) {
+            infojs.error(error, serverInfoNode);
+          }
+        }
+        getServerInfo();
+      });
       if (readmejs) {
         var renderElement = this.shadow.querySelector('#render_markdown');
         var editElement = this.shadow.querySelector('#edit_markdown');
@@ -275,7 +321,7 @@ target element down to the shadow tree.
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
     try {
-      infojs.info(`new value ${newValue} for attribute ${name}`);
+      infojs.info(`attribute ${name} changed from ${oldValue} to ${newValue}`);
     }
     catch (e) {
       infojs.error(e);

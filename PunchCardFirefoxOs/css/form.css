@@ -32,22 +32,33 @@ input {
     font-size: inherit;
 }
 
-:is(button, input)[type=button] {
+:is(button, input[type=button]) {
     background-color: white;
     color: black;
     font-size: inherit;
 }
 
-:is(button, input)[type=button]:disabled {
+:is(button, input[type=button]):disabled {
     background-color: lightgrey;
 }
 
-.dark_theme :is(button, input)[type=button] {
+/* For light DOM */
+.dark_theme :is(button, input[type=button]) {
     background-color: black;
     color: white;
 }
 
-.dark_theme :is(button, input)[type=button]:disabled {
+.dark_theme :is(button, input[type=button]):disabled {
+    background-color: dimgrey;
+}
+
+/* For shadow DOM */
+:host-context(.dark_theme) :is(button, input[type=button]) {
+    background-color: black;
+    color: white;
+}
+
+:host-context(.dark_theme) :is(button, input[type=button]):disabled {
     background-color: dimgrey;
 }
 

@@ -12,7 +12,7 @@ export class OptionsUI extends HTMLElement {
       super();
       this.shadow = this.attachShadow({ mode: 'open' });
       this.shadow.innerHTML = `
-<input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="app_options">Punchcard Options</h1>
+<input type="checkbox" id="cb1" class="cb1"><label for="cb1"><h1 data-l10n-id="app_options"><span class="first">&top;</span><span class="last">&bottom;</span> Punchcard Options</h1>
 </label>
 <section id="options">
   <section>
@@ -154,6 +154,16 @@ pre:focus {
       var setCookie;
       let loadButton = this.shadow.querySelector('#load');
       let saveButton = this.shadow.querySelector('#save');
+      let first_options = this.shadow.querySelector('h1[data-l10n-id=app_options]>.first');
+      let last_options = this.shadow.querySelector('h1[data-l10n-id=app_options]>.last');
+      first_options.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.shadow.querySelector('#options').firstElementChild.scrollIntoView({block: "center", inline: "center"});
+      });
+      last_options.addEventListener('click', (event) => {
+        event.preventDefault();
+        this.shadow.querySelector('#options').lastElementChild.scrollIntoView({block: "center", inline: "center"});
+      });
       // No need to keep a lot of history for user options.
       infojs.time('new Pouchdb options');
       var optionsDB = new PouchDB('options'/*, { auto_compaction: true }*/);
@@ -243,7 +253,7 @@ pre:focus {
       fontSizeSelect.addEventListener ('change', (event) => changeFontSize(event.target));
 
       loadButton.addEventListener('click', (event) => {
-        infojs.time('optionsDB.allDocs');
+        infojs.time('loading optionsDB.allDocs');
         optionsDB.allDocs({
           include_docs: true,
         }).then((result) => {
@@ -261,6 +271,7 @@ pre:focus {
             }
             else {
               localStorage.setItem(row.key, row.doc.value);
+              infojs.info(`loading value '${row.doc.value}' for option '${row.key}'`);
               if (element.type == 'checkbox') {
                 element.checked = row.doc.value;
               }
@@ -270,7 +281,7 @@ pre:focus {
             }
           });
           infojs.timeEnd('delete no longer used options in optionsDB');
-          infojs.timeEnd('optionsDB.allDocs');
+          infojs.timeEnd('loading optionsDB.allDocs');
         });
         infojs.time('optionsDB.info()');
         optionsDB.info().then((info) => {
@@ -282,49 +293,30 @@ pre:focus {
       });
 
       saveButton.addEventListener('click', (event) => {
-        infojs.time('delete optionsDB conflicts');
+        infojs.time('save optionsDB options');
         this.shadow.querySelectorAll('.persistent').forEach((element) => {
-          optionsDB.get(element.id, {
-            conflicts: true
-          }).then((otherDoc) => {
-            if (otherDoc._conflicts) {
-              infojs.info({ conflicts: otherDoc._conflicts }, infoNode);
-              // FIXME: just delete conflict for now for options.
-              // DON'T DO THIS FOR VALUABLE DOCUMENTS!
-              otherDoc._conflicts.forEach((conflict) => {
-                optionsDB.put({
-                  _id: otherDoc._id,
-                  _rev: conflict,
-                  _deleted: true
-                }).then((response) => {
-                  infojs.info('options db conflict deleted');
-                  infojs.info(response);
-                  // this.shadow.location.reload('force');
-                  // saveLink.click();
-                }).catch((err) => {
-                  infojs.error(err);
-                });
-              });
-            }
-            if (element.type == 'checkbox') {
-              otherDoc.value = element.checked;
-            }
-            else {
-              otherDoc.value = element.value;
-            }
+          let value = element.type == 'checkbox' ? element.checked : element.value;
+          optionsDB.get(element.id).then((otherDoc) => {
+            optionsDB.put({
+              _id: element.id,
+              _rev: otherDoc._rev,
+              value: value
+            }).then((savedDoc) => {
+              infojs.info(`saved value '${value}' for revision  '${savedDoc.rev}' of option '${savedDoc.id}'`);
+            }).catch((err) => {
+              infojs.warn(err);
+            });
           }).catch((err) => {
-            //errors
-            console.log(err, element);
-            var value = element.type == 'checkbox' ? element.checked : element.value;
-            if (element.id) {
-              optionsDB.put({ _id: element.id, value: value });
-            }
-            else {
-              console.log("no id for saving options doc", element);
-            }
+            infojs.warn(err);
+            optionsDB.put({
+              _id: element.id,
+              value: value
+            }).catch((err) => {
+              infojs.warn(err);
+            });
           });
         });
-        infojs.timeEnd('delete optionsDB conflicts');
+        infojs.timeEnd('save optionsDB options');
       });
 
       var infoNode = this.shadow.getElementById('replication_info');
@@ -428,18 +420,19 @@ pre:focus {
                 infojs.infojs(myInfo, infoNode);
               }
             })
-              .on('paused', () => {
+              .on('paused', (err) => {
                 // replication paused (e.g. user went offline)
                 if (verbositySelect.value == 'verbose') {
                   myInfo[localDbName] = "replication paused (e.g. user went offline)";
                   infojs.infojs(myInfo, infoNode);
+                  err && infojs.error(err, infoNode);
                 }
               })
               .on('active', () => {
                 // replicate resumed (e.g. user went back online)
                 if (verbositySelect.value == 'verbose') {
                   myInfo[localDbName] = "replicate resumed (e.g. user went back online)";
-                  infojs.info(myInfo, infoNode);
+                  infojs.infojs(myInfo, infoNode);
                 }
               })
               .on('denied', (info) => {
@@ -460,7 +453,7 @@ pre:focus {
                   });
                 }
                 startButton.removeAttribute('disabled');
-                stopButton.setAttribute('disabled', true);
+                stopButton.setAttribute('disabled', '');
               })
               .on('uptodate', (info) => {
                 myInfo[localDbName] = info;
@@ -473,14 +466,14 @@ pre:focus {
                     this.shadow.getElementById('hostportpath').value + '_session';
                 sessionLogin(sessionUrl, this.shadow.getElementById('user').value, this.querySelector('#pass').value);
                 startButton.removeAttribute('disabled');
-                stopButton.setAttribute('disabled', true);
+                stopButton.setAttribute('disabled', '');
               });
           }
-          startButton.setAttribute('disabled', true);
+          startButton.setAttribute('disabled', '');
           stopButton.removeAttribute('disabled');
           var cancelSync = (event) => {
             startButton.removeAttribute('disabled');
-            stopButton.setAttribute('disabled', true);
+            stopButton.setAttribute('disabled', '');
             this.removeEventListener('click', cancelSync);
             dbSync.cancel();
           };
@@ -745,7 +738,7 @@ pre:focus {
             // alert('request.getResponseHeader("Set-Cookie") = ' + request.getResponseHeader('Set-Cookie'));
             var data = request.response && JSON.parse(request.response);
             if (data && data.ok) {
-              // load.setAttribute('disabled', true);
+              // load.setAttribute('disabled', '');
             }
             // FIXME: async!
             // return data.ok;
@@ -788,11 +781,12 @@ pre:focus {
     ];
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
-    // try {
-    // }
-    // catch (e) {
-    //   window.alert(JSON.stringify(e, null, 2));
-    // }
+    try {
+      infojs.info(`attribute ${name} changed from ${oldValue} to ${newValue}`);
+    }
+    catch (e) {
+      infojs.error(e);
+    }
   }
   get options() {
     let options = {};

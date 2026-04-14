@@ -183,6 +183,9 @@ input {
       event.preventDefault();
       event.stopPropagation();
       if (!this.activity.value.trim().length || window.confirm("Discard edits?")) {
+        this.tack.removeCallback(this.updateStart);
+        this.tack.removeCallback(this.updateEnd);
+        delete this.tack;
         document.body.removeChild(this);
       }
       removeAutosave();
@@ -192,8 +195,14 @@ input {
       event.stopPropagation();
       let res = this.save();
       res && res.then((result) => {
+        this.tack.removeCallback(this.updateStart);
+        this.tack.removeCallback(this.updateEnd);
+        delete this.tack;
         document.body.removeChild(this);
-        document.getElementById(('modified' in result) ? result.modified.id : result.new.id).scrollIntoView({block: "center", inline: "center"});
+        let entry = document.getElementById(('modified' in result) ? result.modified.id : result.new.id);
+        // Make sure new entry is visible to user.
+        entry.parentElement.shadow.firstElementChild.checked = true;
+        entry.scrollIntoView({block: "center", inline: "center"});
         removeAutosave();
       }).catch((err) => {
         infojs.error(err);
@@ -435,13 +444,18 @@ input {
       return true;
     }
     this.autosaveEntry = () => {
-      let autosave = {
-        activity: this.activity.value,
-        end: this.end.value,
-        start: this.start.value,
-      };
-      infojs.info(`autosaving to ${this.autosaveID} ${JSON.stringify(autosave, null, 2)}`);
-      localStorage.setItem(this.autosaveID, JSON.stringify(autosave));
+      try {
+        let autosave = {
+          activity: this.activity.value,
+          end: this.end.value,
+          start: this.start.value,
+        };
+        infojs.info(`autosaving to ${this.autosaveID} ${JSON.stringify(autosave, null, 2)}`);
+        localStorage.setItem(this.autosaveID, JSON.stringify(autosave));
+      }
+      catch(err) {
+        infojs.error(err);
+      }
     };
     this.activity = this.shadow.querySelector('#activity');
     this.autosaveID = `new-${(new Date).toJSON()}`;
@@ -452,7 +466,7 @@ input {
     let setupAutosave = (event) => {
       // Causes Permission to access toJSON on click event.
       // event && infojs.info(event);
-      // Only clear timeout if weak map has one set for this event target.
+      // Only clear timeout if weak map has one set up for this event target.
       // This prevents a restart of the timeout by an event.target
       // which did not initiate the timeout.
       window.clearTimeout(wm.get(event.target));
@@ -610,16 +624,19 @@ input {
     }));
     this.updateStartButton.addEventListener('click', ((event) => {
       this.tack.addCallback.bind(this.tack)(this.updateStart);
-      event.target.setAttribute('disabled', true);
+      event.target.setAttribute('disabled', '');
       this.start.classList.add('updating');
     }));
     this.updateEndButton.addEventListener('click', ((event) => {
       this.tack.addCallback.bind(this.tack)(this.updateEnd);
-      event.target.setAttribute('disabled', true);
+      event.target.setAttribute('disabled', '');
       this.end.classList.add('updating');
     }));
     this.tack.start();
     this.init(this.databaseID);
+    // Do initial autosave in case editor crashes before first user timeout.
+    // This could happen when editor is started by appjs.editFilterAsNewEntry().
+    this.autosaveEntry();
   }
 
   loadAutosaveGetNewID(autosaveID) {
@@ -808,11 +825,14 @@ input {
             let newEntry;
             if (this.copy && this.databaseID) {
               let beforeThisElement = document.getElementById(this.databaseID);
-              newEntry = utilsjs.addNewEntry(entry, beforeThisElement.parentElement, beforeThisElement);
+              newEntry = utilsjs.addNewEntry(entry, beforeThisElement
+                                             ? beforeThisElement.parentElement
+                                             :  this.entries, beforeThisElement);
               infojs.info(`adding inside ${beforeThisElement.parentElement.id} before ${beforeThisElement.id}`);
             }
             else {
-              newEntry = utilsjs.addNewEntry(entry, this.entries);
+              newEntry = utilsjs.addNewEntry(entry, this.entries, this.entries.firstElementChild);
+              this.entries.info = `${this.entries.childElementCount} New Entries`;
             }
             newEntry.activity.classList.add('changed');
             newEntry.start.classList.add('changed');

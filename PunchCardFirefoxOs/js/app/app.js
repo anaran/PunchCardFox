@@ -19,7 +19,9 @@ let changes = "&vzigzag;";
 let live = "&ofcir;";
 let must_match = "&approx;";
 let must_not_match = "&napprox;";
-let processed = "&circlearrowright;";
+// ctdot;	U+022EF	⋯
+// let processed = "&circlearrowright;";
+let processed = "&ctdot;";
 
 let updateQueryResults = (result) => {
   const scrollView = document.querySelector('section#view-punchcard-list.view.view-noscroll');
@@ -171,7 +173,7 @@ export let stringToRegexp = function(str) {
   // Regexp syntax requires at least a slash at end, possibly followed by flags.
   return captureGroups &&
     new RegExp(captureGroups[1],
-               typeof captureGroups[2] == 'undefined' ? "is" : captureGroups[2]);
+               typeof captureGroups[2] == 'undefined' ? "isu" : captureGroups[2]);
 };
 
 export let runQuery = function(arg) {
@@ -238,23 +240,23 @@ export let runQuery = function(arg) {
             return;
           }
           entries.info = `${query_info}, ${processed} ${changesCount}`;
-          infojs.info(info);
+          infojs.info(JSON.stringify(info, ['changes', 'id', 'rev', 'seq'], 2));
           if ('_deleted' in info.doc) {
-            let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
+            let entry = utilsjs.addNewEntry(info.doc, entries, (options.descending && !options.live) ? undefined : entries.firstElementChild, 'addRevisionToElementId');
             entry.classList.add('deleted');
             if (options.deleted) {
               matches += 1; 
             }
           }
           else if ('_conflicts' in info.doc) {
-            let entry = utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, 'addRevisionToElementId');
+            let entry = utilsjs.addNewEntry(info.doc, entries, (options.descending && !options.live) ? undefined : entries.firstElementChild, 'addRevisionToElementId');
             entry.classList.add('conflicts');
             if (options.conflicts) {
               matches += 1;
             }
           }
           else if (!options.deleted && !options.conflicts) {
-            utilsjs.addNewEntry(info.doc, entries, entries.firstElementChild, !'addRevisionToElementId');
+            utilsjs.addNewEntry(info.doc, entries, (options.descending && !options.live) ? undefined : entries.firstElementChild, !'addRevisionToElementId');
             matches += 1;
           }
           if (matches == matchLimit) {
@@ -271,7 +273,7 @@ export let runQuery = function(arg) {
         // Since a db.changes promise returns immediately we can use a
         // click listener to call cancel at any time, without waiting
         // for a change event.
-        let stop = entries.shadow.querySelector('a.stop');
+        let stop = entries.shadow.querySelector('button.stop');
         stop.addEventListener('click', (event) => {
           event.preventDefault();
           query.cancel();
@@ -357,7 +359,11 @@ export let runQuery = function(arg) {
                   continue;
                 }
               }
-              entry = utilsjs.addNewEntry(row.doc, entries, undefined, !'addRevisionToElementId');
+              entry = utilsjs.addNewEntry(
+                row.doc,
+                entries,
+                options.descending ? undefined : entries.firstElementChild,
+                !'addRevisionToElementId');
               if (isSearch) {
                 matches += 1;
                 if (matchLimit && (matches == matchLimit)) {
@@ -437,7 +443,9 @@ document.addEventListener('readystatechange', (event) => {
       // See showRevisions for its use in HTML id to identify
       // historic revisions in UI.
       // entry._rev = response.rev;
-      let newEntry = utilsjs.addNewEntry(entry, utilsjs.getNewEntriesUI());
+      const entries = utilsjs.getNewEntriesUI();
+      let newEntry = utilsjs.addNewEntry(entry, entries, entries.firstElementChild);
+      entries.info = `${entries.childElementCount} New Entries`;
       newEntry.scrollIntoView({block: "center", inline: "center"});
       newEntry.activity.classList.add('changed');
       newEntry.start.classList.add('changed');
@@ -475,7 +483,26 @@ document.addEventListener('readystatechange', (event) => {
     let revisionsMenu = document.getElementById('revisions_menu');
     let activityMenu = document.getElementById('activity_menu');
     let operationMenu = document.getElementById('operation_menu');
-    // let request = navigator.mozApps.getSelf();
+    let first_cached_version = document.querySelector('h1[data-l10n-id=cache_title]>.first');
+    let last_cached_version = document.querySelector('h1[data-l10n-id=cache_title]>.last');
+    first_cached_version.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.querySelector('#cache_section').firstElementChild.scrollIntoView({block: "start", inline: "start"});
+    });
+    last_cached_version.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.querySelector('#cache_section').lastElementChild.scrollIntoView({block: "end", inline: "end"});
+    });
+    let first_info = document.querySelector('h1[data-l10n-id=console_title]>.first');
+    let last_info = document.querySelector('h1[data-l10n-id=console_title]>.last');
+    first_info.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.querySelector('#info_categories').scrollIntoView({block: "start", inline: "start"});
+    });
+    last_info.addEventListener('click', (event) => {
+      event.preventDefault();
+      document.querySelector('#info').lastElementChild.scrollIntoView({block: "end", inline: "end"});
+    });
     let info_categories = document.querySelector('#info_categories');
     Array.prototype.forEach.call(info_categories.querySelectorAll('input'), (value) => {
       if (localStorage.getItem(value.id)) {
@@ -599,7 +626,8 @@ document.addEventListener('readystatechange', (event) => {
       updateScrollLinks();
       window.requestAnimationFrame(function (timestamp) {
         let firstUnfilteredEntryNode = scrollView.querySelector('entry-ui:not(.filtered)');
-        firstUnfilteredEntryNode.scrollIntoView({block: "center", inline: "center"});
+        firstUnfilteredEntryNode
+          && firstUnfilteredEntryNode.scrollIntoView({block: "center", inline: "center"});
       });
       event.target.classList.remove('updating');
       infojs.timeEnd('updating');
@@ -608,11 +636,11 @@ document.addEventListener('readystatechange', (event) => {
     let updateQueryButton = event => {
       if (event.target.value == '') {
         filter.classList.add('empty');
-        document.getElementById('query_filter').disabled = true;
+        document.getElementById('query_filter').setAttribute('disabled', '');
       }
       else {
         filter.classList.remove('empty');
-        document.getElementById('query_filter').disabled = null;
+        document.getElementById('query_filter').removeAttribute('disabled');
       }
       // Filter value has been updating (is changed) since last Query
       // or filter operation (Enter).
@@ -693,7 +721,7 @@ document.addEventListener('readystatechange', (event) => {
             document.getElementById('start_at_checked').removeAttribute('disabled');
           }
           else {
-            document.getElementById('start_at_checked').setAttribute('disabled', true);
+            document.getElementById('start_at_checked').setAttribute('disabled', '');
           }
         }
         else {
@@ -706,7 +734,7 @@ document.addEventListener('readystatechange', (event) => {
           utilsjs.positionMenu(endMenu, event);
           endMenu.dataset.id = entry.id;
           if (entry.end.textContent == ' ') {
-            document.getElementById('end_undefined').setAttribute('disabled', true);
+            document.getElementById('end_undefined').setAttribute('disabled', '');
           }
           else {
             document.getElementById('end_undefined').removeAttribute('disabled');
@@ -715,7 +743,7 @@ document.addEventListener('readystatechange', (event) => {
             document.getElementById('end_at_checked').removeAttribute('disabled');
           }
           else {
-            document.getElementById('end_at_checked').setAttribute('disabled', true);
+            document.getElementById('end_at_checked').setAttribute('disabled', '');
           }
         }
         else {
@@ -745,7 +773,7 @@ document.addEventListener('readystatechange', (event) => {
         if (operationCount > 0) {
           let title = document.getElementById('operation_menu_title');
           let ids = Array.from(checkedEntries, elem => elem.parentElement.id);
-          title.textContent = `${operationCount} checked ${ids}`;
+          title.textContent = `${operationCount} checked`;
         }
         let menu = entry.checked ? operationMenu : activityMenu;
         if (menu.style.display == 'none') {
@@ -755,19 +783,19 @@ document.addEventListener('readystatechange', (event) => {
             document.getElementById('activity_at_checked').removeAttribute('disabled');
           }
           else {
-            document.getElementById('activity_at_checked').setAttribute('disabled', true);
+            document.getElementById('activity_at_checked').setAttribute('disabled', '');
           }
           if (entry.checked && operationCount == 2) {
             document.getElementById('fill_gap').removeAttribute('disabled');
           }
           else {
-            document.getElementById('fill_gap').setAttribute('disabled', true);
+            document.getElementById('fill_gap').setAttribute('disabled', '');
           }
           if (entry.checked && operationCount > 0) {
             document.getElementById('delete').removeAttribute('disabled');
           }
           else {
-            document.getElementById('delete').setAttribute('disabled', true);
+            document.getElementById('delete').setAttribute('disabled', '');
           }
         }
         else {

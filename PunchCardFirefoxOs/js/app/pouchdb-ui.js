@@ -37,20 +37,17 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
   </template>
 </section>
 <style>
-  /*div {
-  position: fixed;
-  top: 1em;
-  left: 1em;
-  }*/
+  @import url(css/form.css);
+  @import url(css/links.css);
   div {
-    padding: 1em;
-    /*border: solid 0.2em;*/
-    opacity: 0.7;
+      padding: 1em;
+      /*border: solid 0.2em;*/
+      opacity: 0.7;
   }
   span.close {
-    padding: 1em;
-    /*border: solid 0.2em;*/
-    opacity: 0.7;
+      padding: 1em;
+      /*border: solid 0.2em;*/
+      opacity: 0.7;
   }
 </style>
 `;
@@ -76,17 +73,16 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
         var reader = new FileReader();
         var filesLoaded = 0;
         reader.onerror = errorHandler;
+        infojs.time('read and parse of ' + file.name);
         reader.onload = function(readEvent) {
           try {
             filesLoaded++;
-            console.timeEnd('read of ' + file.name);
             var data = JSON.parse(readEvent.target.result);
-            // console.log(result);
-            console.time(`db.bulkDocs of ${db.name}`);
+            infojs.timeEnd('read and parse of ' + file.name);
+            infojs.time(`db.bulkDocs of ${db.name} for import`);
             db.bulkDocs(data, { new_edits: false }).then(function (result) {
-              console.timeEnd(`db.bulkDocs of ${db.name}`);
+              infojs.timeEnd(`db.bulkDocs of ${db.name} for import`);
               resolve({ result: result, file: fileName });
-              // handle result
             }).catch(function (err) {
               reject(err);
             });
@@ -96,17 +92,16 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
             reject(err);
           }
         };
-        console.time('read of ' + file.name);
         reader.readAsText(file);
       });
     };
     // proto.createdCallback = function() {
-    // console.log('proto', Object.getPrototypeOf(this));
+    // infojs.info(`proto ${Object.getPrototypeOf(this)}`);
     // let two = document.createElement('span');
     // two.setAttribute('slot', 'two');
     // two.textContent = 'hättest du gern!';
     // this.appendChild(two);
-    // console.log(this);
+    // infojs.info(this);
     let addInfo = (element, text) => {
       let infoTemplate = this.infoTemplate;
       let div = document.importNode(infoTemplate.content, true).children[0];
@@ -119,6 +114,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
       element.appendChild(div);
     };
     let addDownloadLink = (element, obj, text, filename) => {
+      infojs.time(`new window.Blob, URL of ${this.db.name}`);
       let linkTemplate = this.linkTemplate;
       let blob = new window.Blob([JSON.stringify(obj, null, 2)], {
         type: 'text/plain; charset=utf-8'
@@ -131,7 +127,7 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
         div.parentElement.removeChild(div);
       });
       download.href = window.URL.createObjectURL(blob);
-      console.timeEnd(`window.Blob, URL of ${this.db.name}`);
+      infojs.timeEnd(`new window.Blob, URL of ${this.db.name}`);
       download.download = filename;
       download.textContent = text;
       element.appendChild(div);
@@ -140,10 +136,10 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
     this.importButton = this.shadow.querySelector('#import_db');
     this.importFile = this.shadow.querySelector('#import_file');
     this.importFile.addEventListener('change', event => {
-      console.log(event.target.files);
+      infojs.info(event.target.files);
       if (checkFileCount(event.target.files)) {
         // TODO files are added to head of the list, so we have to process in reverse order.
-        console.log("Loading files, please wait...");
+        infojs.info("Loading files, please wait...");
         for (var i = 0, len = event.target.files.length; i < len; i++) {
           readFileUpdateUI(event.target.files[i], this.db).then(result => {
             let importFile = result.file;
@@ -178,72 +174,96 @@ See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#U
             addInfo(self.shadow.children[0], `failed to import ${event.target.files[i].name}`);
           });
         }
+        this.importButton.removeAttribute('disabled');
       }
     }, false);
     this.importButton.addEventListener('click', event => {
+      this.importButton.setAttribute('disabled', '');
       event.preventDefault();
-      console.log(event, this);
+      infojs.info(event);
       this.importFile.click();
     });
     this.exportButton = this.shadow.querySelector('#export_db');
     this.exportButton.addEventListener('click', event => {
-      console.log(event, this);
-      console.time(`db.allDocs of ${this.db.name}`);
-      this.db.allDocs({
-        timeout: 1000000,
-        include_docs: true/*, 
-                            attachments: true*/
-      }).then(result => {
-        // handle result
-        let exportDate = new Date();
-        console.timeEnd(`db.allDocs of ${this.db.name}`);
-        // Map to JSON which can be directly loaded into new database using
-        // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
-        // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
-        var docs = {
-          'docs': result.rows.map(function (row) {
-            // NOTE Causes "error":"conflict","reason":"Document update conflict."
-            // on second time POST _bulk_docs to database.
-            // delete row.doc._rev;
-            return row.doc;
-          })
-        };
-        console.time(`window.Blob, URL of ${this.db.name}`);
-        addDownloadLink(self.shadow.children[0], docs,
-                        `Download all ${result.total_rows} doc exported at ${exportDate.toLocaleString()}`,
-                        `${this.db.name}-${result.total_rows}-${exportDate.getTime()}.txt`);
-      }).catch(function (err) {
-        infojs.error(err);
-      });
-      // this.parentElement.removeChild(this);
+      try {
+        this.exportButton.setAttribute('disabled', '');
+        infojs.info(event);
+        infojs.time(`get db.allDocs of ${this.db.name} for export`);
+        this.db.allDocs({
+          timeout: 1000000,
+          include_docs: true
+        }).then(result => {
+          // handle result
+          let exportDate = new Date();
+          infojs.timeEnd(`get db.allDocs of ${this.db.name} for export`);
+          infojs.info(`db.allDocs of ${this.db.name} returned ${result.rows.length} entries.`);
+          // Map to JSON which can be directly loaded into new database using
+          // curl -u USER -k -d @punchcard-ROWS-DATE.txt -X POST \
+          // https://HOST/NEWDB/_bulk_docs -H "Content-Type: application/json"
+          var docs = {
+            'docs': result.rows.map(function (row) {
+              // NOTE Causes "error":"conflict","reason":"Document update conflict."
+              // on second time POST _bulk_docs to database.
+              // delete row.doc._rev;
+              return row.doc;
+            })
+          };
+          addDownloadLink(self.shadow.children[0], docs,
+                          `Download all ${result.total_rows} docs exported at ${exportDate.toLocaleString()}`,
+                          `${this.db.name}-${result.total_rows}-${exportDate.getTime()}.txt`);
+          this.exportButton.removeAttribute('disabled');
+        }).catch(function (err) {
+          infojs.error(err);
+          this.exportButton.removeAttribute('disabled');
+        });
+        // this.parentElement.removeChild(this);
+      }
+      catch (e) {
+        infojs.error(e);
+      }
     });
     this.deleteButton = this.shadow.querySelector('#delete_db');
     this.deleteButton.addEventListener('click', event => {
-      console.log(event, this);
-      if ('db' in this &&
-          this.db instanceof PouchDB &&
-          window.confirm('Make sure you have downloaded all docs, else they will be lost forever')) {
-        this.db.destroy().then(response => {
-          console.log('deleted database', this.db.name);
-        }).catch(function (err) {
-          infojs.error(err);
-        });
+      try {
+        this.deleteButton.setAttribute('disabled', '');
+        infojs.info(event);
+        if ('db' in this &&
+            this.db instanceof PouchDB &&
+            window.confirm('Make sure you have downloaded all docs, else they will be lost forever')) {
+          this.db.destroy().then(response => {
+            infojs.info(`deleted database ${this.db.name}`);
+          }).catch(function (err) {
+            infojs.error(err);
+          });
+        }
+        this.deleteButton.removeAttribute('disabled');
+      }
+      catch (e) {
+        infojs.error(e);
       }
     });
     this.linkTemplate = this.shadow.querySelector('#template_link');
     this.infoTemplate = this.shadow.querySelector('#template_info');
   }
-  static get observedAttributes() {return ['db_name']; }
+  static get observedAttributes() {
+    return ['db_name'];
+  }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
-    switch (name) {
-    case 'db_name': {
-      this.headline.textContent = `Datebase ${newValue}`;
-      this.db = new PouchDB(newValue);
-      break;
+    try {
+      infojs.info(`attribute ${name} changed from ${oldValue} to ${newValue}`);
+      switch (name) {
+      case 'db_name': {
+        this.headline.textContent = `Datebase ${newValue}`;
+        this.db = new PouchDB(newValue);
+        break;
+      }
+      default: {
+        infojs.error(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
+      }
+      }
     }
-    default: {
-      infojs.error(`unknown attribute ${name}, NS: ${namespace} for element ${this}`);
-    }
+    catch (e) {
+      infojs.error(e);
     }
   }
 }

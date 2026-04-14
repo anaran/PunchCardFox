@@ -2,5 +2,5 @@
 .view {
     flex: auto;
     overflow-y: scroll;
-    scrollbar-color: black white;
+    scrollbar-color: red green;
 }

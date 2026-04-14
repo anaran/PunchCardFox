@@ -105,7 +105,6 @@ export let getNewEntriesUI = function() {
     let entries = document.querySelector('entries-ui#New');
     if (!entries) {
       entries = new EntriesUI('New', appjs.updateScrollLinks);
-      let cache_section = document.querySelector('#cache_section');
       scrollView.insertAdjacentElement('beforeend', entries);
       entries.scrollIntoView({block: "center", inline: "center"});
       entries.info = 'New Entries';
@@ -212,6 +211,8 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
     // }).catch(function (err) {
     //   infojs.error({get_error:err}, entries);
     // });
+    // Make sure new entry is visible to user.
+    entries.shadow.firstElementChild.checked = true;
     if (before) {
       // Insert before the first entry we find, if any.
       entries.insertBefore(entry, before);
@@ -233,7 +234,7 @@ export let addNewEntry = function (doc, entries, before, addRevisionToElementId)
 export let positionMenu = function(menu, event) {
   let xProp, yProp;
   let xOffset, yOffset;
-  if (event.clientX > window.innerWidth * 0.8) {
+  if (event.clientX > window.innerWidth * 0.5) {
     xProp = 'right';
     menu.style['left'] = ``;
     xOffset = window.innerWidth - event.clientX + 10;
@@ -243,7 +244,7 @@ export let positionMenu = function(menu, event) {
     menu.style['right'] = ``;
     xOffset = event.clientX + 10;
   }
-  if (event.clientY > window.innerHeight * 0.8) {
+  if (event.clientY > window.innerHeight * 0.6) {
     yProp = 'bottom';
     menu.style['top'] = ``;
     yOffset = window.innerHeight - event.clientY + 10;

@@ -10,7 +10,7 @@ let cachedVersion = undefined;
 self.addEventListener('fetch', function(event) {
   const successResponses = /^0|([123]\d\d)|(40[14567])|410$/;
   let request = event.request;
-  // TODO: Use a nonce here?
+  // TODO: Use a nonce here to defeat caching?
   let url = request.url;
   event.respondWith(
     caches.open(cachedVersion || version).then(function(cache) {
@@ -26,7 +26,7 @@ self.addEventListener('fetch', function(event) {
           const msg = `fetch request timed out after ${fetchTimeout} ms for ${event.request.url}`;
           self.clients.get(event.clientId).then((client) => {
             client.postMessage({
-              request: 'error',
+              request: 'warn',
               message: msg,
               scope: self.registration.scope,
               where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]
@@ -85,7 +85,7 @@ self.addEventListener('fetch', function(event) {
         }).catch(err => {
           self.clients.get(event.clientId).then((client) => {
             client.postMessage({
-              request: 'error',
+              request: 'warn',
               message: `${err.message} ${event.request.url}`,
               scope: self.registration.scope,
               where: (new Error).stack.match(/(@|at\s+)(.+:\d+:\d+)/)[2]

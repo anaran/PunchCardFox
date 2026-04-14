@@ -10,6 +10,14 @@
     display: none;
 }
 
+/* bottom;	U+022A5	⊥ */
+/* top;	U+022A4	⊤ */
+
+/* DownArrowBar;	U+02913	⤓ */
+/* UpArrowBar;	U+02912	⤒ */
+
+/* angrt;	U+0221F	∟ */
+
 /* Vee;	U+022C1	⋁ */
 /* vee;	U+02228	∨ */
 /* Wedge;	U+022C0	⋀ */
@@ -22,15 +30,17 @@
 /* bigtriangledown;	U+025BD	▽ */
 /* bigtriangleup;	U+025B3	△ */
 
-.cb1 + label > *::before {
-    content: "\25be  ";
-    /* font-family: monospace; */
-}
+/* .cb1 + label > *::before { */
+/*     content: "\25be  "; */
+/*     padding-inline-start: 1rem; */
+/*     /\* font-family: monospace; *\/ */
+/* } */
 
-.cb1:checked + label > *::before {
-    content: "\25b8  ";
-    /* font-family: monospace; */
-}
+/* .cb1:checked + label > *::before { */
+/*     content: "\25b8  "; */
+/*     padding-inline-start: 1rem; */
+/*     /\* font-family: monospace; *\/ */
+/* } */
 
 .cb1 + label + * {
     display: none;
@@ -40,31 +50,40 @@
 .cb1:checked + label + * {
     max-height: calc(100vh - 3rem);
     position: sticky;
-    top: 1.5rem;
+    top: 3rem;
     display: block;
-    overscroll-behavior: auto;
+    /* overscroll-behavior: contain; */
     overflow: scroll;
-    scrollbar-width: none;
+    scrollbar-width: auto;
     z-index: 1;
 }
 
 .cb1 + label {
     background-color: inherit;
+    opacity: 0.5;
+}
+
+.cb1:checked + label {
+    background-color: inherit;
+    opacity: 1;
 }
 
 .cb1 + label > * {
     margin: 0;
     font-size: 1.2rem;
     position: sticky;
-    top: 1.5rem;
+    top: 0;
     z-index: 1;
-    overscroll-behavior: contain;
+    /* overscroll-behavior: none; */
     overflow: visible;
-    scrollbar-width: none;
     background-color: inherit;
 }
 
 .cb1:checked + label > * {
-    top: 0;
+    top: 1.5rem;
     z-index: 2;
+}
+
+span.first, span.last {
+    padding-inline-start: 1rem;
 }

@@ -154,6 +154,7 @@ input.empty + input.undo.undoable + input.erase {
   }
   attributeChangedCallback(name, oldValue, newValue, namespace) {
     try {
+      infojs.info(`attribute ${name} changed from ${oldValue} to ${newValue}`);
       if (name != 'class') {
         this.inp.setAttribute(name, newValue);
       }
